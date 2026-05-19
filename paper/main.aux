@@ -81,54 +81,60 @@
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
 \newlabel{alg:dva}{{1}{7}{DVA-MCTS}{algorithm.1}{}}
 \citation{lecam1973convergence}
-\citation{snell2024scaling}
-\citation{wu2024inference}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Verifier Call Complexity}{8}{subsection.5.2}\protected@file@percent }
 \newlabel{thm:calls}{{5.2}{8}{Sub-linear verifier calls}{theorem.5.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Lower Bound}{8}{subsection.5.3}\protected@file@percent }
 \newlabel{thm:lower}{{5.3}{8}{Minimax lower bound}{theorem.5.3}{}}
 \newlabel{cor:optimal}{{5.4}{8}{Rate-optimality}{theorem.5.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Robustness to Assumption Violations}{8}{subsection.5.4}\protected@file@percent }
-\newlabel{rem:robustness}{{5.5}{8}{Robustness to Lipschitz violations}{theorem.5.5}{}}
-\citation{lightman2023lets}
-\citation{brown2024large}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Connection to Compute-Optimal Scaling}{9}{subsection.5.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Finite-Sample Behaviour and the Exploration Regime}{8}{subsection.5.4}\protected@file@percent }
+\newlabel{rem:exploration}{{5.5}{8}{Exploration vs.\ exploitation regimes}{theorem.5.5}{}}
+\citation{snell2024scaling}
+\citation{wu2024inference}
+\newlabel{rem:lhat}{{5.6}{9}{Sensitivity to Lipschitz constant estimation}{theorem.5.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Robustness to Assumption Violations}{9}{subsection.5.5}\protected@file@percent }
+\newlabel{rem:robustness}{{5.7}{9}{Robustness to Lipschitz violations}{theorem.5.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}Connection to Compute-Optimal Scaling}{9}{subsection.5.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {6}Experiments}{9}{section.6}\protected@file@percent }
 \newlabel{sec:experiments}{{6}{9}{Experiments}{section.6}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Experimental Setup}{9}{subsection.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Fixed parameters.}{9}{subsection.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Baselines.}{9}{subsection.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Regret Scaling}{9}{subsection.6.2}\protected@file@percent }
-\newlabel{sec:regret_results}{{6.2}{9}{Regret Scaling}{subsection.6.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{Rate confirmation.}{9}{subsection.6.2}\protected@file@percent }
-\citation{snell2024scaling}
-\@writefile{toc}{\contentsline {paragraph}{Comparison with baselines.}{10}{subsection.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Verifier Call Efficiency}{10}{subsection.6.3}\protected@file@percent }
-\newlabel{sec:efficiency_results}{{6.3}{10}{Verifier Call Efficiency}{subsection.6.3}{}}
-\@writefile{toc}{\contentsline {paragraph}{Regime-dependent savings.}{10}{subsection.6.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Lipschitz Continuity Validation}{10}{subsection.6.4}\protected@file@percent }
-\newlabel{sec:lipschitz_results}{{6.4}{10}{Lipschitz Continuity Validation}{subsection.6.4}{}}
-\@writefile{toc}{\contentsline {paragraph}{Envelope holds exactly.}{10}{subsection.6.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Mean rate vs.\ Lipschitz supremum.}{10}{subsection.6.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Compute--Accuracy Tradeoff}{10}{subsection.6.5}\protected@file@percent }
-\newlabel{sec:tradeoff_results}{{6.5}{10}{Compute--Accuracy Tradeoff}{subsection.6.5}{}}
-\@writefile{toc}{\contentsline {paragraph}{DVA-MCTS vs.\ Uniform.}{10}{subsection.6.5}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Summary of DVA-MCTS vs.\ baselines at $T = 400$ (50 runs).}}{11}{table.caption.1}\protected@file@percent }
-\newlabel{tab:summary}{{1}{11}{Summary of DVA-MCTS vs.\ baselines at $T = 400$ (50 runs)}{table.caption.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Best-of-$N$ fails on deep trees.}{11}{subsection.6.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Ablation: Threshold Exponent $\alpha $}{11}{subsection.6.6}\protected@file@percent }
-\newlabel{sec:ablation}{{6.6}{11}{Ablation: Threshold Exponent $\alpha $}{subsection.6.6}{}}
-\@writefile{toc}{\contentsline {paragraph}{Regret trends.}{11}{subsection.6.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Verification rate.}{11}{subsection.6.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.7}Discussion of Experimental Findings}{11}{subsection.6.7}\protected@file@percent }
-\citation{wood1996estimation}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces  Regret comparison over $T=500$ search steps (50 independent runs, shaded = $\pm $1 SD). \textbf  {(a)} Cumulative regret: DVA-MCTS achieves substantially lower cumulative regret than Uniform Verification despite fewer verifier calls. \textbf  {(b)} Log-log scaling confirms the $O(\sqrt  {T})$ rate for DVA-MCTS (slope $\approx 0.5$), matching Theorem~\ref {thm:main}. }}{12}{figure.caption.2}\protected@file@percent }
-\newlabel{fig:regret}{{1}{12}{Regret comparison over $T=500$ search steps (50 independent runs, shaded = $\pm $1 SD). \textbf {(a)} Cumulative regret: DVA-MCTS achieves substantially lower cumulative regret than Uniform Verification despite fewer verifier calls. \textbf {(b)} Log-log scaling confirms the $O(\sqrt {T})$ rate for DVA-MCTS (slope $\approx 0.5$), matching Theorem~\ref {thm:main}}{figure.caption.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Fixed parameters.}{10}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Baselines.}{10}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Two Budget Regimes}{10}{subsection.6.2}\protected@file@percent }
+\newlabel{sec:regime}{{6.2}{10}{Two Budget Regimes}{subsection.6.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Regret Scaling}{10}{subsection.6.3}\protected@file@percent }
+\newlabel{sec:regret_results}{{6.3}{10}{Regret Scaling}{subsection.6.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Empirical rate.}{10}{subsection.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Comparison with baselines.}{10}{subsection.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Verifier Call Efficiency}{10}{subsection.6.4}\protected@file@percent }
+\newlabel{sec:efficiency_results}{{6.4}{10}{Verifier Call Efficiency}{subsection.6.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces DVA-MCTS with known vs.\ estimated Lipschitz constant ($T{=}400$, 50 runs).}}{11}{table.caption.1}\protected@file@percent }
+\newlabel{tab:lhat}{{1}{11}{DVA-MCTS with known vs.\ estimated Lipschitz constant ($T{=}400$, 50 runs)}{table.caption.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Small-budget regime ($B \leq 400$).}{11}{subsection.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Large-budget regime ($B \geq 800$).}{11}{subsection.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Sensitivity to the Lipschitz Constant}{11}{subsection.6.5}\protected@file@percent }
+\newlabel{sec:lhat}{{6.5}{11}{Sensitivity to the Lipschitz Constant}{subsection.6.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Lipschitz Continuity Validation}{11}{subsection.6.6}\protected@file@percent }
+\newlabel{sec:lipschitz_results}{{6.6}{11}{Lipschitz Continuity Validation}{subsection.6.6}{}}
+\@writefile{toc}{\contentsline {paragraph}{Envelope holds exactly.}{11}{subsection.6.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Mean rate vs.\ supremum.}{11}{subsection.6.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.7}Compute--Accuracy Tradeoff}{11}{subsection.6.7}\protected@file@percent }
+\newlabel{sec:tradeoff_results}{{6.7}{11}{Compute--Accuracy Tradeoff}{subsection.6.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces DVA-MCTS vs.\ baselines at $T{=}400$ (50 runs). Best-of-$N$ excluded from regret comparison (different search paradigm; see Section~\ref {sec:tradeoff_results}).}}{12}{table.caption.2}\protected@file@percent }
+\newlabel{tab:summary}{{2}{12}{DVA-MCTS vs.\ baselines at $T{=}400$ (50 runs). Best-of-$N$ excluded from regret comparison (different search paradigm; see Section~\ref {sec:tradeoff_results})}{table.caption.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{DVA-MCTS vs.\ Uniform.}{12}{subsection.6.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{DVA-MCTS outperforms Uniform at $B{=}50$.}{12}{subsection.6.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Random-path Best-of-$N$ fails in deep trees.}{12}{subsection.6.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.8}Ablation: Threshold Exponent $\alpha $}{12}{subsection.6.8}\protected@file@percent }
+\newlabel{sec:ablation}{{6.8}{12}{Ablation: Threshold Exponent $\alpha $}{subsection.6.8}{}}
+\@writefile{toc}{\contentsline {paragraph}{Regret.}{12}{subsection.6.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{12}{section.7}\protected@file@percent }
 \newlabel{sec:conclusion}{{7}{12}{Conclusion}{section.7}{}}
 \@writefile{toc}{\contentsline {paragraph}{Limitations.}{12}{section.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Future directions.}{12}{section.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Broader impact.}{12}{section.7}\protected@file@percent }
+\citation{wang2024math}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces  Regret comparison over $T=500$ search steps (50 independent runs, shaded = $\pm $1 SD). \textbf  {(a)} Cumulative regret: DVA-MCTS achieves substantially lower cumulative regret than Uniform Verification despite fewer verifier calls. \textbf  {(b)} Log-log scaling confirms the $O(\sqrt  {T})$ rate for DVA-MCTS (slope $\approx 0.5$), matching Theorem~\ref {thm:main}. }}{13}{figure.caption.3}\protected@file@percent }
+\newlabel{fig:regret}{{1}{13}{Regret comparison over $T=500$ search steps (50 independent runs, shaded = $\pm $1 SD). \textbf {(a)} Cumulative regret: DVA-MCTS achieves substantially lower cumulative regret than Uniform Verification despite fewer verifier calls. \textbf {(b)} Log-log scaling confirms the $O(\sqrt {T})$ rate for DVA-MCTS (slope $\approx 0.5$), matching Theorem~\ref {thm:main}}{figure.caption.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Future directions.}{13}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Broader impact.}{13}{section.7}\protected@file@percent }
 \bibstyle{plainnat}
 \bibdata{references}
 \bibcite{auer2002finite}{{1}{2002}{{Auer et~al.}}{{Auer, Cesa-Bianchi, and Fischer}}}
@@ -136,20 +142,20 @@
 \bibcite{brown2024large}{{3}{2024}{{Brown et~al.}}{{Brown, Juravsky, Ehrlich, Clark, Le, R{\'e}, and Mirhoseini}}}
 \bibcite{bubeck2011x}{{4}{2011}{{Bubeck et~al.}}{{Bubeck, Munos, Stoltz, and Szepesv{\'a}ri}}}
 \bibcite{chen2024alphamath}{{5}{2024}{{Chen et~al.}}{{Chen, Liao, Li, and Fan}}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces  Verifier call efficiency as a function of search budget $B$. \textbf  {(a)} Absolute verifier calls: DVA-MCTS grows as $O(\sqrt  {B}\log B)$ versus $O(B)$ for Uniform Verification. \textbf  {(b)} DVA-MCTS calls as a percentage of Uniform Verification calls, confirming the increasing efficiency advantage at larger budgets (Theorem~\ref {thm:calls}). }}{13}{figure.caption.3}\protected@file@percent }
-\newlabel{fig:calls}{{2}{13}{Verifier call efficiency as a function of search budget $B$. \textbf {(a)} Absolute verifier calls: DVA-MCTS grows as $O(\sqrt {B}\log B)$ versus $O(B)$ for Uniform Verification. \textbf {(b)} DVA-MCTS calls as a percentage of Uniform Verification calls, confirming the increasing efficiency advantage at larger budgets (Theorem~\ref {thm:calls})}{figure.caption.3}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces  Empirical validation of the Lipschitz score continuity assumption (Assumption~\ref {ass:lipschitz}) on simulated PRM trajectories. \textbf  {(a)} Score differences $|V(s_d) - V(s_{d'})|$ vs. depth gap $|d-d'|$ with the Lipschitz envelope $L=0.35$. \textbf  {(b)} Per-bin estimates of $\hat  {L}$ are stable across depth gaps (CV$< 0.1$). }}{13}{figure.caption.4}\protected@file@percent }
-\newlabel{fig:lipschitz}{{3}{13}{Empirical validation of the Lipschitz score continuity assumption (Assumption~\ref {ass:lipschitz}) on simulated PRM trajectories. \textbf {(a)} Score differences $|V(s_d) - V(s_{d'})|$ vs. depth gap $|d-d'|$ with the Lipschitz envelope $L=0.35$. \textbf {(b)} Per-bin estimates of $\hat {L}$ are stable across depth gaps (CV$< 0.1$)}{figure.caption.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces  Verifier call efficiency as a function of search budget $B$. \textbf  {(a)} Absolute verifier calls: DVA-MCTS grows as $O(\sqrt  {B}\log B)$ versus $O(B)$ for Uniform Verification. \textbf  {(b)} DVA-MCTS calls as a percentage of Uniform Verification calls, confirming the increasing efficiency advantage at larger budgets (Theorem~\ref {thm:calls}). }}{14}{figure.caption.4}\protected@file@percent }
+\newlabel{fig:calls}{{2}{14}{Verifier call efficiency as a function of search budget $B$. \textbf {(a)} Absolute verifier calls: DVA-MCTS grows as $O(\sqrt {B}\log B)$ versus $O(B)$ for Uniform Verification. \textbf {(b)} DVA-MCTS calls as a percentage of Uniform Verification calls, confirming the increasing efficiency advantage at larger budgets (Theorem~\ref {thm:calls})}{figure.caption.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces  Empirical validation of the Lipschitz score continuity assumption (Assumption~\ref {ass:lipschitz}) on simulated PRM trajectories. \textbf  {(a)} Score differences $|V(s_d) - V(s_{d'})|$ vs. depth gap $|d-d'|$ with the Lipschitz envelope $L=0.35$. \textbf  {(b)} Per-bin estimates of $\hat  {L}$ are stable across depth gaps (CV$< 0.1$). }}{14}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:lipschitz}{{3}{14}{Empirical validation of the Lipschitz score continuity assumption (Assumption~\ref {ass:lipschitz}) on simulated PRM trajectories. \textbf {(a)} Score differences $|V(s_d) - V(s_{d'})|$ vs. depth gap $|d-d'|$ with the Lipschitz envelope $L=0.35$. \textbf {(b)} Per-bin estimates of $\hat {L}$ are stable across depth gaps (CV$< 0.1$)}{figure.caption.5}{}}
 \bibcite{cobbe2021training}{{6}{2021}{{Cobbe et~al.}}{{Cobbe, Kosaraju, Bavarian, Chen, Jun, Kaiser, Plappert, Tworek, Hilton, Nakano, Hesse, and Schulman}}}
 \bibcite{combes2015bandits}{{7}{2015}{{Combes et~al.}}{{Combes, Magureanu, Prouti{\`e}re, and Laroche}}}
 \bibcite{coulom2006efficient}{{8}{2006}{{Coulom}}{{}}}
 \bibcite{elbayad2020depth}{{9}{2020}{{Elbayad et~al.}}{{Elbayad, Gu, Grave, and Auli}}}
 \bibcite{graves2016adaptive}{{10}{2016}{{Graves}}{{}}}
 \bibcite{guo2025deepseek}{{11}{2025}{{Guo et~al.}}{{Guo, Yang, Zhang, Song, Zhang, Xu, Zhu, Ma, Wang, Bi, et~al.}}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces  Compute--accuracy tradeoff. DVA-MCTS tracks Oracle Allocation closely, reaching within $2.1\%$ accuracy at $T=800$ while using $38\%$ fewer verifier calls. Uniform Verification and Random Allocation are shown for reference. }}{14}{figure.caption.5}\protected@file@percent }
-\newlabel{fig:tradeoff}{{4}{14}{Compute--accuracy tradeoff. DVA-MCTS tracks Oracle Allocation closely, reaching within $2.1\%$ accuracy at $T=800$ while using $38\%$ fewer verifier calls. Uniform Verification and Random Allocation are shown for reference}{figure.caption.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces  Ablation over threshold exponent $\alpha $ (where $\tau _t = \gamma /t^\alpha $). \textbf  {(a)} Cumulative regret for each $\alpha $; $\alpha =0.5$ matches the $O(\sqrt  {T})$ reference most closely. \textbf  {(b)} Operating curve: regret at $T=400$ versus verification rate. The Pareto-optimal point is near $\alpha =0.5$, consistent with the theory. }}{14}{figure.caption.6}\protected@file@percent }
-\newlabel{fig:ablation}{{5}{14}{Ablation over threshold exponent $\alpha $ (where $\tau _t = \gamma /t^\alpha $). \textbf {(a)} Cumulative regret for each $\alpha $; $\alpha =0.5$ matches the $O(\sqrt {T})$ reference most closely. \textbf {(b)} Operating curve: regret at $T=400$ versus verification rate. The Pareto-optimal point is near $\alpha =0.5$, consistent with the theory}{figure.caption.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces  Compute--accuracy tradeoff. DVA-MCTS tracks Oracle Allocation closely, reaching within $2.1\%$ accuracy at $T=800$ while using $38\%$ fewer verifier calls. Uniform Verification and Random Allocation are shown for reference. }}{15}{figure.caption.6}\protected@file@percent }
+\newlabel{fig:tradeoff}{{4}{15}{Compute--accuracy tradeoff. DVA-MCTS tracks Oracle Allocation closely, reaching within $2.1\%$ accuracy at $T=800$ while using $38\%$ fewer verifier calls. Uniform Verification and Random Allocation are shown for reference}{figure.caption.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces  Ablation over threshold exponent $\alpha $ (where $\tau _t = \gamma /t^\alpha $). \textbf  {(a)} Cumulative regret for each $\alpha $; $\alpha =0.5$ matches the $O(\sqrt  {T})$ reference most closely. \textbf  {(b)} Operating curve: regret at $T=400$ versus verification rate. The Pareto-optimal point is near $\alpha =0.5$, consistent with the theory. }}{15}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:ablation}{{5}{15}{Ablation over threshold exponent $\alpha $ (where $\tau _t = \gamma /t^\alpha $). \textbf {(a)} Cumulative regret for each $\alpha $; $\alpha =0.5$ matches the $O(\sqrt {T})$ reference most closely. \textbf {(b)} Operating curve: regret at $T=400$ versus verification rate. The Pareto-optimal point is near $\alpha =0.5$, consistent with the theory}{figure.caption.7}{}}
 \bibcite{hendrycks2021math}{{12}{2021}{{Hendrycks et~al.}}{{Hendrycks, Burns, Kadavath, Arora, Basart, Tang, Song, and Steinhardt}}}
 \bibcite{kleinberg2008multi}{{13}{2008}{{Kleinberg et~al.}}{{Kleinberg, Slivkins, and Upfal}}}
 \bibcite{kocsis2006bandit}{{14}{2006}{{Kocsis and Szepesv{\'a}ri}}{{}}}
@@ -160,6 +166,8 @@
 \bibcite{liu2023don}{{19}{2023}{{Liu et~al.}}{{Liu, Feng, et~al.}}}
 \bibcite{openai2024o1}{{20}{2024}{{OpenAI}}{{}}}
 \bibcite{qwq2024}{{21}{2024}{{Qwen Team}}{{}}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces  Effect of using the estimated Lipschitz constant $\hat  {L}{=}0.091$ instead of the true $L{=}0.35$ ($T{=}400$, 50 runs). \textbf  {(a)} Cumulative regret curves; the underestimated $\hat  {L}$ yields $43\%$ higher final regret. \textbf  {(b)} Final regret and verifier call count side by side. Using $\hat  {L}$ saves $8\%$ of verifier calls at the cost of $43\%$ more regret---a meaningful but non-catastrophic degradation (see Section~\ref {sec:lhat} and Remark~\ref {rem:lhat}). }}{16}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:lhat}{{6}{16}{Effect of using the estimated Lipschitz constant $\hat {L}{=}0.091$ instead of the true $L{=}0.35$ ($T{=}400$, 50 runs). \textbf {(a)} Cumulative regret curves; the underestimated $\hat {L}$ yields $43\%$ higher final regret. \textbf {(b)} Final regret and verifier call count side by side. Using $\hat {L}$ saves $8\%$ of verifier calls at the cost of $43\%$ more regret---a meaningful but non-catastrophic degradation (see Section~\ref {sec:lhat} and Remark~\ref {rem:lhat})}{figure.caption.8}{}}
 \bibcite{setlur2024rewarding}{{22}{2024}{{Setlur et~al.}}{{Setlur, Nagpal, Fisch, Geng, Eisenstein, Agarwal, Agarwal, Berant, and Kumar}}}
 \bibcite{silver2016mastering}{{23}{2016}{{Silver et~al.}}{{Silver, Huang, Maddison, Guez, Sifre, van~den Driessche, Schrittwieser, Antonoglou, Panneershelvam, Lanctot, et~al.}}}
 \bibcite{snell2024scaling}{{24}{2024}{{Snell et~al.}}{{Snell, Lee, Xu, and Kumar}}}
@@ -171,23 +179,23 @@
 \bibcite{zhang2024llamaberry}{{30}{2024}{{Zhang et~al.}}{{Zhang, Wu, Lei, Che, Li, Xie, Huang, Zhang, Pavone, Li, et~al.}}}
 \citation{kocsis2006bandit}
 \citation{auer2002finite}
-\@writefile{toc}{\contentsline {section}{\numberline {A}Full Proofs}{17}{appendix.A}\protected@file@percent }
-\newlabel{app:proofs}{{A}{17}{Full Proofs}{appendix.A}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Proof of Theorem~\ref {thm:main}}{17}{subsection.A.1}\protected@file@percent }
-\newlabel{app:main_proof}{{A.1}{17}{Proof of Theorem~\ref {thm:main}}{subsection.A.1}{}}
-\newlabel{lem:proxy}{{A.1}{17}{Proxy estimation error}{theorem.A.1}{}}
-\newlabel{lem:direct}{{A.2}{17}{Estimation error when verifier is called}{theorem.A.2}{}}
-\newlabel{lem:uct}{{A.3}{17}{UCT selection error}{theorem.A.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.2}Proof of Theorem~\ref {thm:calls}}{18}{subsection.A.2}\protected@file@percent }
-\newlabel{app:calls}{{A.2}{18}{Proof of Theorem~\ref {thm:calls}}{subsection.A.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.3}Proof of Theorem~\ref {thm:lower}}{18}{subsection.A.3}\protected@file@percent }
-\newlabel{app:lower}{{A.3}{18}{Proof of Theorem~\ref {thm:lower}}{subsection.A.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {B}Hyperparameter Sensitivity}{19}{appendix.B}\protected@file@percent }
-\newlabel{app:hyperparams}{{B}{19}{Hyperparameter Sensitivity}{appendix.B}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Ablation over threshold exponent $\alpha $ at $T{=}400$, $\gamma {=}1.0$ (50 runs; all numbers from \texttt  {results/ablation\_threshold.json}).}}{19}{table.caption.7}\protected@file@percent }
-\newlabel{tab:hyperparams}{{2}{19}{Ablation over threshold exponent $\alpha $ at $T{=}400$, $\gamma {=}1.0$ (50 runs; all numbers from \texttt {results/ablation\_threshold.json})}{table.caption.7}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {C}Notation Summary}{19}{appendix.C}\protected@file@percent }
-\newlabel{app:notation}{{C}{19}{Notation Summary}{appendix.C}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Summary of notation.}}{20}{table.caption.8}\protected@file@percent }
-\newlabel{tab:notation}{{3}{20}{Summary of notation}{table.caption.8}{}}
-\gdef \@abspage@last{20}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Full Proofs}{18}{appendix.A}\protected@file@percent }
+\newlabel{app:proofs}{{A}{18}{Full Proofs}{appendix.A}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Proof of Theorem~\ref {thm:main}}{18}{subsection.A.1}\protected@file@percent }
+\newlabel{app:main_proof}{{A.1}{18}{Proof of Theorem~\ref {thm:main}}{subsection.A.1}{}}
+\newlabel{lem:proxy}{{A.1}{18}{Proxy estimation error}{theorem.A.1}{}}
+\newlabel{lem:direct}{{A.2}{18}{Estimation error when verifier is called}{theorem.A.2}{}}
+\newlabel{lem:uct}{{A.3}{18}{UCT selection error}{theorem.A.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.2}Proof of Theorem~\ref {thm:calls}}{19}{subsection.A.2}\protected@file@percent }
+\newlabel{app:calls}{{A.2}{19}{Proof of Theorem~\ref {thm:calls}}{subsection.A.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.3}Proof of Theorem~\ref {thm:lower}}{19}{subsection.A.3}\protected@file@percent }
+\newlabel{app:lower}{{A.3}{19}{Proof of Theorem~\ref {thm:lower}}{subsection.A.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {B}Hyperparameter Sensitivity}{20}{appendix.B}\protected@file@percent }
+\newlabel{app:hyperparams}{{B}{20}{Hyperparameter Sensitivity}{appendix.B}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Ablation over threshold exponent $\alpha $ at $T{=}400$, $\gamma {=}1.0$ (50 runs; all numbers from \texttt  {results/ablation\_threshold.json}).}}{20}{table.caption.9}\protected@file@percent }
+\newlabel{tab:hyperparams}{{3}{20}{Ablation over threshold exponent $\alpha $ at $T{=}400$, $\gamma {=}1.0$ (50 runs; all numbers from \texttt {results/ablation\_threshold.json})}{table.caption.9}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {C}Notation Summary}{20}{appendix.C}\protected@file@percent }
+\newlabel{app:notation}{{C}{20}{Notation Summary}{appendix.C}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Summary of notation.}}{21}{table.caption.10}\protected@file@percent }
+\newlabel{tab:notation}{{4}{21}{Summary of notation}{table.caption.10}{}}
+\gdef \@abspage@last{21}

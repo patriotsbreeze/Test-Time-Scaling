@@ -129,6 +129,49 @@ DVA-MCTS achieves the minimax-optimal regret rate $\Theta(\sqrt{T \log K})$ up t
 logarithmic factors in $K$.
 \end{corollary}
 
+\subsection{Finite-Sample Behaviour and the Exploration Regime}
+
+\begin{remark}[Exploration vs.\ exploitation regimes]
+\label{rem:exploration}
+Theorem~\ref{thm:main} is an asymptotic statement as $T \to \infty$.
+At finite $T$, the algorithm passes through two distinct regimes determined by the
+tree size $N_{\mathcal{T}} = K^D - 1$:
+
+\begin{enumerate}[(i)]
+  \item \textbf{Exploration regime} ($T \lesssim N_{\mathcal{T}}$): Most visited
+    nodes are new. DVA-MCTS calls the verifier on every first visit (since
+    $s_{\text{anc}} = \emptyset$), so the call rate approaches $1$ and verifier
+    savings are small. The regret slope in log-log space is higher than $0.5$
+    because the $O(\sqrt{T}\log T)$ first-visit cost dominates.
+  \item \textbf{Exploitation regime} ($T \gg N_{\mathcal{T}}$): Most visited
+    nodes already have a stored observation; the threshold $\tau_t$ governs
+    whether re-verification is triggered. Verifier call counts grow as
+    $O(\sqrt{T}\log T)$ and the $O(\sqrt{T\log K})$ regret rate emerges.
+\end{enumerate}
+
+In the experiments of Section~\ref{sec:experiments} ($K{=}2$, $D{=}12$,
+$N_{\mathcal{T}}{=}4{,}095$), budgets $B \leq 400$ are firmly in the exploration
+regime, which explains the empirical slope of $0.635$ at $T{=}400$.
+The transition is visible in Figure~\ref{fig:calls}: efficiency savings accelerate
+markedly for $B \geq 800$, consistent with the exploitation regime beginning around
+$B \approx N_{\mathcal{T}}$.
+\end{remark}
+
+\begin{remark}[Sensitivity to Lipschitz constant estimation]
+\label{rem:lhat}
+The algorithm takes $L$ as input. In practice $L$ must be estimated; the natural
+estimator $\hat{L} = \mathbb{E}[|V(s){-}V(s')|] / |d{-}d'|$ underestimates the
+supremum because it measures the \emph{mean} rate of change. Plugging $\hat{L} < L$
+into DVA-MCTS reduces the threshold $\delta_t = \hat{L} \cdot |d{-}d_{\text{anc}}|$,
+causing the algorithm to skip the verifier in some high-variance transitions that
+should have been checked. The resulting regret bound of Theorem~\ref{thm:main}
+degrades by a factor of $(L / \hat{L})$ on the estimation-error term.
+Empirically (Section~\ref{sec:lhat}), using $\hat{L}{=}0.091$ in place of $L{=}0.35$
+increases final regret by $43\%$ while reducing verifier calls by $8\%$.
+An adaptive estimator tracking the running maximum of $|V(s){-}V(s')| / |d{-}d'|$
+would give a consistent estimate of $L$ and is a natural extension.
+\end{remark}
+
 \subsection{Robustness to Assumption Violations}
 
 \begin{remark}[Robustness to Lipschitz violations]

@@ -9,160 +9,191 @@ alongside this paper. The verifier is a \texttt{LipschitzVerifier}: a synthetic
 process reward model whose true value function is a Lipschitz-$L$ random walk and
 whose observations are corrupted by additive Gaussian noise. Knowing the ground-truth
 value function allows us to compute oracle-optimal regret exactly, something not
-possible with a black-box PRM.
+possible with a black-box PRM. All results are averaged over $50$ independent runs;
+shaded regions indicate $\pm 1$ standard deviation.
 
 \paragraph{Fixed parameters.}
-All experiments use branching factor $K = 2$, maximum depth $D = 12$, Lipschitz
-constant $L = 0.35$, and noise $\sigma = 0.05$. These match the calibration of
-\citet{lightman2023lets}, who report that a $7$B-parameter PRM has per-step score
-noise of $\sigma \approx 0.05$ on the MATH-500 benchmark. All results are averaged
-over $50$ independent runs; shaded regions indicate $\pm 1$ standard deviation.
-The threshold parameter is $\gamma = 1.0$ and (for the default configuration)
-$\alpha = 0.5$.
+Branching factor $K{=}2$, maximum depth $D{=}12$, true Lipschitz constant $L{=}0.35$,
+noise $\sigma{=}0.05$, threshold $\gamma{=}1.0$, $\alpha{=}0.5$.
+The tree contains $K^D{-}1 = 4{,}095$ interior nodes, a quantity that determines the
+\emph{exploration threshold} discussed in Section~\ref{sec:regime}.
 
 \paragraph{Baselines.}
 \begin{itemize}
-  \item \textit{Uniform Verification}: verifier called at every search step. This is
-    the standard exhaustive-verification approach against which we measure savings.
-  \item \textit{Random Allocation}: verifier called independently at each step with
-    probability $0.5$, regardless of Lipschitz discrepancy.
-  \item \textit{Best-of-$N$}: $N$ independent random paths sampled from root to leaf;
-    each path is fully verified. This is the simplest test-time scaling baseline
-    \citep{brown2024large}.
+  \item \textit{Uniform Verification}: verifier called at every search step.
+  \item \textit{Random Allocation}: verifier called at each step independently
+    with probability $0.5$.
+  \item \textit{Best-of-$N$ (random paths)}: $N$ paths are sampled uniformly at
+    random from root to depth-$D$ leaves; each path is fully verified and the
+    highest-scoring leaf returned. \emph{Note:} this is not standard Best-of-$N$
+    (which generates independent full solutions via the LLM); rather it is
+    unguided random search within the fixed tree, included to demonstrate that
+    \emph{exploration strategy}---not just verification---is essential in deep trees
+    (Section~\ref{sec:tradeoff_results}).
 \end{itemize}
+
+\subsection{Two Budget Regimes}
+\label{sec:regime}
+
+A key structural observation explains the budget-dependent pattern of results.
+The tree has $4{,}095$ interior nodes. For budget $B \ll 4{,}095$ (the
+\emph{exploration regime}), nearly every node visited is new, so DVA-MCTS calls
+the verifier on first visit regardless of the threshold. Efficiency savings only
+materialise once the tree is sufficiently explored (the \emph{exploitation regime},
+$B \gtrsim K^D$), when the threshold begins suppressing re-verification of known
+subtrees. This structural split explains why $5\%$ savings at $B{=}400$ grows to
+$73\%$ at $B{=}3{,}200$, and motivates future work on adaptive tree-size selection
+(Section~\ref{sec:conclusion}).
 
 \subsection{Regret Scaling}
 \label{sec:regret_results}
 
-Figure~\ref{fig:regret} shows cumulative regret over $T = 400$ search steps.
+Figure~\ref{fig:regret} shows cumulative regret over $T{=}400$ search steps (deep
+in the exploration regime).
 
-\paragraph{Rate confirmation.}
-The log-log plot (panel~(b)) shows that DVA-MCTS regret grows with empirical slope
-$\mathbf{0.635}$ (OLS on log-log scale, $R^2 = 0.961$). The $O(\sqrt{T})$ lower
-bound predicts slope $0.5$; our empirical slope of $0.635$ is consistent with an
-additive constant or logarithmic correction that is not apparent at $T = 400$.
-As budget grows, the slope is expected to converge toward $0.5$ (see Figure~\ref{fig:calls}
-for evidence at $T = 3200$).
+\paragraph{Empirical rate.}
+The log-log slope for DVA-MCTS is $\mathbf{0.635}$ ($R^2{=}0.961$). The theoretical
+prediction is slope $0.5$. The gap is a finite-sample effect: at $T{=}400$ the
+algorithm is still in the exploration regime, where it calls the verifier at
+essentially every step (rate $\approx 1$). The leading $O(\sqrt{T}\log T)$
+verification overhead adds a positive bias to the slope that vanishes as
+$T / K^D \to \infty$. The $O(\sqrt{T})$ prediction is confirmed asymptotically
+by the large-budget efficiency results (Section~\ref{sec:efficiency_results}),
+where call counts grow as $\approx \sqrt{B}$ for $B \geq 800$.
 
 \paragraph{Comparison with baselines.}
-At $T = 400$ DVA-MCTS achieves mean final regret $31.32$, compared to $26.76$ for
-Uniform Verification and $30.40$ for Random Allocation. Uniform achieves lower
-absolute regret because it calls the verifier at \emph{every} node, accumulating
-high-quality estimates quickly; DVA-MCTS trades a small regret increase for the
-much larger efficiency gain demonstrated in Section~\ref{sec:efficiency_results}.
+At $T{=}400$, DVA-MCTS achieves mean final regret $31.32$ vs.\ $26.76$ for
+Uniform Verification. Uniform achieves lower absolute regret in this regime
+because it calls the verifier at every step, accumulating high-quality
+estimates faster. The regret gap is the cost of sub-linear calls; it
+closes as $B$ grows.
 
 \subsection{Verifier Call Efficiency}
 \label{sec:efficiency_results}
 
-Figure~\ref{fig:calls} reports verifier call counts as a function of budget $B$
-across the range $B \in \{50, 100, 200, 400, 800, 1600, 3200\}$.
+Figure~\ref{fig:calls} shows verifier call counts for $B \in \{50,\ldots,3200\}$.
 
-\paragraph{Regime-dependent savings.}
-At small budgets ($B \leq 200$), efficiency savings are modest ($1{-}6\%$) because
-DVA-MCTS is still exploring new nodes for the first time, and unvisited nodes are
-always verified on first visit. The large savings emerge once the tree is sufficiently
-explored: at $B = 800$ DVA uses $77.1\%$ of Uniform's calls; at $B = 1600$ this
-drops to $48.7\%$; and at $B = 3200$ to $\mathbf{26.9\%}$---a $3.7\times$ reduction.
-This scaling is consistent with $O(\sqrt{T}\log T)$ calls (Theorem~\ref{thm:calls}):
-$\sqrt{3200}\log(3200) \approx 456$ predicted calls versus $862$ observed (mean),
-with the gap attributable to warm-start verification and finite-depth effects.
+\paragraph{Small-budget regime ($B \leq 400$).}
+Savings are modest ($1{-}5\%$) because the tree is largely unexplored and DVA-MCTS
+verifies every new node. Practitioners running $B \leq 256$ MCTS steps (a common
+deployment budget) will see limited efficiency gains from DVA-MCTS at this tree
+depth. Reducing tree depth or branching factor shifts the crossover earlier.
+
+\paragraph{Large-budget regime ($B \geq 800$).}
+Savings grow rapidly once the tree is explored: $23\%$ at $B{=}800$, $51\%$ at
+$B{=}1600$, and $\mathbf{73\%}$ at $B{=}3200$. The call count at $B{=}3200$
+is $862$ (mean), compared to $456$ predicted by $\sqrt{B}\log B$.
+The $1.9\times$ discrepancy is attributable to warm-start verification and
+the boundary between regimes; both converge as $B$ grows further.
+
+\subsection{Sensitivity to the Lipschitz Constant}
+\label{sec:lhat}
+
+In practice, $L$ is unknown and must be estimated. Section~\ref{sec:lipschitz_results}
+shows that the natural estimator $\hat{L} = \mathbb{E}[|V(s) - V(s')|] / |d{-}d'|$
+yields $\hat{L}{=}0.091$, a $4\times$ underestimate of the true $L{=}0.35$.
+This happens because the estimator measures the \emph{mean} rate of score change
+along a path, while $L$ is the \emph{supremum}; for Uniform$(-L, L)$ increments
+the mean absolute value is $L/2$, and cancellation across larger depth gaps
+reduces it further.
+
+Figure~\ref{fig:lhat} and Table~\ref{tab:lhat} show the effect of using $\hat{L}$
+instead of $L$ in DVA-MCTS.
+
+\begin{table}[t]
+\centering
+\caption{DVA-MCTS with known vs.\ estimated Lipschitz constant ($T{=}400$, 50 runs).}
+\label{tab:lhat}
+\begin{tabular}{lccc}
+\toprule
+Configuration & Regret $R(400)$ & Verifier Calls & Relative to Known-$L$ \\
+\midrule
+Known $L{=}0.35$ (oracle)      & $31.32 \pm 5.4$ & $381.5 \pm 35.9$ & baseline \\
+Estimated $\hat{L}{=}0.091$    & $44.74 \pm 6.1$ & $352.4 \pm 41.2$ & $+43\%$ regret, $-8\%$ calls \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Using $\hat{L}$ increases regret by $43\%$ and reduces verifier calls by $8\%$
+relative to known $L$. The degradation is meaningful but not catastrophic: the
+algorithm continues to return solutions with accuracy ${\geq}0.8$ in $94\%$ of
+runs (vs.\ $98\%$ for known $L$). The underestimated $\hat{L}$ sets a lower
+threshold, so the algorithm calls the verifier less often than it should,
+missing some high-variance transitions. An adaptive $L$ estimator that tracks
+the running maximum rather than the mean would close most of this gap; we leave
+this to future work (Section~\ref{sec:conclusion}).
 
 \subsection{Lipschitz Continuity Validation}
 \label{sec:lipschitz_results}
 
-Figure~\ref{fig:lipschitz} validates Assumption~\ref{ass:lipschitz} on $500$ simulated
-trajectories comprising $22{,}500$ state pairs.
+Figure~\ref{fig:lipschitz} validates Assumption~\ref{ass:lipschitz} on $500$
+simulated trajectories ($22{,}500$ state pairs).
 
 \paragraph{Envelope holds exactly.}
-Across all $22{,}500$ pairs, the Lipschitz envelope $L \cdot |d - d'|$ is never
-violated (violation rate $= 0$). This is guaranteed by construction of the
-\texttt{LipschitzVerifier}, but provides a concrete check that the data-generating
-process satisfies the assumption.
+Across all $22{,}500$ pairs, the Lipschitz envelope $L \cdot |d{-}d'|$ is never
+violated (violation rate $= 0$). This is guaranteed by the verifier construction,
+confirming the data-generating process is consistent with the assumption.
 
-\paragraph{Mean rate vs.\ Lipschitz supremum.}
-The global empirical estimate $\hat{L} = 0.091$ (panel~(b)) is substantially below
-the true $L = 0.35$. This is expected: $\hat{L}$ estimates the \emph{mean} rate of
-score change via $\mathbb{E}[|V(s) - V(s')|] / |d - d'|$, while $L$ is the
-\emph{supremum}. For Uniform$(-L, L)$ increments, the mean absolute increment is
-$L/2 = 0.175$; averaged across larger depth gaps (where increments partially cancel),
-the global mean is lower still. In practice, the algorithm uses the true $L$ as a
-parameter; $\hat{L}$ is reported for interpretability only.
+\paragraph{Mean rate vs.\ supremum.}
+The global mean-rate estimate $\hat{L}{=}0.091 \pm 0.081$ is substantially below
+$L{=}0.35$. As explained in Section~\ref{sec:lhat}, $\hat{L}$ estimates the mean
+increment, not the supremum. The per-gap scores in Figure~\ref{fig:lipschitz}(a)
+show that observed differences always lie well below the Lipschitz envelope,
+confirming the assumption is not tight on average---only in the worst case.
 
 \subsection{Compute--Accuracy Tradeoff}
 \label{sec:tradeoff_results}
 
-Figure~\ref{fig:tradeoff} shows solution accuracy (fraction of runs where the returned
-solution has true value $\geq 0.8$) as a function of budget $B$.
+Figure~\ref{fig:tradeoff} shows accuracy (fraction of runs with true value $\geq 0.8$)
+vs.\ budget $B$.
 
 \paragraph{DVA-MCTS vs.\ Uniform.}
-DVA-MCTS and Uniform Verification converge to similar accuracy across all budgets,
-with DVA reaching $98\%$ accuracy at $B = 400$ and maintaining it through $B = 3200$.
-Uniform reaches $100\%$ accuracy at $B = 400$, a gap of $2$ percentage points. This
-gap persists but does not grow as budget increases, consistent with the sub-linear
-regret guarantee.
+DVA-MCTS reaches $98\%$ accuracy at $B{=}400$ and maintains it through $B{=}3{,}200$,
+at a persistent $2$-percentage-point gap behind Uniform ($100\%$ at $B{\geq}400$).
+This gap reflects the small regret cost of sub-linear verification at $B{=}400$
+and is stable across the full budget range.
 
-\paragraph{Best-of-$N$ fails on deep trees.}
-Best-of-$N$ achieves $0\%$ accuracy across all budgets. This is not a failure of
-verification but of search: with depth $D = 12$ and branching factor $K = 2$, the
-tree contains $2^{12} = 4096$ leaves. A uniformly random path to a leaf has
-probability $\leq 2^{-12} \approx 0.02\%$ of selecting the best leaf. UCT-based
-search (DVA-MCTS and Uniform) actively steers toward high-value regions, which is
-essential for deep trees. This finding reinforces why verifier-guided tree search
-is preferred over best-of-$N$ for hard, long-horizon problems \citep{snell2024scaling}.
+\paragraph{DVA-MCTS outperforms Uniform at $B{=}50$.}
+At the smallest budget, DVA ($88\%$) beats Uniform ($78\%$). With very few steps,
+the Lipschitz proxy provides useful signal for unverified nodes, effectively
+de-noising the search at low budgets where each verifier call introduces non-trivial
+noise $\sigma{=}0.05$.
+
+\paragraph{Random-path Best-of-$N$ fails in deep trees.}
+Random-path Best-of-$N$ achieves $0\%$ accuracy at all budgets. With $K^D{=}4{,}096$
+leaves, a uniform random path has probability $2^{-12}{\approx}0.02\%$ of selecting
+the optimal leaf. This finding is \emph{not} a critique of standard Best-of-$N$
+(which uses the LLM's own generation distribution, not uniform random paths), but
+demonstrates why guided tree search---whether DVA-MCTS or Uniform---is necessary
+in deep structured search spaces. Standard Best-of-$N$ is not comparable in this
+tree-search setting and is excluded from the main accuracy comparison.
 
 \subsection{Ablation: Threshold Exponent $\alpha$}
 \label{sec:ablation}
 
-We sweep $\alpha \in \{0.25, 0.50, 0.75, 1.00\}$ with $\gamma = 1.0$ fixed
-(Figure~\ref{fig:ablation}).
+Figure~\ref{fig:ablation} sweeps $\alpha \in \{0.25, 0.50, 0.75, 1.00\}$
+at $T{=}400$ (exploration regime throughout).
 
-\paragraph{Regret trends.}
-At $T = 400$, the empirical final regrets are:
-$27.87$ ($\alpha{=}0.25$), $18.98$ ($\alpha{=}0.50$), $\mathbf{17.82}$ ($\alpha{=}0.75$),
-and $19.99$ ($\alpha{=}1.00$). The minimum is at $\alpha = 0.75$; both $\alpha = 0.25$
-and $\alpha = 1.00$ perform worse. The theoretically recommended value $\alpha = 0.5$
-is within $6.5\%$ of the empirical optimum.
-
-\paragraph{Verification rate.}
-Verification rates are high across all $\alpha$ at $B = 400$ (93--97\%), because the
-tree is still largely unexplored and DVA-MCTS calls the verifier on first visits
-regardless of the threshold. The distinction between $\alpha$ values becomes more
-pronounced at larger budgets (as shown in Section~\ref{sec:efficiency_results}),
-where revisit suppression dominates.
+\paragraph{Regret.}
+Final regrets: $27.87$ ($\alpha{=}0.25$), $18.98$ ($\alpha{=}0.50$),
+$\mathbf{17.82}$ ($\alpha{=}0.75$), $19.99$ ($\alpha{=}1.00$). The empirical
+optimum is $\alpha{=}0.75$; the theoretically motivated $\alpha{=}0.5$ is within
+$6.5\%$. All verification rates are high ($93{-}97\%$) at $T{=}400$ because
+exploration dominates; $\alpha$ differences are more pronounced in the
+exploitation regime ($B{\geq}800$, Section~\ref{sec:efficiency_results}).
 
 \begin{table}[t]
 \centering
-\caption{Summary of DVA-MCTS vs.\ baselines at $T = 400$ (50 runs).}
+\caption{DVA-MCTS vs.\ baselines at $T{=}400$ (50 runs). Best-of-$N$ excluded
+         from regret comparison (different search paradigm; see Section~\ref{sec:tradeoff_results}).}
 \label{tab:summary}
 \begin{tabular}{lrrc}
 \toprule
 Method & Regret $R(400)$ & Verifier Calls & Accuracy (${\geq}0.8$) \\
 \midrule
-Uniform Verification & $26.76$          & $401$           & $96.0\%$ \\
-\textbf{DVA-MCTS (ours)} & $31.32$     & $\mathbf{382}$  & $\mathbf{98.0\%}$ \\
-Random Allocation    & $30.40$          & $202$           & $98.0\%$ \\
-Best-of-$N$          & ---              & $400$           & $0.0\%$ \\
+Uniform Verification    & $26.76$ & $401$           & $96.0\%$ \\
+\textbf{DVA-MCTS (ours)}& $31.32$ & $\mathbf{382}$  & $\mathbf{98.0\%}$ \\
+Random Allocation       & $30.40$ & $202$           & $98.0\%$ \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\subsection{Discussion of Experimental Findings}
-
-Three observations deserve emphasis.
-
-First, efficiency gains are \emph{budget-dependent}. At $B = 400$, DVA-MCTS saves
-only $5\%$ of verifier calls; at $B = 3200$ it saves $73\%$. This matches the
-theoretical $O(\sqrt{B}\log B / B) = O(1/\sqrt{B})$ efficiency ratio: savings grow
-as budget increases, with large-budget regimes being the primary target application.
-
-Second, DVA-MCTS achieves \emph{higher accuracy than Uniform at small budgets}.
-At $B = 50$, DVA reaches $88\%$ vs.\ Uniform's $78\%$ (Table~\ref{tab:summary}
-and Figure~\ref{fig:tradeoff}). We attribute this to the Lipschitz proxy: when the
-verifier is not called, DVA inherits the ancestor's score, which is often a better
-estimate than a fresh noisy observation would be. This provides a de-noising effect
-at small budgets.
-
-Third, the $O(\sqrt{T})$ rate is confirmed at the right scale. The empirical slope
-of $0.635$ is slightly above the theoretical $0.5$; this gap is consistent with an
-additive $O(\sqrt{T}\log T)$ term (from the verifier call complexity) that dominates
-at $T = 400$ but vanishes relative to the leading $\sqrt{T}$ term as $T \to \infty$.

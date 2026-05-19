@@ -115,6 +115,22 @@
   \label{fig:ablation}
 \end{figure}
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig6_estimated_L.pdf}
+  \caption{
+    Effect of using the estimated Lipschitz constant $\hat{L}{=}0.091$ instead
+    of the true $L{=}0.35$ ($T{=}400$, 50 runs).
+    \textbf{(a)} Cumulative regret curves; the underestimated $\hat{L}$ yields
+    $43\%$ higher final regret.
+    \textbf{(b)} Final regret and verifier call count side by side.
+    Using $\hat{L}$ saves $8\%$ of verifier calls at the cost of $43\%$ more
+    regret---a meaningful but non-catastrophic degradation (see
+    Section~\ref{sec:lhat} and Remark~\ref{rem:lhat}).
+  }
+  \label{fig:lhat}
+\end{figure}
+
 % ── References ────────────────────────────────────────────────────────────────
 \newpage
 \bibliographystyle{plainnat}
