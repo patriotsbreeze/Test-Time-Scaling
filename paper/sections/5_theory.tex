@@ -169,7 +169,9 @@ degrades by a factor of $(L / \hat{L})$ on the estimation-error term.
 Empirically (Section~\ref{sec:lhat}), using $\hat{L}{=}0.091$ in place of $L{=}0.35$
 increases final regret by $43\%$ while reducing verifier calls by $8\%$.
 An adaptive estimator tracking the running maximum of $|V(s){-}V(s')| / |d{-}d'|$
-would give a consistent estimate of $L$ and is a natural extension.
+gives a consistent estimate of $L$; empirically it closes $27\%$ of the regret
+gap between fixed $\hat{L}$ and oracle $L$
+(Section~\ref{sec:lhat}).
 \end{remark}
 
 \subsection{Robustness to Assumption Violations}

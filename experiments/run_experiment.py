@@ -417,11 +417,107 @@ def exp_ablation(cfg: ExperimentConfig, budget: int) -> dict:
     return output
 
 
+# ── Experiment 6: Adaptive L estimator ──────────────────────────────────────
+
+def exp_adaptive_l(cfg: ExperimentConfig, budget: int) -> dict:
+    """Compare DVA-MCTS with: known L, fixed L̂ (mean estimator), adaptive L (running max)."""
+    log.info("=== Experiment: Adaptive L Estimator (budget=%d, runs=%d) ===", budget, cfg.n_runs)
+    t0 = time.time()
+
+    # Estimate L̂ the naive way: mean |V(s)-V(s')| / depth_gap from a held-out set
+    rng_est = np.random.default_rng(cfg.seed + 99999)
+    ver_est = LipschitzVerifier(cfg.lipschitz_L, cfg.noise_sigma, rng_est)
+    score_ratios = []
+    prev = rng_est.uniform(0.3, 0.7)
+    for _ in range(5000):
+        delta = rng_est.uniform(-cfg.lipschitz_L, cfg.lipschitz_L)
+        curr = float(np.clip(prev + delta, 0.0, 1.0))
+        score_ratios.append(abs(curr - prev))
+        prev = curr
+    l_hat_fixed = float(np.mean(score_ratios))  # mean-rate estimate
+    log.info("  Mean-rate L̂=%.4f (true L=%.2f)", l_hat_fixed, cfg.lipschitz_L)
+
+    variants = {
+        "known_L":    DVAConfig(lipschitz_L=cfg.lipschitz_L, sigma_max=cfg.noise_sigma,
+                                branching_factor=cfg.branching_factor, max_depth=cfg.max_depth,
+                                use_adaptive_l=False),
+        "fixed_Lhat": DVAConfig(lipschitz_L=l_hat_fixed,    sigma_max=cfg.noise_sigma,
+                                branching_factor=cfg.branching_factor, max_depth=cfg.max_depth,
+                                use_adaptive_l=False),
+        "adaptive_L": DVAConfig(lipschitz_L=cfg.lipschitz_L, sigma_max=cfg.noise_sigma,
+                                branching_factor=cfg.branching_factor, max_depth=cfg.max_depth,
+                                use_adaptive_l=True, adaptive_l_init=l_hat_fixed),
+    }
+
+    results = {name: {"regrets": [], "calls": [], "accuracies": [], "final_l": []}
+               for name in variants}
+
+    for run in range(cfg.n_runs):
+        for name, dva_cfg in variants.items():
+            seed = cfg.seed + run + hash(name) % 10000
+            v, t, r = make_verifier_and_tree(cfg, seed)
+            alg = DVAMCTS(verifier=v, config=dva_cfg, rng=r)
+            res = alg.search(t, budget)
+            results[name]["regrets"].append(res.final_regret)
+            results[name]["calls"].append(res.total_verifier_calls)
+            results[name]["accuracies"].append(1.0 if res.best_true_value >= 0.8 else 0.0)
+            if res.step_records and dva_cfg.use_adaptive_l:
+                results[name]["final_l"].append(res.step_records[-1].adaptive_l_estimate)
+
+        if (run + 1) % 10 == 0:
+            log.info("  Run %d/%d done", run + 1, cfg.n_runs)
+
+    log.info("  Results summary:")
+    summary = {}
+    for name, data in results.items():
+        r_arr = np.array(data["regrets"])
+        c_arr = np.array(data["calls"])
+        a_arr = np.array(data["accuracies"])
+        l_arr = np.array(data["final_l"]) if data["final_l"] else np.array([])
+        entry = {
+            "regret_mean":    float(r_arr.mean()),
+            "regret_std":     float(r_arr.std()),
+            "calls_mean":     float(c_arr.mean()),
+            "calls_std":      float(c_arr.std()),
+            "accuracy":       float(a_arr.mean()),
+            "final_l_mean":   float(l_arr.mean()) if len(l_arr) > 0 else None,
+        }
+        summary[name] = entry
+        log.info("  %-12s | regret=%.2f±%.1f | calls=%.1f | acc=%.1f%% | final_L=%s",
+                 name,
+                 entry["regret_mean"], entry["regret_std"],
+                 entry["calls_mean"],
+                 entry["accuracy"] * 100,
+                 f"{entry['final_l_mean']:.4f}" if entry["final_l_mean"] else "n/a")
+
+    known_r = summary["known_L"]["regret_mean"]
+    adaptive_r = summary["adaptive_L"]["regret_mean"]
+    fixed_r = summary["fixed_Lhat"]["regret_mean"]
+    gap_closed = (fixed_r - adaptive_r) / max(fixed_r - known_r, 1e-9) * 100
+    log.info("  Gap closed by adaptive L: %.1f%%", gap_closed)
+    log.info("  Elapsed: %.1fs", time.time() - t0)
+
+    output = {
+        "experiment": "adaptive_l",
+        "budget": budget,
+        "n_runs": cfg.n_runs,
+        "true_L": cfg.lipschitz_L,
+        "fixed_lhat": l_hat_fixed,
+        "gap_closed_pct": float(gap_closed),
+        "summary": summary,
+    }
+    path = RESULTS_DIR / "adaptive_l_comparison.json"
+    with open(path, "w") as f:
+        json.dump(output, f, indent=2)
+    log.info("  Saved → %s", path)
+    return output
+
+
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 def parse_args():
     p = argparse.ArgumentParser(description="DVA-MCTS Experiments")
-    p.add_argument("--exp", choices=["all", "regret", "efficiency", "lipschitz", "tradeoff", "ablation"],
+    p.add_argument("--exp", choices=["all", "regret", "efficiency", "lipschitz", "tradeoff", "ablation", "adaptive_l"],
                    default="all")
     p.add_argument("--budget", type=int, default=400,
                    help="Search budget for regret/ablation experiments")
@@ -461,6 +557,9 @@ def main():
 
     if args.exp in ("all", "ablation"):
         all_results["ablation"] = exp_ablation(cfg, budget=args.budget)
+
+    if args.exp in ("all", "adaptive_l"):
+        all_results["adaptive_l"] = exp_adaptive_l(cfg, budget=args.budget)
 
     summary_path = RESULTS_DIR / "summary.json"
     meta = {

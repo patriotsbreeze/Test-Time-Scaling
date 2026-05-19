@@ -31,6 +31,7 @@ class StepRecord:
     oracle_best_true: float
     cumulative_regret: float
     total_verifier_calls: int
+    adaptive_l_estimate: float = 0.0  # running max L estimate (0 when not using adaptive)
 
 
 @dataclass
@@ -95,6 +96,7 @@ class DVAMCTS:
         self.verifier = verifier
         self.cfg = config
         self.rng = rng
+        self._adaptive_l = config.adaptive_l_init
 
     # ── Public API ────────────────────────────────────────────────────────────
 
@@ -107,6 +109,9 @@ class DVAMCTS:
         step_records: List[StepRecord] = []
         verifier_calls_total = 0
         cumulative_regret = 0.0
+
+        # Reset adaptive L for a fresh run
+        self._adaptive_l = self.cfg.adaptive_l_init
 
         # Step 0: always verify the root to warm-start
         if self.cfg.always_verify_root:
@@ -136,6 +141,8 @@ class DVAMCTS:
             if self._should_call_verifier(sim_node, tau):
                 self._call_verifier(sim_node)
                 verifier_calls_total += 1
+                if self.cfg.use_adaptive_l:
+                    self._update_adaptive_l(sim_node)
             else:
                 self._apply_proxy(sim_node)
 
@@ -168,6 +175,7 @@ class DVAMCTS:
                 oracle_best_true=oracle_best,
                 cumulative_regret=cumulative_regret,
                 total_verifier_calls=verifier_calls_total,
+                adaptive_l_estimate=self._adaptive_l if self.cfg.use_adaptive_l else 0.0,
             )
             step_records.append(rec)
 
@@ -210,18 +218,35 @@ class DVAMCTS:
         delta = L * |d(node) - d(ancestor)|
         b_t   = 1{not verified} AND 1{delta > tau}
         """
-        # Never re-verify a node — its score is already cached
         if node.verifier_called:
             return False
 
-        # No information anywhere up the path — must call
         ancestor = node.nearest_verified_ancestor()
         if ancestor is None:
             return True
 
         depth_gap = abs(node.depth - ancestor.depth)
-        delta = self.cfg.lipschitz_L * depth_gap
+        L = self._adaptive_l if self.cfg.use_adaptive_l else self.cfg.lipschitz_L
+        delta = L * depth_gap
         return delta > tau
+
+    def _update_adaptive_l(self, node: SearchNode) -> None:
+        """Update running-max L estimate from a newly verified node.
+
+        Compares verifier_value at this node against all verified ancestors,
+        taking the max of |score_gap| / depth_gap over all pairs.
+        """
+        if node.verifier_value is None:
+            return
+        current: Optional[SearchNode] = node.parent
+        while current is not None:
+            if current.verifier_called and current.verifier_value is not None:
+                depth_gap = node.depth - current.depth
+                if depth_gap > 0:
+                    ratio = abs(node.verifier_value - current.verifier_value) / depth_gap
+                    if ratio > self._adaptive_l:
+                        self._adaptive_l = ratio
+            current = current.parent
 
     def _call_verifier(self, node: SearchNode) -> None:
         """Invoke the verifier and store the result on the node."""

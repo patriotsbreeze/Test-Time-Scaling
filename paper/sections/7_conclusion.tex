@@ -10,32 +10,24 @@ sub-linear reduction in verification overhead. A matching $\Omega(\sqrt{T})$ low
 bound establishes rate-optimality.
 
 \paragraph{Limitations.}
-Our analysis assumes that the Lipschitz constant $L$ is known. In practice, $L$ must
-be estimated from data; an adaptive version of DVA-MCTS with an online estimator of
-$L$ is an interesting extension. Additionally, our simulations use a synthetic
-verifier; validating on production-scale PRMs (e.g., a $7$B PRM applied to
-Llama~3 outputs) would strengthen the empirical claims. Finally, the regret definition
-(Definition~\ref{def:regret}) measures quality relative to states \emph{visited} by
-the search; a stronger benchmark would compare against the best leaf in the full tree,
-which is generally inaccessible.
+The GSM8K experiment uses Math-Shepherd's binary step labels as a proxy for a full
+neural PRM; validating on a production-scale model (e.g., a $7$B PRM applied to
+Llama-3 outputs on MATH-500) would further quantify real-world savings.
+The regret definition (Definition~\ref{def:regret}) measures quality relative to
+states \emph{visited} by the search; a stronger benchmark would compare against
+the best leaf in the full tree, which is generally inaccessible.
 
 \paragraph{Future directions.}
-Several extensions are immediate:
-(1) \emph{Adaptive $L$ estimation:} the natural estimator $\hat{L}$ underestimates
-the true Lipschitz constant by tracking the mean rather than the supremum
-(Remark~\ref{rem:lhat}); using the running maximum of
-$|V(s){-}V(s')| / |d{-}d'|$ yields a consistent estimator and would make
-DVA-MCTS parameter-free.
-(2) \emph{Adaptive tree depth:} the exploration--exploitation crossover occurs at
+Several extensions remain:
+(1) \emph{Adaptive tree depth:} the exploration--exploitation crossover occurs at
 $T \approx K^D$; choosing $D$ as a function of $B$ shifts the efficiency gains
 into practically relevant budget ranges.
-(3) \emph{Cost-aware allocation:} when verifier cost is non-uniform (e.g., depends on
+(2) \emph{Cost-aware allocation:} when verifier cost is non-uniform (e.g., depends on
 sequence length), incorporate a cost-weighted threshold.
-(4) \emph{Real PRM validation:} validating DVA-MCTS on a production reward model
-(e.g., Math-Shepherd \citep{wang2024math} applied to Llama-3 outputs on MATH-500)
-would confirm whether the Lipschitz assumption holds empirically and quantify
-real-world compute savings.
-(5) \emph{Integration with speculative decoding:} combine adaptive verification with
+(3) \emph{Production-scale PRM validation:} extending the GSM8K result
+(Section~\ref{sec:gsm8k}) to neural PRMs on MATH-500 or AIME would quantify
+real-world savings at deployment scale.
+(4) \emph{Integration with speculative decoding:} combine adaptive verification with
 draft-model generation for joint compute reduction.
 
 \paragraph{Broader impact.}

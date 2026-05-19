@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.1)  19 MAY 2026 10:22
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.1)  19 MAY 2026 10:49
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -731,7 +731,7 @@ xlive/2026basic/texmf-dist/fonts/enc/dvips/lm/lm-mathex.enc}{/usr/local/texlive
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
 put line 68.
 ) (./sections/5_theory.tex [6]
-Underfull \vbox (badness 4805) has occurred while \output is active []
+Underfull \vbox (badness 1122) has occurred while \output is active []
 
  [7]
 [8]) (./sections/6_experiments.tex
@@ -751,58 +751,62 @@ LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 2
 
 (/usr/local/texlive/2026basic/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) [10{/usr/local/texlive/2026basic/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}] [
-11]
+) [10{/usr/local/texlive/2026basic/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}]
+Overfull \hbox (34.30296pt too wide) in paragraph at lines 109--118
+ [][] 
+ []
+
+[11]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 171.
+(hyperref)                removing `math shift' on input line 176.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\alpha' on input line 171.
+(hyperref)                removing `\alpha' on input line 176.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 171.
+(hyperref)                removing `math shift' on input line 176.
 
-) (./sections/7_conclusion.tex [12])
-<figures/fig1_regret_comparison.pdf, id=443, 714.94476pt x 279.68599pt>
+[12]) (./sections/7_conclusion.tex [13])
+<figures/fig1_regret_comparison.pdf, id=460, 714.94476pt x 279.68599pt>
 File: figures/fig1_regret_comparison.pdf Graphic file (type pdf)
 <use figures/fig1_regret_comparison.pdf>
 Package pdftex.def Info: figures/fig1_regret_comparison.pdf  used on input line
  55.
 (pdftex.def)             Requested size: 433.62001pt x 169.63089pt.
-<figures/fig2_verifier_calls.pdf, id=446, 714.06313pt x 280.98375pt>
+<figures/fig2_verifier_calls.pdf, id=463, 714.06313pt x 280.98375pt>
 File: figures/fig2_verifier_calls.pdf Graphic file (type pdf)
 <use figures/fig2_verifier_calls.pdf>
 Package pdftex.def Info: figures/fig2_verifier_calls.pdf  used on input line 68
 .
 (pdftex.def)             Requested size: 433.62001pt x 170.63237pt.
-<figures/fig3_lipschitz.pdf, id=449, 715.82495pt x 281.6461pt>
+<figures/fig3_lipschitz.pdf, id=466, 715.82495pt x 281.6461pt>
 File: figures/fig3_lipschitz.pdf Graphic file (type pdf)
 <use figures/fig3_lipschitz.pdf>
 Package pdftex.def Info: figures/fig3_lipschitz.pdf  used on input line 81.
 (pdftex.def)             Requested size: 433.62001pt x 170.60913pt.
-<figures/fig4_compute_accuracy.pdf, id=452, 714.85698pt x 283.36925pt>
+<figures/fig4_compute_accuracy.pdf, id=469, 714.85698pt x 283.36925pt>
 File: figures/fig4_compute_accuracy.pdf Graphic file (type pdf)
 <use figures/fig4_compute_accuracy.pdf>
 Package pdftex.def Info: figures/fig4_compute_accuracy.pdf  used on input line 
 95.
 (pdftex.def)             Requested size: 281.85036pt x 111.72423pt.
-<figures/fig5_ablation.pdf, id=453, 713.6646pt x 282.3668pt>
+<figures/fig5_ablation.pdf, id=470, 713.6646pt x 282.3668pt>
 File: figures/fig5_ablation.pdf Graphic file (type pdf)
 <use figures/fig5_ablation.pdf>
 Package pdftex.def Info: figures/fig5_ablation.pdf  used on input line 107.
 (pdftex.def)             Requested size: 433.62001pt x 171.56274pt.
-<figures/fig6_estimated_L.pdf, id=454, 714.94476pt x 283.53502pt>
+<figures/fig6_estimated_L.pdf, id=471, 714.94476pt x 283.53502pt>
 File: figures/fig6_estimated_L.pdf Graphic file (type pdf)
 <use figures/fig6_estimated_L.pdf>
 Package pdftex.def Info: figures/fig6_estimated_L.pdf  used on input line 120.
 (pdftex.def)             Requested size: 433.62001pt x 171.96536pt.
- [13 <./figures/fig1_regret_comparison.pdf>] (./main.bbl [14 <./figures/fig2_ve
-rifier_calls.pdf> <./figures/fig3_lipschitz.pdf>] [15 <./figures/fig4_compute_a
-ccuracy.pdf> <./figures/fig5_ablation.pdf>] [16 <./figures/fig6_estimated_L.pdf
->]) [17] (./sections/A_appendix.tex
+ [14 <./figures/fig1_regret_comparison.pdf>] (./main.bbl [15 <./figures/fig2_ve
+rifier_calls.pdf> <./figures/fig3_lipschitz.pdf>] [16 <./figures/fig4_compute_a
+ccuracy.pdf> <./figures/fig5_ablation.pdf>] [17 <./figures/fig6_estimated_L.pdf
+>]) [18] (./sections/A_appendix.tex
 Overfull \hbox (9.04762pt too wide) in paragraph at lines 9--12
 \T1/lmr/m/n/10.95 (-20) We pro-vide a com-plete proof of the re-gret bound. Thr
 ough-out, let $\OMS/lmsy/m/n/10.95 F[] \OT1/lmr/m/n/10.95 (-20) = \OML/lmm/m/it
@@ -810,33 +814,33 @@ ough-out, let $\OMS/lmsy/m/n/10.95 F[] \OT1/lmr/m/n/10.95 (-20) = \OML/lmm/m/it
  b[]; []\OT1/lmr/m/n/10.95 (-20) )$
  []
 
-[18]
+[19]
 Overfull \hbox (1.78816pt too wide) in paragraph at lines 92--101
 \T1/lmr/m/n/10.95 (-20) To get the claimed $\OML/lmm/m/it/10.95 O\OT1/lmr/m/n/1
 0.95 (-20) ([])$ \T1/lmr/m/n/10.95 (-20) rate on the estimation error as well, 
 note that by Lemmas [][]A.1[][]--
  []
 
-[19]
+[20]
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-) [20] [21] (./main.aux)
+) [21] [22] (./main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: B5682717CFBE1E061B5CF191F4C5FEE2;6350.
+(rerunfilecheck)             Checksum: BCA49B02FF74289A0CDE6280B5DEAA31;6560.
  ) 
 Here is how much of TeX's memory you used:
- 17922 strings out of 469006
- 287284 string characters out of 5454814
- 739376 words of memory out of 5000000
- 45842 multiletter control sequences out of 15000+600000
- 738002 words of font info for 288 fonts, out of 8000000 for 9000
+ 17966 strings out of 469006
+ 287785 string characters out of 5454814
+ 737704 words of memory out of 5000000
+ 45849 multiletter control sequences out of 15000+600000
+ 745381 words of font info for 306 fonts, out of 8000000 for 9000
  319 hyphenation exceptions out of 8191
- 90i,13n,93p,1001b,725s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 90i,13n,93p,1001b,619s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2026basic/texmf-dist/fonts/type1/public/lm/lmbx10.pfb></u
 sr/local/texlive/2026basic/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></usr/lo
 cal/texlive/2026basic/texmf-dist/fonts/type1/public/lm/lmex10.pfb></usr/local/t
@@ -846,21 +850,22 @@ basic/texmf-dist/fonts/type1/public/lm/lmmi7.pfb></usr/local/texlive/2026basic/
 texmf-dist/fonts/type1/public/lm/lmmi8.pfb></usr/local/texlive/2026basic/texmf-
 dist/fonts/type1/public/lm/lmr10.pfb></usr/local/texlive/2026basic/texmf-dist/f
 onts/type1/public/lm/lmr6.pfb></usr/local/texlive/2026basic/texmf-dist/fonts/ty
-pe1/public/lm/lmr8.pfb></usr/local/texlive/2026basic/texmf-dist/fonts/type1/pub
-lic/lm/lmr9.pfb></usr/local/texlive/2026basic/texmf-dist/fonts/type1/public/lm/
-lmri10.pfb></usr/local/texlive/2026basic/texmf-dist/fonts/type1/public/lm/lmri1
-2.pfb></usr/local/texlive/2026basic/texmf-dist/fonts/type1/public/lm/lmsy10.pfb
-></usr/local/texlive/2026basic/texmf-dist/fonts/type1/public/lm/lmsy5.pfb></usr
-/local/texlive/2026basic/texmf-dist/fonts/type1/public/lm/lmsy6.pfb></usr/local
-/texlive/2026basic/texmf-dist/fonts/type1/public/lm/lmsy7.pfb></usr/local/texli
-ve/2026basic/texmf-dist/fonts/type1/public/lm/lmsy8.pfb></usr/local/texlive/202
-6basic/texmf-dist/fonts/type1/public/lm/lmtt10.pfb></usr/local/texlive/2026basi
-c/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/local/texlive
-/2026basic/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (21 pages, 591487 bytes).
+pe1/public/lm/lmr7.pfb></usr/local/texlive/2026basic/texmf-dist/fonts/type1/pub
+lic/lm/lmr8.pfb></usr/local/texlive/2026basic/texmf-dist/fonts/type1/public/lm/
+lmr9.pfb></usr/local/texlive/2026basic/texmf-dist/fonts/type1/public/lm/lmri10.
+pfb></usr/local/texlive/2026basic/texmf-dist/fonts/type1/public/lm/lmri12.pfb><
+/usr/local/texlive/2026basic/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></usr/
+local/texlive/2026basic/texmf-dist/fonts/type1/public/lm/lmsy5.pfb></usr/local/
+texlive/2026basic/texmf-dist/fonts/type1/public/lm/lmsy6.pfb></usr/local/texliv
+e/2026basic/texmf-dist/fonts/type1/public/lm/lmsy7.pfb></usr/local/texlive/2026
+basic/texmf-dist/fonts/type1/public/lm/lmsy8.pfb></usr/local/texlive/2026basic/
+texmf-dist/fonts/type1/public/lm/lmtt10.pfb></usr/local/texlive/2026basic/texmf
+-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/local/texlive/2026ba
+sic/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on main.pdf (22 pages, 618071 bytes).
 PDF statistics:
- 1093 PDF objects out of 1200 (max. 8388607)
- 660 compressed objects within 7 object streams
- 129 named destinations out of 1000 (max. 500000)
- 56655 words of extra memory for PDF output out of 61914 (max. 10000000)
+ 1111 PDF objects out of 1200 (max. 8388607)
+ 675 compressed objects within 7 object streams
+ 132 named destinations out of 1000 (max. 500000)
+ 60759 words of extra memory for PDF output out of 61914 (max. 10000000)
 

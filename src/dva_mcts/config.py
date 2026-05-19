@@ -28,6 +28,10 @@ class DVAConfig:
     # Whether to call verifier at depth-0 nodes always (warm-start)
     always_verify_root: bool = True
 
+    # Adaptive L estimation: track running max of |V(s)-V(s')| / depth_gap
+    use_adaptive_l: bool = False
+    adaptive_l_init: float = 0.1  # starting estimate before data accumulates
+
     def threshold(self, t: int) -> float:
         """Budget-sensitive threshold tau_t = gamma / t^alpha."""
         return self.gamma / max(t, 1) ** self.alpha
