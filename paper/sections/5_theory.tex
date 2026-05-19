@@ -9,15 +9,16 @@ Under Assumptions~\ref{ass:lipschitz}--\ref{ass:cost}, with threshold
 $\tau_t = \gamma / \sqrt{t}$, DVA-MCTS achieves cumulative regret
 \[
   \mathbb{E}[R(T)] \;\leq\; C_1 \sqrt{T \log K}
-  \;+\; C_2 \gamma \sqrt{T},
+  \;+\; 2\gamma \sqrt{T}
+  \;+\; 2N_{\mathcal{T}}\sigma_{\max},
 \]
-where $C_1 = 8\sigma_{\max}\sqrt{2}$ and $C_2 = 2L D / \gamma$, and $K$ is the
-branching factor.
-Setting $\gamma = \sqrt{8\sigma_{\max}^2 \log K / (L^2 D^2)}$ balances the two terms
+where $C_1 = 8\sigma_{\max}\sqrt{2}$, $K$ is the branching factor, and
+$N_{\mathcal{T}} = K^D - 1$.
+Setting $\gamma^* = 4\sigma_{\max}\sqrt{2\log K}$ equates the first two terms
 to give
 \[
-  \mathbb{E}[R(T)] \;\leq\; C\sqrt{T \log K},
-  \qquad C = 2\sqrt{8\sigma_{\max}^2 + 2L^2 D^2}.
+  \mathbb{E}[R(T)] \;\leq\; C\sqrt{T \log K} \;+\; 2N_{\mathcal{T}}\sigma_{\max},
+  \qquad C = 16\sigma_{\max}\sqrt{2}.
 \]
 \end{theorem}
 
@@ -50,15 +51,20 @@ values gives a per-step selection error of $O(\sqrt{\log K / n(s)})$, which sums
 $O(\sqrt{T \log K})$ over all steps by Cauchy--Schwarz.
 
 \textbf{Combining.}
-Summing over $T$ steps and using $\tau_t = \gamma/\sqrt{t}$:
+Summing the selection error, proxy estimation error, and the O(1) direct-verification
+error ($\leq N_{\mathcal{T}}\sigma_{\max}$ by Theorem~\ref{thm:calls}(a)):
 \[
   \mathbb{E}[R(T)]
   \;\leq\; C_1\sqrt{T\log K}
-  \;+\; \sum_{t=1}^T \tau_t
-  \;=\; C_1\sqrt{T\log K} + \gamma\sum_{t=1}^T t^{-1/2}
-  \;\leq\; C_1\sqrt{T\log K} + 2\gamma\sqrt{T}.
+  \;+\; \gamma\sum_{t=1}^T t^{-1/2}
+  \;+\; 2N_{\mathcal{T}}\sigma_{\max}
+  \;\leq\; C_1\sqrt{T\log K} + 2\gamma\sqrt{T} + 2N_{\mathcal{T}}\sigma_{\max}.
 \]
-The full proof with exact constants is given in Appendix~\ref{app:proofs}.
+Setting $\gamma^* = 4\sigma_{\max}\sqrt{2\log K} = C_1\sqrt{\log K}/2$ makes
+$2\gamma^*\sqrt{T} = C_1\sqrt{T\log K}$, yielding
+$\mathbb{E}[R(T)] \leq 2C_1\sqrt{T\log K} + 2N_{\mathcal{T}}\sigma_{\max}
+= C\sqrt{T\log K} + 2N_{\mathcal{T}}\sigma_{\max}$ with $C = 2C_1 = 16\sigma_{\max}\sqrt{2}$.
+The full proof is in Appendix~\ref{app:proofs}.
 \end{proof}
 
 \subsection{Verifier Call Complexity}

@@ -30,6 +30,24 @@ further developed in \citet{chen2024alphamath,zhang2024llamaberry,liu2023don}.
 framework. Unlike these works, we do not modify the search tree structure; instead,
 we provide an adaptive calling policy for the verifier oracle that reduces its cost.
 
+\paragraph{Budget-limited MCTS and adaptive computation in planning.}
+Reducing MCTS computation under a fixed query budget has been studied independently
+of the LLM setting.
+\citet{tolpin2012mcts} introduce MCTS based on \emph{simple regret}---minimising the
+gap between the returned action and the optimal action---directly as a function of
+the evaluation budget, deriving optimal allocation strategies for tree nodes.
+\citet{feldman2014simple} extend simple-regret analysis to online planning in MDPs,
+characterising the computation--quality tradeoff with formal guarantees.
+\citet{hay2012selecting} develop a decision-theoretic framework for selecting which
+computations to perform in planning, treating each evaluation as reducing uncertainty
+at a cost.
+These works adapt the \emph{search policy} given a fixed per-step evaluation cost;
+DVA-MCTS instead adapts \emph{whether to invoke the verifier} within a fixed UCT
+search policy.
+The key distinction is that in our setting the evaluator (PRM) is itself a large
+neural network whose cost dominates the search budget, so the allocation decision
+is over verifier calls rather than node expansions.
+
 \paragraph{Adaptive computation.}
 Reducing computation by skipping expensive operations in learned models has a rich
 history: early-exit classifiers \citep{teerapittayanon2016branchynet}, adaptive depth

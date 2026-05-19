@@ -146,51 +146,54 @@ Therefore
   \label{eq:est_err}
 \end{align}
 
-\paragraph{Combining and optimising $\gamma$.}
-Adding the two bounds:
+\paragraph{Combining.}
+Adding the selection error (term II) and estimation error (term I):
 \[
   \mathbb{E}[R(T)]
-  \leq C_1\sqrt{T\log K} + \sigma_{\max} T + 2\gamma\sqrt{T}.
+  \;\leq\; \underbrace{C_1\sqrt{T\log K}}_{\text{(II) selection}}
+         + \underbrace{\sum_{t:b_t=1}\mathbb{E}[|V - \hat{V}|]
+           + \sum_{t:b_t=0}\mathbb{E}[|V - \hat{v}_{\text{proxy}}|]}_{\text{(I) estimation}}.
 \]
-The $T\sigma_{\max}$ term is dominated by $2\gamma\sqrt{T}$ once
-$\gamma \geq \sigma_{\max}\sqrt{T}/2$, but for large $T$ the $T\sigma_{\max}$ term
-grows linearly.  To suppress it we use the fact that $b_t = 1$ only when
-$\delta_t > \tau_t$, i.e., only when the discrepancy is already large.  Re-splitting:
-\begin{align}
-  \sum_{t=1}^T \mathbb{E}[|V - \hat{v}|]
-  &= \sum_{t : b_t=1} \mathbb{E}[|V - \hat{V}|]
-   + \sum_{t : b_t=0} \mathbb{E}[|V - \hat{v}_{\text{proxy}}|] \notag\\
-  &\leq B_{\text{call}} \cdot \sigma_{\max}
-   + (T - B_{\text{call}}) \cdot \overline{\tau}, \label{eq:est_split}
-\end{align}
-where $B_{\text{call}} = \mathbb{E}[\mathcal{B}]$ and $\overline{\tau} = (1/T)\sum_t\tau_t \leq 2\gamma/\sqrt{T}$.
-Substituting $B_{\text{call}} \leq T$ and $\overline{\tau} \leq 2\gamma/\sqrt{T}$:
-\[
-  \text{(I)} \leq T\sigma_{\max} + 2\gamma\sqrt{T}.
-\]
-To achieve $O(\sqrt{T\log K})$ we set $\gamma$ so that $2\gamma\sqrt{T} = C_1\sqrt{T\log K}$:
-\[
-  \gamma^* = \frac{C_1}{2}\sqrt{\log K}
-           = 4\sigma_{\max}\sqrt{2\log K}.
-\]
-With this choice, $2\gamma^*\sqrt{T} = C_1\sqrt{T\log K}$.  The remaining linear term
-$T\sigma_{\max}$ can be eliminated by noting that for the sub-Gaussian model the
-estimation error when the verifier IS called is exactly $\sigma_{\max}$, so
-\[
-  \sum_{t:b_t=1} \mathbb{E}[|V - \hat{V}|] \leq B_{\text{call}} \cdot \sigma_{\max}
-  \leq N_\mathcal{T}\,\sigma_{\max} = O(1),
-\]
-which is $o(T)$.  Hence the dominant terms are $O(\sqrt{T\log K})$ and
-$\mathbb{E}[R(T)] \leq 2C_1\sqrt{T\log K} + O(1) = O(\sqrt{T\log K})$.
 
-\medskip
-Setting $\gamma = \gamma^*$ and collecting:
+\noindent\textit{Direct-call steps ($b_t=1$):}
+By Lemma~\ref{lem:direct} and the single-verification property
+(Lemma~\ref{lem:single_verify}):
 \[
-  \mathbb{E}[R(T)] \leq C_1\sqrt{T\log K} + C_2\gamma^*\sqrt{T},
-  \quad C_2 = 2,
+  \sum_{t:b_t=1}\mathbb{E}[|V(s^*_t) - \hat{V}(s^*_t)|]
+  \;\leq\; B_{\text{call}}\cdot\sigma_{\max}
+  \;\leq\; N_\mathcal{T}\,\sigma_{\max}.
 \]
-which equals $C\sqrt{T\log K}$ with $C = C_1 + C_2\gamma^*/\sqrt{\log K}
-= C_1(1 + C_2/2) = 3C_1/2 + C_2C_1/4$. \qed
+
+\noindent\textit{Proxy steps ($b_t=0$):}
+By Lemma~\ref{lem:proxy}, each proxy step contributes at most $\tau_t + \sigma_{\max}$.
+The $\sigma_{\max}$ part is already charged to the $N_\mathcal{T}\sigma_{\max}$
+budget above (each ancestor is verified at most once).  The remaining $\tau_t$ terms sum:
+\[
+  \sum_{t:b_t=0}\tau_t \;\leq\; \sum_{t=1}^T \frac{\gamma}{\sqrt{t}}
+  \;\leq\; 2\gamma\sqrt{T}.
+\]
+
+\noindent\textit{Total estimation error:}
+\[
+  \text{(I)} \;\leq\; 2\gamma\sqrt{T} + 2N_\mathcal{T}\sigma_{\max}.
+\]
+
+\paragraph{Optimising $\gamma$.}
+The full bound is
+\[
+  \mathbb{E}[R(T)] \;\leq\; C_1\sqrt{T\log K} + 2\gamma\sqrt{T} + 2N_\mathcal{T}\sigma_{\max}.
+\]
+Setting
+\[
+  \gamma^* = \tfrac{C_1}{2}\sqrt{\log K} = 4\sigma_{\max}\sqrt{2\log K}
+\]
+gives $2\gamma^*\sqrt{T} = C_1\sqrt{T\log K}$, so both leading terms are equal and
+\[
+  \mathbb{E}[R(T)]
+  \;\leq\; 2C_1\sqrt{T\log K} + 2N_\mathcal{T}\sigma_{\max}
+  \;=\; C\sqrt{T\log K} + 2N_\mathcal{T}\sigma_{\max},
+  \quad C = 2C_1 = 16\sigma_{\max}\sqrt{2}. \qquad\square
+\]
 \end{proof}
 
 \subsection{Proof of Theorem~\ref{thm:calls}}
