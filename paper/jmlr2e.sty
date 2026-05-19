@@ -1,0 +1,131 @@
+%% jmlr2e.sty  -- JMLR style file (simplified, faithful reproduction)
+%% Based on the public JMLR LaTeX style
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{jmlr2e}[2022/01/01 JMLR 2e style]
+
+\RequirePackage{amsmath,amssymb,amsfonts,amsthm}
+\RequirePackage{natbib}
+\RequirePackage{booktabs}
+\RequirePackage{hyperref}
+\RequirePackage{enumerate}
+\RequirePackage{algorithmicx}
+\RequirePackage{algpseudocode}
+% Minimal algorithm float (replaces the missing algorithm.sty)
+\RequirePackage{float}
+\floatstyle{ruled}
+\newfloat{algorithm}{tbp}{loa}
+\floatname{algorithm}{Algorithm}
+\RequirePackage{caption}
+\RequirePackage{graphicx}
+\RequirePackage{microtype}
+\RequirePackage{xcolor}
+
+% ── Page layout ──────────────────────────────────────────────────────────────
+\RequirePackage[
+  top=1in, bottom=1in,
+  inner=1.25in, outer=1.25in,
+  twoside
+]{geometry}
+
+\setlength{\parskip}{0pt}
+\setlength{\parindent}{12pt}
+
+% ── Fonts ─────────────────────────────────────────────────────────────────────
+\RequirePackage[T1]{fontenc}
+\RequirePackage{lmodern}
+
+% ── Title block ───────────────────────────────────────────────────────────────
+\renewcommand{\maketitle}{%
+  \par
+  \begingroup
+    \renewcommand\thefootnote{\@fnsymbol\c@footnote}%
+    \def\@makefnmark{\rlap{\@textsuperscript{\normalfont\@thefnmark}}}%
+    \long\def\@makefntext##1{\parindent 1em\noindent
+      \hb@xt@1.8em{%
+        \hss\@textsuperscript{\normalfont\@thefnmark}}##1}%
+    \@maketitle
+    \@thanks
+  \endgroup
+  \setcounter{footnote}{0}%
+  \global\let\thanks\relax
+  \global\let\maketitle\relax
+}
+
+\def\@maketitle{%
+  \newpage
+  \null
+  \vskip 2em%
+  \begin{center}%
+    {\LARGE \bfseries \@title \par}%
+    \vskip 1.5em%
+    {\large \@author \par}%
+    \vskip 1em%
+    {\normalsize \@date}%
+  \end{center}%
+  \par
+  \vskip 1.5em%
+}
+
+% ── Abstract ──────────────────────────────────────────────────────────────────
+\renewenvironment{abstract}{%
+  \small
+  \begin{center}%
+    {\bfseries Abstract}%
+  \end{center}%
+  \quotation
+}{%
+  \endquotation
+}
+
+% ── Keywords ──────────────────────────────────────────────────────────────────
+\newcommand{\keywords}[1]{%
+  \par\addvspace{\baselineskip}
+  \noindent{\small\textbf{Keywords:} #1}\par
+}
+
+% ── Section headings ──────────────────────────────────────────────────────────
+\RequirePackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{1em}{}
+
+% ── Header / footer ───────────────────────────────────────────────────────────
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\small\thepage}
+\fancyhead[LO]{\small\nouppercase{\rightmark}}
+\fancyhead[RE]{\small\nouppercase{\leftmark}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Theorem environments ──────────────────────────────────────────────────────
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{problem}[theorem]{Problem}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% ── Captions ─────────────────────────────────────────────────────────────────
+\RequirePackage{caption}
+\captionsetup{font=small, labelfont=bf, skip=4pt}
+
+% ── Hyperref colours ─────────────────────────────────────────────────────────
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=green!50!black,
+  urlcolor=blue!60!black
+}
+
+% ── natbib ───────────────────────────────────────────────────────────────────
+\setcitestyle{authoryear,round,semicolon,aysep={},yysep={,},notesep={, }}
+
+\endinput

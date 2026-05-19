@@ -1,0 +1,112 @@
+\section{Dynamic Verifier Allocation MCTS}
+\label{sec:algorithm}
+
+\subsection{High-Level Design}
+
+DVA-MCTS augments standard MCTS \citep{coulom2006efficient} with two components:
+(1) a \emph{score memory} $\mathcal{M}$ that stores the most recent verifier
+observation along each root-to-leaf path, and (2) a \emph{budget-sensitive threshold}
+$\tau_t$ that governs whether the verifier is called at step $t$. When the verifier is
+not called, the algorithm \emph{proxies} the score of the current node using the
+nearest ancestor for which a verifier observation exists, adjusted by the Lipschitz
+bound.
+
+\subsection{Budget-Sensitive Threshold}
+
+At step $t$, define the threshold
+\[
+  \tau_t \;=\; \frac{\gamma}{\sqrt{t}},
+  \qquad \gamma > 0,
+\]
+where $\gamma$ is a hyperparameter that trades off regret and verification cost.
+The verifier is invoked at node $s_t$ if and only if the estimated score uncertainty
+exceeds $\tau_t$:
+\[
+  b_t = \mathbf{1}\!\left[\,\delta_t > \tau_t\,\right],
+\]
+where $\delta_t$ is the \emph{score discrepancy estimate}:
+\[
+  \delta_t \;=\; L \cdot \bigl|d(s_t) - d(s_{\text{anc}})\bigr|,
+\]
+and $s_{\text{anc}}$ is the deepest ancestor of $s_t$ for which a verifier observation
+is stored in $\mathcal{M}$.
+
+\begin{remark}
+The threshold $\tau_t = \gamma / \sqrt{t}$ is decreasing in $t$, meaning the algorithm
+becomes \emph{more conservative} about skipping the verifier as the budget is
+exhausted. This mirrors the exploration--exploitation schedule in UCB-style bandit
+algorithms \citep{auer2002finite}.
+\end{remark}
+
+\subsection{Score Proxy}
+
+When $b_t = 0$ (verifier not called), the algorithm sets
+\[
+  \hat{v}_t \;=\; \hat{V}(s_{\text{anc}}) + L \cdot (d(s_t) - d(s_{\text{anc}})) \cdot \eta_t,
+\]
+where $\eta_t \in [-1, 1]$ is a pessimistic correction that defaults to $0$
+(neutral proxy). This proxy is guaranteed to satisfy
+$|\hat{v}_t - V(s_t)| \leq L \cdot |d(s_t) - d(s_{\text{anc}})| + \sigma_{\max}$
+under Assumptions~\ref{ass:lipschitz}--\ref{ass:noise}.
+
+\subsection{UCB Selection with Verifier Budget}
+
+The standard UCT selection criterion \citep{kocsis2006bandit} selects the child $a^*$
+of the current node $s$ that maximizes
+\[
+  \text{UCT}(s, a) = \bar{V}(P(s,a)) + c_{\text{ucb}} \sqrt{\frac{\ln n(s)}{n(P(s,a))}},
+\]
+where $n(\cdot)$ is the visit count and $\bar{V}(\cdot)$ is the empirical mean score.
+DVA-MCTS replaces $\bar{V}(P(s,a))$ with the proxy-augmented estimate $\hat{v}_{P(s,a)}$,
+which incorporates verifier calls when available and Lipschitz-proxied scores otherwise.
+
+\subsection{Full Algorithm}
+
+Algorithm~\ref{alg:dva} gives the complete DVA-MCTS procedure.
+
+\begin{algorithm}[t]
+\caption{DVA-MCTS}
+\label{alg:dva}
+\begin{algorithmic}[1]
+\Require Root $s_0$, LLM policy $\pi_\theta$, verifier $V$,
+         Lipschitz constant $L$, threshold constant $\gamma$,
+         budget $T$, branching factor $K$
+\State Initialize score memory $\mathcal{M} \leftarrow \emptyset$,
+       visit counts $n(s) \leftarrow 0$ for all $s$, $t \leftarrow 0$
+\While{$t < T$}
+  \State \textit{// Selection}
+  \State $s \leftarrow s_0$
+  \While{$s$ is not a leaf}
+    \State $a^* \leftarrow \arg\max_{a} \hat{v}(P(s,a)) + c_{\text{ucb}}\sqrt{\ln n(s) / n(P(s,a))}$
+    \State $s \leftarrow P(s, a^*)$
+  \EndWhile
+  \State \textit{// Expansion}
+  \State Add children $\{P(s, a) : a \in \mathcal{A}\}$ to tree
+  \State \textit{// Simulation and Verifier Decision}
+  \For{each new child $s'$}
+    \State $t \leftarrow t + 1$
+    \State $s_{\text{anc}} \leftarrow$ deepest ancestor of $s'$ in $\mathcal{M}$
+    \State $\delta \leftarrow L \cdot (d(s') - d(s_{\text{anc}}))$
+    \State $\tau \leftarrow \gamma / \sqrt{t}$
+    \If{$\delta > \tau$ \textbf{or} $s_{\text{anc}} = \emptyset$}
+      \State $\hat{v}(s') \leftarrow \hat{V}(s')$ \Comment{invoke verifier}
+      \State $\mathcal{M} \leftarrow \mathcal{M} \cup \{(s', \hat{v}(s'))\}$
+    \Else
+      \State $\hat{v}(s') \leftarrow \hat{V}(s_{\text{anc}})$ \Comment{use proxy}
+    \EndIf
+  \EndFor
+  \State \textit{// Backpropagation}
+  \State Update $n(s)$ and $\bar{V}(s)$ along the selected path
+\EndWhile
+\State \Return $\hat{s}^* = \arg\max_{s \in \mathcal{L}} \hat{v}(s)$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Complexity}
+
+Each search step requires $O(D)$ work for selection, $O(K)$ work for expansion, and
+either $O(V_{\text{cost}})$ or $O(1)$ for the verifier decision (proxy lookup).
+The total work per step is $O(D + K + V_{\text{cost}} \cdot b_t)$. Since
+$\sum_{t=1}^T b_t = O(\sqrt{T}\log T)$ (Theorem~\ref{thm:calls}), the total
+verification cost over all steps is $O(V_{\text{cost}} \cdot \sqrt{T}\log T)$,
+compared to $O(V_{\text{cost}} \cdot T)$ for uniform verification.

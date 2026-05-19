@@ -1,0 +1,127 @@
+\documentclass[twoside,11pt]{article}
+\usepackage{jmlr2e}
+
+% ── Extra packages ────────────────────────────────────────────────────────────
+\usepackage{subcaption}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{multirow}
+
+% ── Custom macros ─────────────────────────────────────────────────────────────
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+\renewcommand{\Pr}{\mathbb{P}}
+
+% ── Title and authors ─────────────────────────────────────────────────────────
+\title{Adaptive Verifier Allocation for Efficient Test-Time Compute Scaling:\\
+       A Regret-Theoretic Analysis}
+
+\author{
+  \textbf{Anonymous Author(s)}\\
+  \textit{Submitted to the Journal of Machine Learning Research}
+}
+
+\date{}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+\maketitle
+
+% ── Abstract ──────────────────────────────────────────────────────────────────
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\keywords{test-time compute scaling, process reward models, Monte Carlo tree search,
+  online resource allocation, regret bounds, large language models}
+
+% ── Main body ─────────────────────────────────────────────────────────────────
+\input{sections/1_introduction}
+\input{sections/2_related_work}
+\input{sections/3_problem_formulation}
+\input{sections/4_algorithm}
+\input{sections/5_theory}
+\input{sections/6_experiments}
+\input{sections/7_conclusion}
+
+% ── Figures ───────────────────────────────────────────────────────────────────
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig1_regret_comparison.pdf}
+  \caption{
+    Regret comparison over $T=500$ search steps (50 independent runs, shaded = $\pm$1 SD).
+    \textbf{(a)} Cumulative regret: DVA-MCTS achieves substantially lower cumulative
+    regret than Uniform Verification despite fewer verifier calls.
+    \textbf{(b)} Log-log scaling confirms the $O(\sqrt{T})$ rate for DVA-MCTS
+    (slope $\approx 0.5$), matching Theorem~\ref{thm:main}.
+  }
+  \label{fig:regret}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig2_verifier_calls.pdf}
+  \caption{
+    Verifier call efficiency as a function of search budget $B$.
+    \textbf{(a)} Absolute verifier calls: DVA-MCTS grows as $O(\sqrt{B}\log B)$
+    versus $O(B)$ for Uniform Verification.
+    \textbf{(b)} DVA-MCTS calls as a percentage of Uniform Verification calls,
+    confirming the increasing efficiency advantage at larger budgets (Theorem~\ref{thm:calls}).
+  }
+  \label{fig:calls}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig3_lipschitz.pdf}
+  \caption{
+    Empirical validation of the Lipschitz score continuity assumption
+    (Assumption~\ref{ass:lipschitz}) on simulated PRM trajectories.
+    \textbf{(a)} Score differences $|V(s_d) - V(s_{d'})|$ vs. depth gap
+    $|d-d'|$ with the Lipschitz envelope $L=0.35$.
+    \textbf{(b)} Per-bin estimates of $\hat{L}$ are stable across depth gaps
+    (CV$< 0.1$).
+  }
+  \label{fig:lipschitz}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.65\linewidth]{figures/fig4_compute_accuracy.pdf}
+  \caption{
+    Compute--accuracy tradeoff. DVA-MCTS tracks Oracle Allocation closely,
+    reaching within $2.1\%$ accuracy at $T=800$ while using $38\%$ fewer
+    verifier calls. Uniform Verification and Random Allocation are shown for
+    reference.
+  }
+  \label{fig:tradeoff}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig5_ablation.pdf}
+  \caption{
+    Ablation over threshold exponent $\alpha$ (where $\tau_t = \gamma/t^\alpha$).
+    \textbf{(a)} Cumulative regret for each $\alpha$; $\alpha=0.5$ matches the
+    $O(\sqrt{T})$ reference most closely.
+    \textbf{(b)} Operating curve: regret at $T=400$ versus verification rate.
+    The Pareto-optimal point is near $\alpha=0.5$, consistent with the theory.
+  }
+  \label{fig:ablation}
+\end{figure}
+
+% ── References ────────────────────────────────────────────────────────────────
+\newpage
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+% ── Appendix ──────────────────────────────────────────────────────────────────
+\newpage
+\input{sections/A_appendix}
+
+\end{document}

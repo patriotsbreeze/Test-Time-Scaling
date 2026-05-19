@@ -1,0 +1,56 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Test-time compute scaling.}
+The idea that inference-time compute can substitute for model size was demonstrated
+empirically by \citet{brown2024large} via best-of-$N$ sampling and later formalized
+by \citet{snell2024scaling}, who showed that for hard reasoning problems, verifier-guided
+search is preferable to repeated independent sampling. \citet{wu2024inference} provides a
+compute-optimal analysis mapping problem difficulty to optimal search strategy.
+\citet{openai2024o1} introduced chain-of-thought reasoning with extended thinking time,
+and subsequent work by \citet{guo2025deepseek} and \citet{qwq2024} has extended this
+to open-weight models. Our work is orthogonal to the choice of base model or search
+strategy; we provide a principled framework for reducing verification overhead within
+any such system.
+
+\paragraph{Process reward models and verifiers.}
+\citet{cobbe2021training} trained outcome reward models (ORMs) to re-rank sampled
+solutions. \citet{lightman2023lets} introduced process reward models (PRMs) that score
+intermediate reasoning steps, demonstrating substantially better performance on the
+MATH benchmark \citep{hendrycks2021math}. \citet{setlur2024rewarding} proved
+optimality of PRMs under a fixed compute budget and introduced advantage-based PRMs.
+\citet{wang2024math} showed that self-consistency and process rewards can be combined.
+These works motivate PRMs as the verifier of choice; DVA-MCTS is compatible with any
+verifier satisfying our Lipschitz assumption.
+
+\paragraph{Monte Carlo Tree Search for LLMs.}
+MCTS was adapted for LLM reasoning by \citet{yao2023tree} (Tree of Thoughts) and
+further developed in \citet{chen2024alphamath,zhang2024llamaberry,liu2023don}.
+\citet{guo2025deepseek} integrates MCTS with PRMs in a reinforcement learning
+framework. Unlike these works, we do not modify the search tree structure; instead,
+we provide an adaptive calling policy for the verifier oracle that reduces its cost.
+
+\paragraph{Adaptive computation.}
+Reducing computation by skipping expensive operations in learned models has a rich
+history: early-exit classifiers \citep{teerapittayanon2016branchynet}, adaptive depth
+transformers \citep{graves2016adaptive,elbayad2020depth}, and speculative decoding
+\citep{leviathan2023fast} all reduce cost while preserving output quality.
+Most related is \citet{liu2024speculative}, who applies speculative execution ideas to
+reasoning chains. Our work differs by providing a \emph{regret guarantee} for the
+online decision to invoke or skip the verifier, rather than an empirical speedup.
+
+\paragraph{Online resource allocation and bandits.}
+Dynamic verifier allocation is formally related to online learning under a compute
+budget constraint. The UCB algorithm of \citet{auer2002finite} achieves
+$O(\sqrt{T \log K})$ regret in stochastic multi-armed bandits; our setting generalizes
+this to a tree-structured action space with varying arm costs. Budget-limited bandit
+problems have been studied by \citet{badanidiyuru2013bandits} and
+\citet{combes2015bandits}; we extend their framework to account for the Lipschitz
+structure of PRM scores across tree depth.
+
+\paragraph{Regret in structured environments.}
+\citet{bubeck2011x} and \citet{kleinberg2008multi} study bandits with metric structure
+on the action space (the $X$-armed bandit and Lipschitz bandit settings). Our
+Assumption~\ref{ass:lipschitz} places DVA-MCTS in this class, allowing us to exploit
+score smoothness across tree depth to reduce verifier calls while maintaining
+near-optimal regret.

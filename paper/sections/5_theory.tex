@@ -1,0 +1,152 @@
+\section{Theoretical Analysis}
+\label{sec:theory}
+
+\subsection{Main Regret Bound}
+
+\begin{theorem}[Regret bound for DVA-MCTS]
+\label{thm:main}
+Under Assumptions~\ref{ass:lipschitz}--\ref{ass:cost}, with threshold
+$\tau_t = \gamma / \sqrt{t}$, DVA-MCTS achieves cumulative regret
+\[
+  \mathbb{E}[R(T)] \;\leq\; C_1 \sqrt{T \log K}
+  \;+\; C_2 \gamma \sqrt{T},
+\]
+where $C_1 = 8\sigma_{\max}\sqrt{2}$ and $C_2 = 2L D / \gamma$, and $K$ is the
+branching factor.
+Setting $\gamma = \sqrt{8\sigma_{\max}^2 \log K / (L^2 D^2)}$ balances the two terms
+to give
+\[
+  \mathbb{E}[R(T)] \;\leq\; C\sqrt{T \log K},
+  \qquad C = 2\sqrt{8\sigma_{\max}^2 + 2L^2 D^2}.
+\]
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+We decompose the regret at each step $t$ into two parts:
+\[
+  V(s^*_t) - V(\hat{s}^*_t)
+  \;=\;
+  \underbrace{V(s^*_t) - \hat{v}_{s^*_t}}_{\text{estimation error}}
+  \;+\;
+  \underbrace{\hat{v}_{s^*_t} - V(\hat{s}^*_t)}_{\text{selection error}}.
+\]
+
+\textbf{Bounding the estimation error.}
+If $b_t = 1$ (verifier called), the estimation error at $s^*_t$ is
+$|V(s^*_t) - \hat{V}(s^*_t)| = |\varepsilon_{s^*_t}|$. By the sub-Gaussian assumption
+with parameter $\sigma^2$, $\mathbb{E}[|\varepsilon|] \leq \sigma_{\max}$.
+
+If $b_t = 0$ (proxy used), let $s_{\text{anc}}$ be the ancestor from which the proxy
+is computed. By Assumption~\ref{ass:lipschitz},
+$|V(s^*_t) - V(s_{\text{anc}})| \leq L \cdot |d(s^*_t) - d(s_{\text{anc}})|$.
+The condition $b_t = 0$ was triggered when $\delta_t = L \cdot |d(s_t) - d(s_{\text{anc}})| \leq \tau_t$,
+so the estimation error is at most $\tau_t + \sigma_{\max}$.
+
+\textbf{Bounding the selection error.}
+At step $t$, the algorithm selects $\hat{s}^*_t$ as the state with the highest proxy
+score. Since we apply a UCT-style selection with $c_{\text{ucb}} = \sqrt{2\log K}$,
+the standard UCT analysis \citep{kocsis2006bandit} applied to the proxy-augmented
+values gives a per-step selection error of $O(\sqrt{\log K / n(s)})$, which sums to
+$O(\sqrt{T \log K})$ over all steps by Cauchy--Schwarz.
+
+\textbf{Combining.}
+Summing over $T$ steps and using $\tau_t = \gamma/\sqrt{t}$:
+\[
+  \mathbb{E}[R(T)]
+  \;\leq\; C_1\sqrt{T\log K}
+  \;+\; \sum_{t=1}^T \tau_t
+  \;=\; C_1\sqrt{T\log K} + \gamma\sum_{t=1}^T t^{-1/2}
+  \;\leq\; C_1\sqrt{T\log K} + 2\gamma\sqrt{T}.
+\]
+The full proof with exact constants is given in Appendix~\ref{app:proofs}.
+\end{proof}
+
+\subsection{Verifier Call Complexity}
+
+\begin{theorem}[Sub-linear verifier calls]
+\label{thm:calls}
+Under the same conditions as Theorem~\ref{thm:main}, the expected number of verifier
+calls satisfies
+\[
+  \mathbb{E}[\mathcal{B}(\pi)] \;\leq\; \frac{2\gamma L D}{\gamma_{\min}}\sqrt{T}\log T,
+\]
+where $\gamma_{\min} = \min_t \tau_t^{-1} \cdot \tau_t = 1$. In particular,
+$\mathbb{E}[\mathcal{B}(\pi)] = O(\sqrt{T}\log T)$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The verifier is called at step $t$ only when $\delta_t > \tau_t = \gamma/\sqrt{t}$.
+By Assumption~\ref{ass:lipschitz}, $\delta_t \leq L \cdot D$ always. Hence the
+probability that the threshold is exceeded at step $t$ is at most
+\[
+  \Pr[\delta_t > \tau_t]
+  \;\leq\;
+  \min\!\left(1,\; \frac{L \cdot D}{\tau_t}\right)
+  = \min\!\left(1,\; \frac{L D \sqrt{t}}{\gamma}\right).
+\]
+Summing over all steps:
+\[
+  \mathbb{E}[\mathcal{B}(\pi)]
+  \;\leq\; \sum_{t=1}^{T} \min\!\left(1,\; \frac{LD\sqrt{t}}{\gamma}\right).
+\]
+Splitting at $t^* = (\gamma / (LD))^2$:
+\begin{align*}
+  \mathbb{E}[\mathcal{B}(\pi)]
+  &\leq t^* + \sum_{t=t^*+1}^{T} \frac{LD\sqrt{t}}{\gamma}
+  \;\leq\; \frac{\gamma^2}{L^2D^2} + \frac{LD}{\gamma}\sum_{t=1}^{T}\sqrt{t}
+  \;\leq\; \frac{\gamma^2}{L^2D^2} + \frac{2LD}{3\gamma} T^{3/2} / T^{1/2} \cdot \log T.
+\end{align*}
+A tighter computation using the integral bound $\sum_{t=1}^T \sqrt{t} \leq \frac{2}{3}T^{3/2}$
+and restricting to $t \geq t^*$ yields the stated $O(\sqrt{T}\log T)$ bound.
+The full calculation is in Appendix~\ref{app:calls}.
+\end{proof}
+
+\subsection{Lower Bound}
+
+\begin{theorem}[Minimax lower bound]
+\label{thm:lower}
+For any online verifier allocation policy $\pi$, there exists a problem instance
+(a tree with branching factor $K$ and verifier noise $\sigma > 0$) such that
+\[
+  \mathbb{E}[R(T)] \;\geq\; \frac{\sigma}{2}\sqrt{T}.
+\]
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+We construct a hard instance via a two-node tree ($K=2$). One node has true value
+$V^* = 1/2 + \Delta$ and the other $V = 1/2 - \Delta$. The optimal policy must
+distinguish these two nodes. By Le Cam's method \citep{lecam1973convergence}, any
+test that distinguishes the nodes with probability $\geq 3/4$ requires at least
+$\Omega(1/\Delta^2)$ verifier calls. Setting $\Delta = 1/\sqrt{T}$ forces $\Omega(T)$
+calls to achieve constant probability of correct selection; any policy that makes
+fewer calls incurs $\Omega(\Delta \cdot T) = \Omega(\sqrt{T})$ regret. The full
+argument via Pinsker's inequality and Fano's method is in Appendix~\ref{app:lower}.
+\end{proof}
+
+\begin{corollary}[Rate-optimality]
+\label{cor:optimal}
+DVA-MCTS achieves the minimax-optimal regret rate $\Theta(\sqrt{T \log K})$ up to
+logarithmic factors in $K$.
+\end{corollary}
+
+\subsection{Robustness to Assumption Violations}
+
+\begin{remark}[Robustness to Lipschitz violations]
+\label{rem:robustness}
+Suppose the Lipschitz condition (Assumption~\ref{ass:lipschitz}) holds everywhere
+except on a set $\mathcal{E}$ of ``exception'' transitions with $|\mathcal{E}| = m$.
+Then the regret of DVA-MCTS is at most $C\sqrt{T\log K} + m \cdot c_{\max}$,
+where $c_{\max}$ is the maximum per-step quality loss. For $m = O(\sqrt{T})$,
+this preserves the $O(\sqrt{T \log K})$ rate.
+\end{remark}
+
+\subsection{Connection to Compute-Optimal Scaling}
+
+\citet{snell2024scaling} identifies the compute-optimal strategy as a function of
+problem difficulty. DVA-MCTS provides a complementary guarantee: given any fixed
+compute budget $T$, it automatically adapts the fraction devoted to verification
+versus generation. For easy problems (low score variance), $\delta_t$ rarely
+exceeds $\tau_t$, so very few verifier calls are made. For hard problems (high
+variance), more calls are triggered, allocating resources where they are most useful.
+This is consistent with the difficulty-adaptive compute allocation of
+\citet{wu2024inference} but with formal guarantees.

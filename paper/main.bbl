@@ -1,0 +1,204 @@
+\begin{thebibliography}{30}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Auer et~al.(2002)Auer, Cesa-Bianchi, and Fischer]{auer2002finite}
+Peter Auer, Nicol{\`o} Cesa-Bianchi, and Paul Fischer.
+\newblock Finite-time analysis of the multiarmed bandit problem.
+\newblock volume~47, pages 235--256. Springer, 2002.
+
+\bibitem[Badanidiyuru et~al.(2013)Badanidiyuru, Kleinberg, and
+  Slivkins]{badanidiyuru2013bandits}
+Ashwinkumar Badanidiyuru, Robert Kleinberg, and Aleksandrs Slivkins.
+\newblock Bandits with knapsacks.
+\newblock In \emph{2013 IEEE 54th Annual Symposium on Foundations of Computer
+  Science}, pages 207--216. IEEE, 2013.
+
+\bibitem[Brown et~al.(2024)Brown, Juravsky, Ehrlich, Clark, Le, R{\'e}, and
+  Mirhoseini]{brown2024large}
+Bradley Brown, Jordan Juravsky, Ryan Ehrlich, Ronald Clark, Quoc~V Le,
+  Christopher R{\'e}, and Azalia Mirhoseini.
+\newblock Large language monkeys: Scaling inference compute with repeated
+  sampling.
+\newblock \emph{arXiv preprint arXiv:2407.21787}, 2024.
+
+\bibitem[Bubeck et~al.(2011)Bubeck, Munos, Stoltz, and
+  Szepesv{\'a}ri]{bubeck2011x}
+S{\'e}bastien Bubeck, R{\'e}mi Munos, Gilles Stoltz, and Csaba Szepesv{\'a}ri.
+\newblock $x$-armed bandits.
+\newblock volume~12, pages 1655--1695, 2011.
+
+\bibitem[Chen et~al.(2024)Chen, Liao, Li, and Fan]{chen2024alphamath}
+Guoxin Chen, Minpeng Liao, Chengxi Li, and Kai Fan.
+\newblock {AlphaMath} almost zero: Process supervision without process.
+\newblock \emph{arXiv preprint arXiv:2405.03553}, 2024.
+
+\bibitem[Cobbe et~al.(2021)Cobbe, Kosaraju, Bavarian, Chen, Jun, Kaiser,
+  Plappert, Tworek, Hilton, Nakano, Hesse, and Schulman]{cobbe2021training}
+Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz
+  Kaiser, Matthias Plappert, Jerry Tworek, Jacob Hilton, Reiichiro Nakano,
+  Christopher Hesse, and John Schulman.
+\newblock Training verifiers to solve math word problems.
+\newblock \emph{arXiv preprint arXiv:2110.14168}, 2021.
+
+\bibitem[Combes et~al.(2015)Combes, Magureanu, Prouti{\`e}re, and
+  Laroche]{combes2015bandits}
+Richard Combes, Stefan Magureanu, Alexandre Prouti{\`e}re, and Cyrille Laroche.
+\newblock Bandits with budget: New algorithms and lower bounds.
+\newblock \emph{Advances in Neural Information Processing Systems}, 28, 2015.
+
+\bibitem[Coulom(2006)]{coulom2006efficient}
+R{\'e}mi Coulom.
+\newblock Efficient selectivity and backup operators in monte-carlo tree
+  search.
+\newblock \emph{International Conference on Computers and Games}, pages 72--83,
+  2006.
+
+\bibitem[Elbayad et~al.(2020)Elbayad, Gu, Grave, and Auli]{elbayad2020depth}
+Maha Elbayad, Jiatao Gu, Edouard Grave, and Michael Auli.
+\newblock Depth-adaptive transformer.
+\newblock In \emph{International Conference on Learning Representations}, 2020.
+
+\bibitem[Graves(2016)]{graves2016adaptive}
+Alex Graves.
+\newblock Adaptive computation time for recurrent neural networks.
+\newblock \emph{arXiv preprint arXiv:1603.08983}, 2016.
+
+\bibitem[Guo et~al.(2025)Guo, Yang, Zhang, Song, Zhang, Xu, Zhu, Ma, Wang, Bi,
+  et~al.]{guo2025deepseek}
+Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu,
+  Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, et~al.
+\newblock {DeepSeek-R1}: Incentivizing reasoning capability in {LLMs} via
+  reinforcement learning.
+\newblock \emph{arXiv preprint arXiv:2501.12948}, 2025.
+
+\bibitem[Hendrycks et~al.(2021)Hendrycks, Burns, Kadavath, Arora, Basart, Tang,
+  Song, and Steinhardt]{hendrycks2021math}
+Dan Hendrycks, Collin Burns, Saurav Kadavath, Akul Arora, Steven Basart, Eric
+  Tang, Dawn Song, and Jacob Steinhardt.
+\newblock Measuring mathematical problem solving with the {MATH} dataset.
+\newblock \emph{arXiv preprint arXiv:2103.03874}, 2021.
+
+\bibitem[Kleinberg et~al.(2008)Kleinberg, Slivkins, and
+  Upfal]{kleinberg2008multi}
+Robert Kleinberg, Aleksandrs Slivkins, and Eli Upfal.
+\newblock Multi-armed bandits in metric spaces.
+\newblock In \emph{Proceedings of the 40th Annual ACM Symposium on Theory of
+  Computing}, pages 681--690, 2008.
+
+\bibitem[Kocsis and Szepesv{\'a}ri(2006)]{kocsis2006bandit}
+Levente Kocsis and Csaba Szepesv{\'a}ri.
+\newblock Bandit based monte-carlo planning.
+\newblock In \emph{European Conference on Machine Learning}, pages 282--293.
+  Springer, 2006.
+
+\bibitem[Le~Cam(1973)]{lecam1973convergence}
+Lucien Le~Cam.
+\newblock \emph{Convergence of Estimates under Dimensionality Restrictions}.
+\newblock Annals of Statistics, 1973.
+
+\bibitem[Leviathan et~al.(2023)Leviathan, Kalman, and
+  Matias]{leviathan2023fast}
+Yaniv Leviathan, Matan Kalman, and Yossi Matias.
+\newblock Fast inference from transformers via speculative decoding.
+\newblock \emph{arXiv preprint arXiv:2211.17192}, 2023.
+
+\bibitem[Lightman et~al.(2023)Lightman, Kosaraju, Burda, Edwards, Baker, Lee,
+  Leike, Schulman, Sutskever, and Cobbe]{lightman2023lets}
+Hunter Lightman, Vineet Kosaraju, Yura Burda, Harri Edwards, Bowen Baker, Teddy
+  Lee, Jan Leike, John Schulman, Ilya Sutskever, and Karl Cobbe.
+\newblock Let's verify step by step.
+\newblock \emph{arXiv preprint arXiv:2305.20050}, 2023.
+
+\bibitem[Liu et~al.(2024)Liu, Desrochers, et~al.]{liu2024speculative}
+Sehoon Liu, Alexandre Desrochers, et~al.
+\newblock Speculative decoding with big little decoder.
+\newblock \emph{arXiv preprint arXiv:2302.07863}, 2024.
+
+\bibitem[Liu et~al.(2023)Liu, Feng, et~al.]{liu2023don}
+Sophia Liu, Ruiyi Feng, et~al.
+\newblock Don't throw away your value function: Generalized gated linear
+  networks for arbitrarily structured blackbox optimization.
+\newblock In \emph{International Conference on Machine Learning}, 2023.
+
+\bibitem[{OpenAI}(2024)]{openai2024o1}
+{OpenAI}.
+\newblock Learning to reason with {LLMs}.
+\newblock \emph{OpenAI Blog}, 2024.
+\newblock URL \url{https://openai.com/index/learning-to-reason-with-llms/}.
+
+\bibitem[{Qwen Team}(2024)]{qwq2024}
+{Qwen Team}.
+\newblock {QwQ}: Reflect deeply on the boundaries of the unknown.
+\newblock \emph{Qwen Blog}, 2024.
+
+\bibitem[Setlur et~al.(2024)Setlur, Nagpal, Fisch, Geng, Eisenstein, Agarwal,
+  Agarwal, Berant, and Kumar]{setlur2024rewarding}
+Amrith Setlur, Chirag Nagpal, Adam Fisch, Xinyang Geng, Jacob Eisenstein,
+  Rishabh Agarwal, Alekh Agarwal, Jonathan Berant, and Aviral Kumar.
+\newblock Rewarding progress: Scaling automated process verifiers for {LLM}
+  reasoning.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2024.
+
+\bibitem[Silver et~al.(2016)Silver, Huang, Maddison, Guez, Sifre, van~den
+  Driessche, Schrittwieser, Antonoglou, Panneershelvam, Lanctot,
+  et~al.]{silver2016mastering}
+David Silver, Aja Huang, Chris~J Maddison, Arthur Guez, Laurent Sifre, George
+  van~den Driessche, Julian Schrittwieser, Ioannis Antonoglou, Veda
+  Panneershelvam, Marc Lanctot, et~al.
+\newblock Mastering the game of {Go} with deep neural networks and tree search.
+\newblock \emph{Nature}, 529:\penalty0 484--489, 2016.
+
+\bibitem[Snell et~al.(2024)Snell, Lee, Xu, and Kumar]{snell2024scaling}
+Charlie Snell, Jaehoon Lee, Kelvin Xu, and Aviral Kumar.
+\newblock Scaling {LLM} test-time compute optimally can be more effective than
+  scaling model parameters.
+\newblock \emph{arXiv preprint arXiv:2408.03314}, 2024.
+
+\bibitem[Teerapittayanon et~al.(2016)Teerapittayanon, McDanel, and
+  Kung]{teerapittayanon2016branchynet}
+Surat Teerapittayanon, Bradley McDanel, and H.T. Kung.
+\newblock {BranchyNet}: Fast inference via early exiting from deep neural
+  networks.
+\newblock In \emph{2016 23rd International Conference on Pattern Recognition},
+  pages 2464--2469. IEEE, 2016.
+
+\bibitem[Wang et~al.(2024)Wang, Li, Shao, Xu, Dai, Li, Chen, Wu, and
+  Sui]{wang2024math}
+Peiyi Wang, Lei Li, Zhihong Shao, Runxin Xu, Damai Dai, Yifei Li, Deli Chen,
+  Yu~Wu, and Zhifang Sui.
+\newblock Math-shepherd: Verify and reinforce {LLMs} step-by-step without human
+  annotations.
+\newblock \emph{arXiv preprint arXiv:2312.08935}, 2024.
+
+\bibitem[Wood and Zhang(1996)]{wood1996estimation}
+G.R. Wood and B.P. Zhang.
+\newblock Estimation of the lipschitz constant of a function.
+\newblock \emph{Journal of Global Optimization}, 8:\penalty0 91--103, 1996.
+
+\bibitem[Wu et~al.(2024)Wu, Sun, Li, Welleck, and Yang]{wu2024inference}
+Yangzhen Wu, Zhiqing Sun, Shanda Li, Sean Welleck, and Yiming Yang.
+\newblock Inference scaling laws: An empirical analysis of compute-optimal
+  inference for problem-solving with language models.
+\newblock \emph{arXiv preprint arXiv:2408.00724}, 2024.
+
+\bibitem[Yao et~al.(2023)Yao, Yu, Zhao, Shafran, Griffiths, Cao, and
+  Narasimhan]{yao2023tree}
+Shunyu Yao, Dian Yu, Jeffrey Zhao, Ishan Shafran, Thomas~L Griffiths, Yuan Cao,
+  and Karthik Narasimhan.
+\newblock Tree of thoughts: Deliberate problem solving with large language
+  models.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2023.
+
+\bibitem[Zhang et~al.(2024)Zhang, Wu, Lei, Che, Li, Xie, Huang, Zhang, Pavone,
+  Li, et~al.]{zhang2024llamaberry}
+Di~Zhang, Jianbo Wu, Jingdi Lei, Tong Che, Jiatong Li, Tong Xie, Xiaoshui
+  Huang, Shufei Zhang, Marco Pavone, Yuqiang Li, et~al.
+\newblock {LLaMA-Berry}: Pairwise optimization for {O1}-like olympiad-level
+  mathematical reasoning.
+\newblock \emph{arXiv preprint arXiv:2410.02884}, 2024.
+
+\end{thebibliography}

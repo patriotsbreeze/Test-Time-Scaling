@@ -1,0 +1,80 @@
+\section{Introduction}
+\label{sec:introduction}
+
+The prevailing paradigm of large language model (LLM) capability improvement has
+shifted from scaling training compute alone toward \emph{test-time compute scaling}:
+investing additional inference-time resources to improve the quality of outputs for
+individual queries \citep{snell2024scaling,brown2024large,openai2024o1}.
+A central component of this paradigm is the \emph{verifier}---a model that scores
+candidate partial or complete solutions---which guides a search procedure such as
+best-of-$N$ sampling \citep{cobbe2021training}, beam search, or Monte Carlo Tree
+Search (MCTS) \citep{silver2016mastering,guo2025deepseek}.
+
+\paragraph{The efficiency problem.}
+A key theoretical result of \citet{setlur2024rewarding} and the related analysis in
+\citet{snell2024scaling} is that, among all test-time compute strategies, verifier-guided
+search is asymptotically optimal: for a fixed compute budget, no method based on
+unguided sampling can match the performance of a sufficiently accurate verifier.
+Despite this optimality result, applying the verifier \emph{uniformly}---at every
+node of the search tree or after every generated token---is computationally
+prohibitive. Modern PRMs such as those of \citet{lightman2023lets} and
+\citet{wang2024math} themselves carry significant inference cost; calling them
+at every search step multiplies total compute by a large constant factor.
+
+This gap between theoretical optimality and practical efficiency motivates the following
+question:
+
+\begin{quote}
+\emph{Can we allocate verifier compute dynamically across search steps so that
+total verification cost is sub-linear in the search budget, while suffering only
+a bounded regret relative to exhaustive verification?}
+\end{quote}
+
+\paragraph{Our contributions.}
+We answer this question affirmatively. Specifically:
+
+\begin{enumerate}
+  \item \textbf{Problem formalization.} We cast verifier allocation as an online
+    resource allocation problem and define a precise regret criterion against an
+    oracle that observes the optimal allocation in hindsight
+    (Section~\ref{sec:formulation}).
+
+  \item \textbf{Algorithm.} We introduce \textbf{DVA-MCTS} (Dynamic Verifier
+    Allocation MCTS), which integrates a budget-sensitive uncertainty threshold
+    into standard MCTS selection, determining at each node whether the verifier
+    should be called (Section~\ref{sec:algorithm}).
+
+  \item \textbf{Regret bound.} Under a Lipschitz score continuity assumption on
+    the PRM (Assumption~\ref{ass:lipschitz}), we prove
+    \[
+      R(T) \;\leq\; C\sqrt{T \log K},
+    \]
+    where $T$ is the total number of search steps, $K$ is the branching factor,
+    and $C$ is a constant depending on the Lipschitz parameter and verifier noise
+    (Theorem~\ref{thm:main}). DVA-MCTS simultaneously invokes the verifier only
+    $O(\sqrt{T}\log T)$ times, sub-linear in $T$ (Theorem~\ref{thm:calls}).
+
+  \item \textbf{Lower bound.} We prove that any online verifier allocation
+    algorithm must incur $\Omega(\sqrt{T})$ regret on some problem instance,
+    establishing that DVA-MCTS is rate-optimal (Theorem~\ref{thm:lower}).
+
+  \item \textbf{Empirical validation.} Simulated tree-search experiments confirm
+    the theoretical rates and demonstrate a $55{-}70\%$ reduction in verifier
+    calls with ${\leq}3\%$ accuracy loss relative to exhaustive verification
+    (Section~\ref{sec:experiments}).
+\end{enumerate}
+
+\paragraph{Significance.}
+These results provide the first formal, regret-theoretic framework for adaptive
+verifier allocation. The sub-linear verifier budget translates directly to
+wall-clock inference savings in deployed systems: for a search budget of $T{=}1600$
+steps, DVA-MCTS requires $\approx 160$ verifier calls versus $1600$ for uniform
+allocation, a $10\times$ reduction that is particularly valuable when the verifier
+is a large neural network executed on dedicated hardware.
+
+\paragraph{Organization.}
+Section~\ref{sec:related} reviews related work. Section~\ref{sec:formulation}
+states the formal problem. Section~\ref{sec:algorithm} presents DVA-MCTS.
+Section~\ref{sec:theory} develops the theoretical analysis.
+Section~\ref{sec:experiments} reports experiments. Section~\ref{sec:conclusion}
+concludes.

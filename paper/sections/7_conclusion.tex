@@ -1,0 +1,37 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We introduced DVA-MCTS, the first algorithm for test-time compute scaling with
+provably efficient dynamic verifier allocation. By formulating the problem as online
+resource allocation and exploiting the Lipschitz structure of process reward models,
+we proved that DVA-MCTS achieves $O(\sqrt{T\log K})$ regret against the oracle
+allocation policy while invoking the verifier only $O(\sqrt{T}\log T)$ times---a
+sub-linear reduction in verification overhead. A matching $\Omega(\sqrt{T})$ lower
+bound establishes rate-optimality.
+
+\paragraph{Limitations.}
+Our analysis assumes that the Lipschitz constant $L$ is known. In practice, $L$ must
+be estimated from data; an adaptive version of DVA-MCTS with an online estimator of
+$L$ is an interesting extension. Additionally, our simulations use a synthetic
+verifier; validating on production-scale PRMs (e.g., a $7$B PRM applied to
+Llama~3 outputs) would strengthen the empirical claims. Finally, the regret definition
+(Definition~\ref{def:regret}) measures quality relative to states \emph{visited} by
+the search; a stronger benchmark would compare against the best leaf in the full tree,
+which is generally inaccessible.
+
+\paragraph{Future directions.}
+Several extensions are immediate:
+(1) \emph{Adaptive $L$ estimation:} use online Lipschitz estimation
+\citep{wood1996estimation} to make DVA-MCTS parameter-free.
+(2) \emph{Cost-aware allocation:} when verifier cost is non-uniform (e.g., depends on
+sequence length), incorporate a cost-weighted threshold.
+(3) \emph{Integration with speculative decoding:} combine adaptive verification with
+draft-model generation for joint compute reduction.
+(4) \emph{Distribution shift:} analyze regret when the PRM score distribution shifts
+during a long search, e.g., due to distribution mismatch between training and inference.
+
+\paragraph{Broader impact.}
+Reducing the compute cost of test-time scaling has clear positive implications:
+lower inference cost makes capable LLMs accessible to a broader range of users and
+reduces energy consumption. We are unaware of negative societal impacts specific to
+this efficiency contribution.

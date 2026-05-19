@@ -1,0 +1,112 @@
+\section{Problem Formulation}
+\label{sec:formulation}
+
+\subsection{Search Tree and Verifier}
+
+Let $\mathcal{T} = (\mathcal{S}, \mathcal{A}, P, r, s_0)$ be a search tree where
+$\mathcal{S}$ is the set of states (partial solutions), $\mathcal{A}$ is the action
+set (token or step choices), $P: \mathcal{S} \times \mathcal{A} \to \mathcal{S}$
+is the deterministic transition, and $s_0$ is the root. Each leaf $\ell \in \mathcal{L}$
+is a complete candidate solution. The tree has branching factor $K$ and maximum depth
+$D$; hence $|\mathcal{L}| \leq K^D$.
+
+A \emph{verifier} is a function $V: \mathcal{S} \to [0,1]$ that assigns a quality
+score to any state. In practice $V$ is a process reward model applied to the token
+sequence corresponding to $s$. We denote by $\hat{V}(s)$ the noisy observation returned
+by a single verifier call:
+\[
+  \hat{V}(s) = V(s) + \varepsilon_s,
+  \qquad \varepsilon_s \overset{\text{i.i.d.}}{\sim} \operatorname{SubGaussian}(0, \sigma^2).
+\]
+
+\subsection{Dynamic Verifier Allocation}
+
+A search procedure generates a sequence of states $s_1, s_2, \ldots, s_T$ visited
+during $T$ search steps. At each step $t$, an \emph{allocation policy} $\pi$ decides
+$b_t \in \{0, 1\}$: whether to invoke the verifier at $s_t$. When $b_t = 1$, the
+algorithm observes $\hat{V}(s_t)$ at unit cost; when $b_t = 0$, no observation is
+obtained. The total verifier budget consumed is $\mathcal{B}(\pi) = \sum_{t=1}^T b_t$.
+
+Let $\hat{v}_t$ denote the algorithm's estimate of $V(s_t)$: either $\hat{V}(s_t)$
+if $b_t = 1$, or a \emph{proxy} derived from prior observations if $b_t = 0$. At the
+end of the search, the algorithm selects the state $\hat{s}^* = \arg\max_t \hat{v}_t$
+as its answer.
+
+\subsection{Oracle Benchmark and Regret}
+
+\begin{definition}[Oracle allocation]
+\label{def:oracle}
+The oracle $\pi^*$ observes all $V(s_1),\ldots,V(s_T)$ without cost and allocates
+verifier calls to maximize the quality of the returned solution. Formally, let
+$s^* = \arg\max_t V(s_t)$ be the best state visited. The oracle achieves quality
+$V(s^*)$.
+\end{definition}
+
+\begin{definition}[Cumulative regret]
+\label{def:regret}
+The cumulative regret of policy $\pi$ over $T$ steps is
+\[
+  R(T) \;=\; \sum_{t=1}^{T} \bigl[V(s^*_t) - V(\hat{s}^*_t)\bigr],
+\]
+where $s^*_t = \arg\max_{i \leq t} V(s_i)$ is the best state found by the oracle
+through step $t$, and $\hat{s}^*_t = \arg\max_{i \leq t} \hat{v}_i$ is the policy's
+best estimate.
+\end{definition}
+
+\begin{remark}
+This regret measures the cumulative quality gap relative to an oracle that knows all
+true scores. It differs from classical bandit regret in two respects: (i) the
+``arms'' are nodes of a tree, not independent, and (ii) the benchmark is a
+\emph{retrospective} oracle rather than the Bayes-optimal arm.
+\end{remark}
+
+\subsection{Assumptions}
+\label{sec:assumptions}
+
+\begin{assumption}[Lipschitz score continuity]
+\label{ass:lipschitz}
+There exists a constant $L > 0$ such that for any two states $s, s'$ on the same
+root-to-leaf path with tree depths $d(s)$ and $d(s')$,
+\[
+  |V(s) - V(s')| \;\leq\; L \cdot |d(s) - d(s')|.
+\]
+\end{assumption}
+
+\begin{remark}[Motivation for Assumption~\ref{ass:lipschitz}]
+This assumption captures the intuition that the quality of a partial solution changes
+smoothly as more tokens are generated. It is equivalent to requiring that the PRM
+score be a Lipschitz function of depth along any trajectory. Figure~\ref{fig:lipschitz}
+provides empirical support: on simulated PRM trajectories calibrated to match reported
+PRM score distributions from \citet{lightman2023lets}, the estimated Lipschitz constant
+$\hat{L}$ stabilizes rapidly and is consistent across depth gaps. Violations could occur
+at decision boundaries where the solution becomes clearly correct or incorrect; in
+practice these are isolated events that do not materially affect our bound (see
+Remark~\ref{rem:robustness}).
+\end{remark}
+
+\begin{assumption}[Bounded verifier noise]
+\label{ass:noise}
+The noise $\varepsilon_s$ is $\sigma^2$-sub-Gaussian with $\sigma \leq \sigma_{\max}$
+for a known constant $\sigma_{\max}$.
+\end{assumption}
+
+\begin{assumption}[Bounded cost ratio]
+\label{ass:cost}
+Each verifier call costs $c \in [c_{\min}, c_{\max}]$ with $c_{\min} > 0$.
+The total compute budget satisfies $\mathcal{B} \leq C_{\max}$ for a known constant.
+\end{assumption}
+
+\subsection{Problem Statement}
+
+\begin{problem}
+\label{prob:main}
+Design an allocation policy $\pi$ that simultaneously achieves:
+\begin{enumerate}[(i)]
+  \item $R(T) = O(\sqrt{T \log K})$, and
+  \item $\mathcal{B}(\pi) = O(\sqrt{T} \log T)$.
+\end{enumerate}
+\end{problem}
+
+Condition (i) guarantees near-oracle solution quality; condition (ii) guarantees that
+verifier calls are sub-linear in the search budget. Together they show that the
+computational cost of verification need not scale linearly with search effort.

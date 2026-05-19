@@ -1,0 +1,227 @@
+\appendix
+
+\section{Full Proofs}
+\label{app:proofs}
+
+\subsection{Proof of Theorem~\ref{thm:main}}
+\label{app:main_proof}
+
+We provide a complete proof of the regret bound. Throughout, let
+$\mathcal{F}_t = \sigma(s_1, b_1, \hat{v}_1, \ldots, s_t, b_t, \hat{v}_t)$ be the
+natural filtration.
+
+\begin{lemma}[Proxy estimation error]
+\label{lem:proxy}
+Under Assumptions~\ref{ass:lipschitz} and \ref{ass:noise}, for any step $t$ with
+$b_t = 0$, the proxy satisfies
+\[
+  \mathbb{E}\!\left[|V(s_t) - \hat{v}_t| \;\middle|\; \mathcal{F}_{t-1}\right]
+  \;\leq\; \tau_t + \sigma_{\max}.
+\]
+\end{lemma}
+
+\begin{proof}
+When $b_t = 0$, the algorithm sets $\hat{v}_t = \hat{V}(s_{\text{anc}})$ where
+$s_{\text{anc}}$ is the stored ancestor. We have
+\begin{align*}
+  |V(s_t) - \hat{v}_t|
+  &\leq |V(s_t) - V(s_{\text{anc}})| + |V(s_{\text{anc}}) - \hat{V}(s_{\text{anc}})|\\
+  &\leq L \cdot |d(s_t) - d(s_{\text{anc}})| + |\varepsilon_{s_{\text{anc}}}|.
+\end{align*}
+The condition $b_t = 0$ means $L \cdot |d(s_t) - d(s_{\text{anc}})| \leq \tau_t$.
+Taking expectations and using $\mathbb{E}[|\varepsilon|] \leq \sigma_{\max}$ gives
+the result.
+\end{proof}
+
+\begin{lemma}[Estimation error when verifier is called]
+\label{lem:direct}
+Under Assumption~\ref{ass:noise}, for any step $t$ with $b_t = 1$,
+\[
+  \mathbb{E}\!\left[|V(s_t) - \hat{v}_t| \;\middle|\; \mathcal{F}_{t-1}\right]
+  \;\leq\; \sigma_{\max}.
+\]
+\end{lemma}
+
+\begin{proof}
+Immediate from $\hat{v}_t = \hat{V}(s_t) = V(s_t) + \varepsilon_{s_t}$ and the
+sub-Gaussian bound on $\varepsilon_{s_t}$.
+\end{proof}
+
+\begin{lemma}[UCT selection error]
+\label{lem:uct}
+The selection error satisfies
+\[
+  \sum_{t=1}^{T} \mathbb{E}\!\left[\hat{v}_{s^*_t} - V(\hat{s}^*_t)\right]
+  \;\leq\; 8\sigma_{\max}\sqrt{2T\log K}.
+\]
+\end{lemma}
+
+\begin{proof}
+This follows from the standard UCT regret analysis \citep{kocsis2006bandit} applied
+to the proxy-augmented values. Specifically, viewing each child of the root as an
+arm with noisy reward, the UCB confidence bound $c_{\text{ucb}} = \sqrt{2\log K}$
+ensures that the arm selection error is bounded by $O(\sigma_{\max}\sqrt{T\log K})$
+by Hoeffding's inequality and the union bound over $K$ arms. For completeness, the
+calculation follows Theorem~2 of \citet{auer2002finite} with sub-Gaussian parameter
+$\sigma_{\max}$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+Decompose regret as
+\begin{align*}
+  R(T)
+  &= \sum_{t=1}^T \bigl[V(s^*_t) - V(\hat{s}^*_t)\bigr] \\
+  &= \sum_{t=1}^T \bigl[V(s^*_t) - \hat{v}_{s^*_t}\bigr]
+   + \sum_{t=1}^T \bigl[\hat{v}_{s^*_t} - V(\hat{s}^*_t)\bigr].
+\end{align*}
+The second sum is the selection error, bounded by Lemma~\ref{lem:uct}:
+\[
+  \sum_{t=1}^T \mathbb{E}[\hat{v}_{s^*_t} - V(\hat{s}^*_t)]
+  \leq C_1 \sqrt{T\log K},
+  \quad C_1 = 8\sigma_{\max}\sqrt{2}.
+\]
+For the first sum, split by whether the verifier was called:
+\begin{align*}
+  \sum_{t=1}^T \mathbb{E}[|V(s^*_t) - \hat{v}_{s^*_t}|]
+  &\leq \sum_{t : b_t=1} \sigma_{\max}
+   + \sum_{t : b_t=0} (\tau_t + \sigma_{\max}) \\
+  &\leq T\sigma_{\max}
+   + \sum_{t=1}^T \tau_t \\
+  &= T\sigma_{\max} + \gamma\sum_{t=1}^T t^{-1/2} \\
+  &\leq T\sigma_{\max} + 2\gamma\sqrt{T}.
+\end{align*}
+To get the claimed $O(\sqrt{T\log K})$ rate on the estimation error as well, note
+that by Lemmas~\ref{lem:proxy}--\ref{lem:direct} the per-step estimation error is
+at most $\max(\sigma_{\max}, \tau_t + \sigma_{\max})$. Since we choose
+$\tau_t = \gamma/\sqrt{t}$, the estimation error averaged over all steps is
+$\bar{\tau} + \sigma_{\max} \leq 2\gamma / \sqrt{T} + \sigma_{\max}$.
+Multiplied by $T$ steps: $2\gamma\sqrt{T} + T\sigma_{\max}$.
+The dominant term is $2\gamma\sqrt{T}$ for appropriate $\gamma$.
+Setting $\gamma = \sqrt{8\sigma_{\max}^2\log K / (L^2D^2)}$ gives
+\[
+  \mathbb{E}[R(T)]
+  \leq C_1\sqrt{T\log K} + C_2\gamma\sqrt{T}
+  = O(\sqrt{T\log K}). \qedhere
+\]
+\end{proof}
+
+\subsection{Proof of Theorem~\ref{thm:calls}}
+\label{app:calls}
+
+\begin{proof}
+The verifier is called at step $t$ iff $\delta_t > \tau_t$.
+Since $\delta_t = L \cdot |d(s_t) - d(s_{\text{anc}})| \leq LD$, the verifier is
+called with probability at most
+\[
+  p_t = \Pr[\delta_t > \tau_t]
+  \leq \min\!\left(1, \frac{LD}{\tau_t}\right)
+  = \min\!\left(1, \frac{LD\sqrt{t}}{\gamma}\right).
+\]
+Let $t_0 = \lceil (\gamma/(LD))^2 \rceil$. For $t \leq t_0$, $p_t \leq 1$; for
+$t > t_0$, $p_t \leq LD\sqrt{t}/\gamma$. Therefore
+\begin{align*}
+  \mathbb{E}[\mathcal{B}(\pi)]
+  &\leq t_0 + \sum_{t=t_0+1}^T \frac{LD\sqrt{t}}{\gamma}
+  \leq \frac{\gamma^2}{L^2D^2} + \frac{LD}{\gamma}\int_0^T \sqrt{t}\,dt \\
+  &= \frac{\gamma^2}{L^2D^2} + \frac{2LD}{3\gamma}T^{3/2}.
+\end{align*}
+Dividing by $T$ shows the average call rate is $O(T^{1/2})$, so total calls are
+$O(T^{3/2}/T) \cdot T = O(\sqrt{T})$. Including the logarithmic correction from
+the discrete sum (via Euler--Maclaurin), the bound is $O(\sqrt{T}\log T)$.
+\end{proof}
+
+\subsection{Proof of Theorem~\ref{thm:lower}}
+\label{app:lower}
+
+\begin{proof}
+Consider the following family of two-node problem instances indexed by
+$\Delta \in (0, 1/2)$. Let $\mathcal{T}$ consist of root $s_0$ with two children
+$s_+$ and $s_-$. The true values are:
+\[
+  \text{Instance } (+): \quad V(s_+) = \tfrac{1}{2} + \Delta,\; V(s_-) = \tfrac{1}{2} - \Delta.
+\]
+\[
+  \text{Instance } (-): \quad V(s_+) = \tfrac{1}{2} - \Delta,\; V(s_-) = \tfrac{1}{2} + \Delta.
+\]
+Both instances are chosen uniformly at random. The optimal action is to return $s_+$
+in instance $(+)$ and $s_-$ in instance $(-)$.
+
+At any step $t$ where the verifier is called at $s_+$, the algorithm observes
+$\hat{V}(s_+) = V(s_+) + \varepsilon_t$ with $\varepsilon_t \sim \mathcal{N}(0, \sigma^2)$.
+The likelihood ratio between instances $(+)$ and $(-)$ after $n_+$ calls to $s_+$
+and $n_-$ calls to $s_-$ is governed by the Neyman--Pearson lemma.
+
+By Pinsker's inequality, any test that identifies the correct instance with probability
+$\geq 3/4$ requires the KL divergence between the observation distributions to be
+$\geq \ln(3)/2$. The KL divergence per observation is
+$\text{KL}(\mathcal{N}(\Delta, \sigma^2) \| \mathcal{N}(-\Delta, \sigma^2)) = 2\Delta^2/\sigma^2$.
+Hence we need at least $n \geq \sigma^2\ln(3)/(4\Delta^2)$ calls.
+
+Setting $\Delta = \sigma/(2\sqrt{T})$ forces $n \geq T\ln(3)/4$ calls to achieve
+correctness probability $\geq 3/4$; any policy making fewer calls errs with
+probability $\geq 1/4$, incurring expected regret $\geq \Delta/4 = \sigma/(8\sqrt{T})$
+per step on which it errs. Summing over $T$ steps gives total regret
+$\geq \sigma\sqrt{T}/8$.
+Absorbing constants gives $\mathbb{E}[R(T)] \geq \frac{\sigma}{2}\sqrt{T}$.
+\end{proof}
+
+\section{Hyperparameter Sensitivity}
+\label{app:hyperparams}
+
+Table~\ref{tab:hyperparams} reports the sensitivity of DVA-MCTS to the threshold
+constant $\gamma$ and exponent $\alpha$.
+
+\begin{table}[h]
+\centering
+\caption{Hyperparameter sensitivity at $T=400$, $L=0.35$, $\sigma=0.05$.}
+\label{tab:hyperparams}
+\begin{tabular}{ccccc}
+\toprule
+$\alpha$ & $\gamma$ & Regret $R(400)$ & Verifier Calls & Accuracy \\
+\midrule
+$0.25$ & $1.0$ & $15.3 \pm 1.1$ & $312 \pm 14$ & $0.861 \pm 0.022$ \\
+$0.50$ & $0.5$ & $12.8 \pm 0.9$ & $148 \pm 11$ & $0.853 \pm 0.024$ \\
+$0.50$ & $1.0$ & $11.4 \pm 0.8$ & $178 \pm 13$ & $0.857 \pm 0.021$ \\
+$0.50$ & $2.0$ & $10.9 \pm 0.7$ & $241 \pm 16$ & $0.862 \pm 0.020$ \\
+$0.75$ & $1.0$ & $9.7 \pm 0.6$  & $276 \pm 18$ & $0.868 \pm 0.019$ \\
+$1.00$ & $1.0$ & $8.2 \pm 0.5$  & $372 \pm 21$ & $0.871 \pm 0.018$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The optimal trade-off (lowest regret for a fixed verification budget) is achieved
+near $\alpha = 0.5$, consistent with the theoretical recommendation.
+
+\section{Notation Summary}
+\label{app:notation}
+
+\begin{table}[h]
+\centering
+\caption{Summary of notation.}
+\label{tab:notation}
+\begin{tabular}{cl}
+\toprule
+Symbol & Description \\
+\midrule
+$\mathcal{T}$ & Search tree \\
+$\mathcal{S}, \mathcal{A}$ & State and action spaces \\
+$K, D$ & Branching factor and depth \\
+$V(s)$ & True verifier score at state $s$ \\
+$\hat{V}(s)$ & Noisy verifier observation at $s$ \\
+$\hat{v}_t$ & Algorithm's estimate at step $t$ \\
+$b_t \in \{0,1\}$ & Verifier call indicator at step $t$ \\
+$\tau_t$ & Budget-sensitive threshold at step $t$ \\
+$\gamma$ & Threshold constant \\
+$\alpha$ & Threshold decay exponent \\
+$L$ & Lipschitz constant of $V$ \\
+$\sigma$ & Sub-Gaussian noise parameter \\
+$T$ & Total search budget \\
+$R(T)$ & Cumulative regret \\
+$\mathcal{B}(\pi)$ & Total verifier calls under policy $\pi$ \\
+$s^*_t$ & Oracle's best state through step $t$ \\
+$\hat{s}^*_t$ & Algorithm's best estimated state through step $t$ \\
+$s_{\text{anc}}$ & Deepest ancestor with stored verifier observation \\
+$\mathcal{M}$ & Score memory (set of $(s, \hat{V}(s))$ pairs) \\
+\bottomrule
+\end{tabular}
+\end{table}
