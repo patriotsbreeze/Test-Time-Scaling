@@ -1,6 +1,10 @@
 {
-  "total_elapsed_s": 26.9,
+  "total_elapsed_s": 1317.6,
   "experiments_run": [
+    "regret",
+    "efficiency",
+    "lipschitz",
+    "tradeoff",
     "ablation"
   ],
   "config": {
