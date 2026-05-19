@@ -1,0 +1,35 @@
+{
+  "experiment": "lipschitz",
+  "true_L": 0.35,
+  "estimated_L": 0.09089796168680468,
+  "estimated_L_std": 0.08075913054561763,
+  "violation_rate": 0.0,
+  "n_pairs": 22500,
+  "per_depth_gap": {
+    "1": {
+      "mean_score_diff": 0.14501268901934486,
+      "std_score_diff": 0.10534052242984135,
+      "lipschitz_bound": 0.35
+    },
+    "2": {
+      "mean_score_diff": 0.1891978912939189,
+      "std_score_diff": 0.15227887388082867,
+      "lipschitz_bound": 0.7
+    },
+    "3": {
+      "mean_score_diff": 0.2249706823125734,
+      "std_score_diff": 0.1770189861099806,
+      "lipschitz_bound": 1.0499999999999998
+    },
+    "4": {
+      "mean_score_diff": 0.24943079817848438,
+      "std_score_diff": 0.19555454303895375,
+      "lipschitz_bound": 1.4
+    },
+    "5": {
+      "mean_score_diff": 0.26821828352080984,
+      "std_score_diff": 0.20823808106383787,
+      "lipschitz_bound": 1.75
+    }
+  }
+}

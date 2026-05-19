@@ -1,0 +1,13 @@
+{
+  "total_elapsed_s": 26.9,
+  "experiments_run": [
+    "ablation"
+  ],
+  "config": {
+    "budget": 400,
+    "n_runs": 50,
+    "seed": 42,
+    "lipschitz_L": 0.35,
+    "noise_sigma": 0.05
+  }
+}

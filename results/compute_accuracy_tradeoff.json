@@ -1,0 +1,115 @@
+{
+  "experiment": "tradeoff",
+  "threshold": 0.8,
+  "n_runs": 50,
+  "results": {
+    "DVA-MCTS": {
+      "50": {
+        "mean_value": 0.8684503084614087,
+        "std_value": 0.32189726759229903,
+        "accuracy": 0.88
+      },
+      "100": {
+        "mean_value": 0.8954124390505018,
+        "std_value": 0.29878958419912965,
+        "accuracy": 0.9
+      },
+      "200": {
+        "mean_value": 0.9353338924323134,
+        "std_value": 0.2367115893695524,
+        "accuracy": 0.94
+      },
+      "400": {
+        "mean_value": 0.9750889340488941,
+        "std_value": 0.13998757456815664,
+        "accuracy": 0.98
+      },
+      "800": {
+        "mean_value": 0.9750889340488941,
+        "std_value": 0.13998757456815664,
+        "accuracy": 0.98
+      }
+    },
+    "Uniform": {
+      "50": {
+        "mean_value": 0.7741195262672291,
+        "std_value": 0.4115409262341359,
+        "accuracy": 0.78
+      },
+      "100": {
+        "mean_value": 0.9345066245443806,
+        "std_value": 0.23672885151692974,
+        "accuracy": 0.94
+      },
+      "200": {
+        "mean_value": 0.9745066245443806,
+        "std_value": 0.14028549168383062,
+        "accuracy": 0.98
+      },
+      "400": {
+        "mean_value": 0.9945066245443805,
+        "std_value": 0.017313410848209154,
+        "accuracy": 1.0
+      },
+      "800": {
+        "mean_value": 0.9945066245443805,
+        "std_value": 0.017313410848209154,
+        "accuracy": 1.0
+      }
+    },
+    "Random": {
+      "50": {
+        "mean_value": 0.8272489883601456,
+        "std_value": 0.34071133286626193,
+        "accuracy": 0.8
+      },
+      "100": {
+        "mean_value": 0.8704161647583856,
+        "std_value": 0.3221249512025771,
+        "accuracy": 0.88
+      },
+      "200": {
+        "mean_value": 0.9073302130210927,
+        "std_value": 0.2691282880181618,
+        "accuracy": 0.92
+      },
+      "400": {
+        "mean_value": 0.9873302130210928,
+        "std_value": 0.029278000755034613,
+        "accuracy": 1.0
+      },
+      "800": {
+        "mean_value": 0.9873302130210928,
+        "std_value": 0.029278000755034613,
+        "accuracy": 1.0
+      }
+    },
+    "BestOfN": {
+      "50": {
+        "mean_value": 0.0,
+        "std_value": 0.0,
+        "accuracy": 0.0
+      },
+      "100": {
+        "mean_value": 0.0,
+        "std_value": 0.0,
+        "accuracy": 0.0
+      },
+      "200": {
+        "mean_value": 0.0,
+        "std_value": 0.0,
+        "accuracy": 0.0
+      },
+      "400": {
+        "mean_value": 0.0,
+        "std_value": 0.0,
+        "accuracy": 0.0
+      },
+      "800": {
+        "mean_value": 0.0,
+        "std_value": 0.0,
+        "accuracy": 0.0
+      }
+    }
+  }
+}
