@@ -1,0 +1,67 @@
+\documentclass{article}
+
+% ICML 2026 style
+\usepackage[accepted]{icml2026}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{microtype}
+\usepackage{graphicx}
+
+% Colorblind-safe colors
+\definecolor{execblue}{HTML}{0072B2}
+\definecolor{clariorange}{HTML}{D55E00}
+\definecolor{defgreen}{HTML}{009E73}
+
+\newcommand{\tax}{\Delta_{\mathrm{clar}}}
+\newcommand{\asr}{\mathrm{ASR}}
+\newcommand{\tsr}{\mathrm{TSR}}
+\newcommand{\ccr}{\mathrm{CCR}}
+
+\icmltitlerunning{The Clarification Tax}
+
+\begin{document}
+
+\twocolumn[
+\icmltitle{The Clarification Tax: Measuring and Mitigating the\\
+Safety Cost of Collaborative Coding Agents}
+
+\begin{icmlauthorlist}
+\icmlauthor{Anonymous Author(s)}{anon}
+\end{icmlauthorlist}
+
+\icmlaffiliation{anon}{Anonymous Institution}
+\icmlcorrespondingauthor{Anonymous Author(s)}{anonymous@institution.edu}
+\icmlkeywords{coding agents, prompt injection, security, human-AI collaboration, LLMs}
+
+\vskip 0.3in
+]
+
+\printAffiliationsAndNotice{}
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\input{sections/1_introduction}
+\input{sections/2_related_work}
+\input{sections/3_problem_formulation}
+\input{sections/4_benchmark}
+\input{sections/5_defenses}
+\input{sections/6_experiments}
+\input{sections/7_conclusion}
+
+\bibliographystyle{abbrvnat}
+\bibliography{references}
+
+\appendix
+\input{sections/A_appendix}
+
+\end{document}

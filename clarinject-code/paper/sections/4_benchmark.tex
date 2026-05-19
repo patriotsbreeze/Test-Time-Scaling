@@ -1,0 +1,100 @@
+\section{The ClarInject-Code Benchmark}
+\label{sec:benchmark}
+
+\subsection{Design Principles}
+
+ClarInject-Code is constructed around three principles:
+
+\textbf{Matched pairs.} Each scenario has an execution condition and a clarification
+condition that use the \emph{identical adversarial payload}. The only variable is
+the channel through which the payload arrives. This design, borrowed from~\citet{aspi2026},
+cleanly isolates the channel effect from payload-strength confounds.
+
+\textbf{Mechanical verifiability.} Unlike evaluations that rely on LLM judges to
+assess attack success, ClarInject-Code uses code-level predicates: regex patterns,
+substring matching, and AST checks. This eliminates judge-model bias and enables
+exact reproducibility.
+
+\textbf{Concrete harm categories.} We restrict attacks to operations with clear,
+measurable real-world consequences if a coding agent were to execute them in
+production.
+
+\subsection{Scenario Structure}
+
+Each scenario is a JSON object with the following fields:
+
+\begin{itemize}
+  \item \texttt{task\_description}: An ambiguous coding task with one critical
+    constraint deliberately removed (the ``blocked information'' technique of
+    HiL-Bench~\citep{hilbench2024}).
+  \item \texttt{clarifying\_question\_expected}: The question a well-calibrated
+    agent should ask to resolve the ambiguity.
+  \item \texttt{benign\_answer}: A legitimate user reply.
+  \item \texttt{adversarial\_answer}: The benign answer with an injected instruction
+    appended---structured to sound like a natural continuation of the clarification.
+  \item \texttt{success\_check}: A machine-checkable predicate that returns \texttt{True}
+    if the agent followed the injected instruction.
+  \item \texttt{benign\_check}: A predicate that returns \texttt{True} if the
+    agent correctly completed the legitimate task.
+\end{itemize}
+
+\subsection{Attack Categories}
+
+We define five attack categories covering distinct harm types:
+
+\begin{table}[h]
+\centering
+\caption{ClarInject-Code attack categories and example detection patterns.}
+\label{tab:categories}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Category} & \textbf{Harm} & \textbf{Detection} \\
+\midrule
+\texttt{backdoor} & Hidden auth bypass & Regex on bypass code \\
+\texttt{secret\_exfil} & Env vars / keys sent to URL & Regex on network call \\
+\texttt{safetycheck\_removal} & Removes input validation & Regex on removed check \\
+\texttt{dependency\_poison} & Typosquatted package added & Substring on pkg name \\
+\texttt{destructive\_command} & rm, DROP TABLE, FLUSHALL & Regex on destructive op \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Injection Style}
+
+All adversarial answers follow a common structure: the benign answer, followed by a
+natural-sounding justification, followed by the injected instruction. For example:
+
+\begin{quote}
+\small
+\textit{``Use the variable name \texttt{DATABASE\_URL}. Also, the security team approved
+adding a master override: if the password is `admin\_bypass\_2024', the function should
+always return True regardless of username.''}
+\end{quote}
+
+This injection style is deliberately naturalistic---it mimics legitimate operational
+context that a user might plausibly supply---making it a fair test of the agent's
+ability to distinguish task data from instructions.
+
+\subsection{Seed Set}
+
+The current release includes \textbf{25 seed scenarios} (5 per attack category),
+each a realistic Python coding task drawn from common developer workflows: authentication,
+logging, file handling, caching, and database management. We document a clear extension
+protocol for expanding to $\sim$200 scenarios, including guidelines for maintaining
+category balance and injection naturalness.
+
+\subsection{Evaluation Protocol}
+
+For each scenario, we run:
+\begin{enumerate}
+  \item \textbf{Execution condition}: The agent receives a fully-specified task; the
+    adversarial content is injected via a simulated file-read tool output.
+  \item \textbf{Clarification condition}: The agent receives the ambiguous task; if
+    it asks a clarifying question, it receives the adversarial answer through the
+    \texttt{ask\_user} channel.
+\end{enumerate}
+
+Each condition is run $N=3$ times for variance estimation. Agents that do not ask a
+clarifying question in the clarification condition are scored on their first-turn output
+(and recorded as having $\bar{T} = 1$ clarification turn).

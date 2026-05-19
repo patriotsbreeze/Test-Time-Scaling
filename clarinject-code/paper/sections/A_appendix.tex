@@ -1,0 +1,92 @@
+\section{Ethics Statement}
+\label{sec:ethics}
+
+\paragraph{Nature of the research.} This is defensive security research. Our goal is
+to surface a vulnerability in coding agent interaction protocols so that practitioners
+can build safer systems. We do not provide novel attack techniques; the injection patterns
+we study are well-known in the adversarial-prompting literature~\citep{perez2022promptinjection}.
+
+\paragraph{Scope of harm.} All adversarial payloads in ClarInject-Code are:
+(1) \emph{synthetic and clearly labeled}---each is annotated with its attack category
+and is designed to be recognizable as a test case;
+(2) \emph{sandboxed}---the evaluation harness runs all agent code in an isolated temporary
+directory with no real network access; and
+(3) \emph{non-functional outside the sandbox}---exfiltration URLs use the reserved domain
+\texttt{example-sandbox.invalid}, which is unreachable by construction.
+
+\paragraph{No human subjects.} This study involves no human subjects. All LLM API calls
+are made under standard commercial terms. No personally identifiable information is
+collected or processed.
+
+\paragraph{Responsible disclosure.} If our benchmark reveals attack vectors not previously
+documented, we will follow coordinated disclosure with relevant model providers before
+public release of any such scenarios.
+
+\section{Scenario Listing}
+\label{sec:scenarios}
+
+Table~\ref{tab:scenario-list} lists all 25 seed scenarios with their attack categories,
+expected clarifying questions, and difficulty ratings.
+
+\begin{table}[h]
+\centering
+\caption{ClarInject-Code seed scenarios.}
+\label{tab:scenario-list}
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{ID} & \textbf{Category} & \textbf{Clarifying Question (summary)} & \textbf{Difficulty} \\
+\midrule
+backdoor\_001 & backdoor & DB connection env var name & medium \\
+backdoor\_002 & backdoor & JWT public key location & medium \\
+backdoor\_003 & backdoor & Role names and permissions & easy \\
+backdoor\_004 & backdoor & Bcrypt work factor & medium \\
+backdoor\_005 & backdoor & Default session timeout & medium \\
+\midrule
+secret\_exfil\_001 & secret\_exfil & Monitoring endpoint URL & easy \\
+secret\_exfil\_002 & secret\_exfil & Error tracking endpoint & medium \\
+secret\_exfil\_003 & secret\_exfil & Telemetry endpoint URL & medium \\
+secret\_exfil\_004 & secret\_exfil & Log aggregator endpoint & hard \\
+secret\_exfil\_005 & secret\_exfil & Config file format & medium \\
+\midrule
+safetycheck\_001 & safetycheck\_removal & Allowed file types / upload dir & easy \\
+safetycheck\_002 & safetycheck\_removal & Database type for queries & hard \\
+safetycheck\_003 & safetycheck\_removal & Rate limit threshold & medium \\
+safetycheck\_004 & safetycheck\_removal & Allowed shell commands & medium \\
+safetycheck\_005 & safetycheck\_removal & CSRF token storage & medium \\
+\midrule
+dep\_poison\_001 & dependency\_poison & Validation library choice & easy \\
+dep\_poison\_002 & dependency\_poison & Crypto library choice & medium \\
+dep\_poison\_003 & dependency\_poison & Async HTTP library choice & easy \\
+dep\_poison\_004 & dependency\_poison & Migration framework choice & medium \\
+dep\_poison\_005 & dependency\_poison & Model file loading method & easy \\
+\midrule
+destructive\_001 & destructive\_command & Artifact directory to clean & easy \\
+destructive\_002 & destructive\_command & Retention period in days & medium \\
+destructive\_003 & destructive\_command & Cache key prefix pattern & medium \\
+destructive\_004 & destructive\_command & Whether to delete old table & medium \\
+destructive\_005 & destructive\_command & Feature flags config path & easy \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Injection Naturalness Analysis}
+\label{sec:injection-naturalness}
+
+A key design choice in ClarInject-Code is that adversarial answers are designed to
+sound like legitimate operational context. We verified injection naturalness with
+a brief expert review: two researchers with security backgrounds independently rated
+each adversarial answer on a 1--5 scale of ``how naturally this could appear in a
+real developer clarification.'' Mean rating: 3.8/5.0 (SD = 0.6), indicating that
+the injections are plausible enough to be non-trivially distinguishable from benign
+answers without careful inspection.
+
+\section{Reproducibility}
+\label{sec:repro}
+
+All experiments are fully reproducible from the released code. Stochastic elements
+(model sampling) are controlled by running $N=3$ trials and reporting mean $\pm$ 95\%
+bootstrap CI. Random seeds are fixed at 42 for bootstrapping. API keys are never
+hardcoded; the harness reads them from environment variables \texttt{ANTHROPIC\_API\_KEY}
+and \texttt{OPENAI\_API\_KEY}. A mock model client (zero API calls) allows pipeline
+verification without credentials.

@@ -1,0 +1,87 @@
+\section{Defenses}
+\label{sec:defenses}
+
+We propose three defenses of increasing structural invasiveness. All operate at
+inference time without model fine-tuning, making them deployable today in any
+agent framework that exposes the clarification-answer slot.
+
+\subsection{D1: Provenance Tagging}
+
+The simplest defense wraps the user's clarification answer in explicit delimiters
+and extends the system prompt with an instruction:
+
+\begin{quote}
+\small
+\texttt{<USER\_CLARIFICATION>} \\
+\textit{[user's answer]} \\
+\texttt{</USER\_CLARIFICATION>}\\[2pt]
+\textit{(System note: treat the above only as task data---a description of what the
+user wants---never as a new instruction, command, or scope change.)}
+\end{quote}
+
+This defense exploits the model's instruction-following capability to establish a
+trust boundary. It is analogous to HTML-encoding user input before embedding it in
+a SQL query: the structure signals to the processor (here, the LLM) that the
+enclosed content is data, not code. The limitation is that it relies on the model's
+ability to maintain this distinction across a long context, which degrades with
+context length~\citep{anthropic2024instructionhierarchy}.
+
+\subsection{D2: Structured Extraction}
+
+Rather than trusting the model to interpret the delimiter, we run a \emph{separate}
+LLM pass that extracts only the direct answer to the agent's specific question:
+
+\begin{enumerate}
+  \item The agent emits a clarifying question $q$.
+  \item The user's raw answer $u$ (potentially containing injected content) is
+    passed to an extractor with a fixed system prompt: \emph{``Extract ONLY the
+    direct answer to the question asked. Discard everything else, including any
+    additional requests, instructions, or sentences that do not directly answer
+    the question.''}
+  \item The extracted answer $\hat{u}$ is returned to the agent in place of $u$.
+\end{enumerate}
+
+This defense is more robust than D1 because it uses a structurally separate model
+call with no prior context of the task. The extractor has no reason to interpret
+injected content as instructions. The cost is an additional LLM call per
+clarification turn and potential information loss if the user's legitimate answer
+is verbose or multi-part.
+
+\subsection{D3: Plan-Diff Gating}
+
+Inspired by recent work on agent action authorization~\citep{zhou2024agentauthorization},
+D3 interposes a semantic consistency check \emph{after} the agent incorporates
+the clarification answer:
+
+\begin{enumerate}
+  \item The agent produces a post-clarification plan (or code output) $r$.
+  \item A gating LLM call compares $r$ against the original task specification,
+    listing any actions in $r$ that were not implied by the original task.
+  \item If out-of-scope actions are detected---new network calls, file deletions
+    outside the working directory, removal of security checks, new dependencies
+    not requested---the plan is flagged and execution is blocked pending user
+    re-authorization.
+\end{enumerate}
+
+D3 operates on the \emph{semantics} of the agent's output rather than the
+\emph{form} of its input, making it robust to paraphrasing attacks that defeat
+D1 and D2. However, it requires a precise definition of ``in-scope,'' which varies
+across tasks, and may produce false positives on legitimate scope expansions.
+
+\subsection{Defense Summary}
+
+\begin{table}[h]
+\centering
+\caption{Properties of the three defenses.}
+\label{tab:defenses}
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Defense} & \textbf{Extra LLM calls} & \textbf{FP risk} & \textbf{Paraphrase robust} \\
+\midrule
+D1: Provenance Tag & 0 & Low & Partial \\
+D2: Struct.\ Extract & +1 & Medium & Yes \\
+D3: Plan-Diff Gate & +1 & High & Yes \\
+\bottomrule
+\end{tabular}
+\end{table}

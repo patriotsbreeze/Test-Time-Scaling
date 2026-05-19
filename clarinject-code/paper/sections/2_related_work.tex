@@ -1,0 +1,52 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Prompt injection in LLM agents.}
+Prompt injection---embedding malicious instructions in content an LLM processes as
+data---was formalized by \citet{perez2022promptinjection} and has since been studied
+extensively for tool-using agents~\citep{greshake2023notwhoyoureexpecting,
+liu2024promptinjectionattack}. \citet{yi2023benchmarkingpromptinjection} provide a
+systematic taxonomy of injection vectors. The dominant mitigation strategy is
+instruction-hierarchy enforcement, in which the model is trained to give lower trust
+to content from external sources than to system-level instructions~\citep{
+openai2024instructhierarchy, anthropic2024instructionhierarchy}. Our work complements
+this line by identifying an interaction-\emph{state} amplifier that is orthogonal
+to the delivery channel: the same payload is more dangerous when it arrives as a
+clarification answer.
+
+\paragraph{Clarification in coding agents and HCI.}
+The value of clarification-seeking in task-oriented agents has been studied in
+dialogue systems~\citep{radlinski2017clarifyingquestions} and, more recently, in
+coding agents specifically. \citet{zhang2024clarifyingquestions} show that ambiguity
+resolution through targeted questions significantly improves code quality on
+underspecified benchmarks. HiL-Bench~\citep{hilbench2024} introduces a formalized
+framework for ``blocked information'' scenarios that require human-in-the-loop
+interaction to resolve. ClarEval~\citep{clareval2024} proposes metrics for evaluating
+clarification quality beyond task completion. Our work introduces the first \emph{safety}
+dimension to this literature: clarification has a security cost that practitioners
+need to account for.
+
+\paragraph{Security of coding agents.}
+\citet{pearce2022asleepkeyboard} study Copilot-generated code for security vulnerabilities
+and find a non-trivial rate of insecure suggestions. \citet{khoury2023securitychatgpt}
+extend this to ChatGPT. These works study the agent as a \emph{producer} of vulnerable
+code; we study the agent as a \emph{target} for adversarial manipulation through its
+interaction protocol. \citet{yang2024swebench} and related agentic coding benchmarks
+focus on task-completion correctness; none explicitly models the adversarial clarification
+channel.
+
+\paragraph{ASPI report.}
+The most directly related work is the concurrent report by~\citet{aspi2026}, which
+empirically demonstrates that clarification-state amplifies injection ASR by 15--20$\times$
+across two frontier models in general (non-coding) agentic tasks. We build on their
+matched design, extend it to the coding domain with concrete attack categories and
+machine-checkable predicates, and---crucially---propose and evaluate defenses that
+ASPI does not provide.
+
+\paragraph{Agentic safety and oversight.}
+Broader work on LLM agent safety includes constitutional AI~\citep{bai2022constitutionalai},
+RLHF for agent alignment~\citep{ouyang2022trainingllm}, and process-level reward
+modeling~\citep{lightman2023processreward}. The plan-diff gating defense we propose
+(Section~\ref{sec:defenses}) is inspired by recent work on authorizing agent
+actions~\citep{zhou2024agentauthorization} and draws on principles from
+\citet{wu2024agentsafety}.

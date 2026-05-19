@@ -1,0 +1,96 @@
+%% icml2026.sty -- ICML 2026 Style File (local draft approximation)
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{icml2026}[2026/01/01 ICML 2026 Draft]
+
+\DeclareOption{accepted}{}
+\DeclareOption{final}{}
+\DeclareOption{preprint}{}
+\ProcessOptions\relax
+
+%% Page geometry (two-column, letter)
+\RequirePackage[
+  letterpaper,
+  top=1in, bottom=1in,
+  left=0.875in, right=0.875in,
+  columnsep=0.25in
+]{geometry}
+
+%% Fonts — use standard LaTeX fonts (no psnfss required)
+\RequirePackage{lmodern}
+\RequirePackage[T1]{fontenc}
+
+%% Utilities
+\RequirePackage{ifthen}
+\RequirePackage{fancyhdr}
+
+%% Two-column layout
+\setlength{\columnsep}{0.25in}
+
+%% Section formatting
+\RequirePackage{titlesec}
+\titleformat{\section}{\normalsize\bfseries\scshape}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection.}{0.5em}{}
+\titlespacing{\section}{0pt}{8pt plus 2pt minus 2pt}{4pt plus 1pt minus 1pt}
+\titlespacing{\subsection}{0pt}{6pt plus 1pt minus 1pt}{3pt plus 1pt minus 1pt}
+
+%% Paragraph spacing
+\setlength{\parindent}{0.15in}
+\setlength{\parskip}{0pt}
+
+%% Caption
+\RequirePackage{caption}
+\captionsetup{font=small,labelfont=bf,justification=raggedright,singlelinecheck=false}
+
+%% Abstract
+\renewenvironment{abstract}{%
+  \centerline{\large\bf Abstract}
+  \vspace{0.5ex}
+  \begin{quote}\small
+}{%
+  \end{quote}\vskip 1ex
+}
+
+%% Title/author machinery
+\newcommand{\icmltitle}[1]{\gdef\@icmltitle{#1}}
+\newcommand{\icmltitlerunning}[1]{\gdef\@icmltitlerunning{#1}}
+\newcommand{\icmlkeywords}[1]{\gdef\@icmlkeywords{#1}}
+\newcommand{\icmlcorrespondingauthor}[2]{}
+
+\newcounter{icmlauthorcnt}
+\newcommand\icmlauthor[2]{%
+  \stepcounter{icmlauthorcnt}%
+  \expandafter\gdef\csname @icmlauth\theicmlauthorcnt\endcsname{#1}%
+}
+\newcommand\icmlaffiliation[2]{%
+  \expandafter\gdef\csname @icmlaffil#1\endcsname{#2}%
+}
+\newenvironment{icmlauthorlist}{}{}
+
+\newcommand{\printAffiliationsAndNotice}[1]{%
+  \begin{center}
+    \@ifundefined{@icmlauth1}{}{\textbf{\csname @icmlauth1\endcsname}}%
+  \end{center}
+  \vskip 0.2in
+}
+
+%% Header/footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\small\textit{Workshop on Deep Learning for Code (DL4C) @ ICML 2026}}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+%% Float parameters
+\setcounter{topnumber}{4}
+\setcounter{bottomnumber}{4}
+\setcounter{totalnumber}{6}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.5}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.8}
+
+%% Bibliography via natbib
+\RequirePackage{natbib}
+
+\endinput

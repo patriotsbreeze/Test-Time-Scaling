@@ -1,0 +1,76 @@
+\section{Problem Formulation}
+\label{sec:problem}
+
+\subsection{Agent Model}
+
+We model a coding agent as a function $\mathcal{A}$ that maps a context
+$c = (s, h)$---a system prompt $s$ and conversation history $h$---to a response
+$r \in \mathcal{R}$, where $\mathcal{R}$ includes text (code, explanations) and
+structured actions (tool calls, file writes). The agent interacts with a user
+through a sequence of turns.
+
+A \emph{clarification event} occurs when the agent emits a response of the form
+$r = \texttt{CLARIFYING\_QUESTION}: q$ for some question $q$, and the subsequent
+user turn $u$ (the clarification answer) is appended to $h$. The agent then
+produces a final response based on the augmented context.
+
+\subsection{Attack Model}
+
+An adversary $\mathcal{V}$ has write access to exactly one input channel. We
+consider two channels:
+
+\begin{description}
+  \item[Tool output ($\mathcal{C}_{\mathrm{exec}}$)] The adversary injects content
+    into a simulated tool output (e.g., the result of a file read). This represents
+    the standard prompt-injection threat model for tool-using agents.
+  \item[Clarification answer ($\mathcal{C}_{\mathrm{clar}}$)] The adversary injects
+    content into the user's clarification answer $u$. The payload is appended to
+    (or replaces part of) the legitimate answer.
+\end{description}
+
+In both cases, the injected payload $p$ contains an instruction that, if followed,
+produces a mechanically detectable harmful behavior in the agent's output.
+
+\subsection{The Clarification Tax}
+
+For a fixed payload $p$ and scenario $\sigma$, let $\asr(\mathcal{A}, p, \mathcal{C})$
+denote the probability that the agent $\mathcal{A}$ follows payload $p$ when it
+arrives through channel $\mathcal{C}$. We define the \emph{clarification tax} as:
+\begin{equation}
+  \tax(\mathcal{A}, p) = \asr(\mathcal{A}, p, \mathcal{C}_{\mathrm{clar}})
+                       - \asr(\mathcal{A}, p, \mathcal{C}_{\mathrm{exec}})
+  \label{eq:tax}
+\end{equation}
+
+A positive $\tax$ means the agent is more susceptible to injection through the
+clarification channel. The ASPI report~\citep{aspi2026} provides evidence that
+$\tax > 0$ for general agents; we test whether this holds for coding agents and
+whether it can be reduced.
+
+\subsection{Hypotheses}
+
+We test four hypotheses:
+
+\begin{description}
+  \item[H1 (Replication)] $\tax > 0$ for coding agents across model families.
+  \item[H2 (Channel vs.~State)] The tax is partly attributable to the agent's
+    \emph{interaction state} (having just asked a question), not only to the delivery
+    channel.
+  \item[H3 (Mitigation)] Provenance-aware defenses reduce $\tax$ significantly.
+  \item[H4 (Trade-off)] Stronger defenses impose greater collaboration cost
+    (measured by $\ccr$, the clarification compliance rate).
+\end{description}
+
+\paragraph{Metrics.} We report:
+\begin{itemize}
+  \item $\asr$ -- Attack Success Rate: fraction of trials where the injected behavior
+    appears in the agent's output.
+  \item $\tsr$ -- Task Success Rate: fraction of trials where the benign task is
+    correctly completed.
+  \item $\ccr$ -- Clarification Compliance Rate: fraction of trials where the benign
+    part of the clarification answer is correctly incorporated.
+  \item $\bar{T}$ -- Average turns to clarification.
+  \item $\tax$ -- Clarification tax (Equation~\ref{eq:tax}).
+\end{itemize}
+All estimates include 95\% bootstrap confidence intervals over $N=3$ runs per
+scenario per condition.

@@ -1,0 +1,8 @@
+anthropic>=0.25.0
+openai>=1.30.0
+numpy>=1.26.0
+scipy>=1.13.0
+matplotlib>=3.8.0
+pytest>=8.0.0
+jsonschema>=4.22.0
+tiktoken>=0.7.0

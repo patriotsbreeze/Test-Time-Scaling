@@ -1,0 +1,18 @@
+Human-centered coding agents are increasingly designed to ask clarifying questions
+rather than guess at ambiguous requirements---a property widely regarded as
+improving collaboration quality. We identify and quantify a previously unmeasured
+security cost of this design choice: the \emph{clarification tax}, the increase
+in prompt-injection attack success rate (ASR) that occurs when an agent transitions
+from execution to clarification. When an agent asks a question, the user's answer
+becomes a new, trusted-by-default input channel that adversarial content can
+exploit. We introduce \textbf{ClarInject-Code}, the first benchmark specifically
+designed to isolate this effect in coding agents, comprising 25 seed scenarios
+(expandable to $\sim$200) across five concrete attack categories with machine-checkable
+success predicates. Using a matched experimental design that holds adversarial payloads
+constant across conditions, we measure the clarification tax across three model tiers.
+We then propose and evaluate three lightweight, deployable defenses---\emph{provenance
+tagging}, \emph{structured extraction}, and \emph{plan-diff gating}---and plot the
+resulting Pareto frontier between collaboration quality and attack resistance. Our
+results show that the clarification tax is real and consistent across model families,
+and that structured extraction recovers the majority of the security loss with minimal
+impact on task completion. We release ClarInject-Code and all evaluation code.
