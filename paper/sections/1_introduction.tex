@@ -58,9 +58,10 @@ We answer this question affirmatively. Specifically:
     algorithm must incur $\Omega(\sqrt{T})$ regret on some problem instance,
     establishing that DVA-MCTS is rate-optimal (Theorem~\ref{thm:lower}).
 
-  \item \textbf{Empirical validation.} Simulated tree-search experiments confirm
-    the theoretical rates and demonstrate a $55{-}70\%$ reduction in verifier
-    calls with ${\leq}3\%$ accuracy loss relative to exhaustive verification
+  \item \textbf{Empirical validation.} Experiments with 50 independent runs confirm
+    the $O(\sqrt{T})$ regret rate (empirical slope $0.635$, $R^2 = 0.961$) and
+    demonstrate a $73\%$ reduction in verifier calls at $B{=}3200$ with only a
+    $2$ percentage-point accuracy gap relative to exhaustive verification
     (Section~\ref{sec:experiments}).
 \end{enumerate}
 
@@ -68,9 +69,10 @@ We answer this question affirmatively. Specifically:
 These results provide the first formal, regret-theoretic framework for adaptive
 verifier allocation. The sub-linear verifier budget translates directly to
 wall-clock inference savings in deployed systems: for a search budget of $T{=}1600$
-steps, DVA-MCTS requires $\approx 160$ verifier calls versus $1600$ for uniform
-allocation, a $10\times$ reduction that is particularly valuable when the verifier
-is a large neural network executed on dedicated hardware.
+steps, DVA-MCTS requires $780$ verifier calls on average versus $1601$ for uniform
+allocation---a $2.1\times$ reduction---scaling to $3.7\times$ at $T{=}3200$.
+These savings are particularly valuable when the verifier is a large neural network
+(e.g., a $7$B PRM) executed on dedicated hardware.
 
 \paragraph{Organization.}
 Section~\ref{sec:related} reviews related work. Section~\ref{sec:formulation}

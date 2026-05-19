@@ -169,28 +169,31 @@ Absorbing constants gives $\mathbb{E}[R(T)] \geq \frac{\sigma}{2}\sqrt{T}$.
 \label{app:hyperparams}
 
 Table~\ref{tab:hyperparams} reports the sensitivity of DVA-MCTS to the threshold
-constant $\gamma$ and exponent $\alpha$.
+exponent $\alpha$ with $\gamma = 1.0$ fixed, from the ablation experiment
+(Section~\ref{sec:ablation}, 50 runs, $T = 400$, $L = 0.35$, $\sigma = 0.05$).
 
 \begin{table}[h]
 \centering
-\caption{Hyperparameter sensitivity at $T=400$, $L=0.35$, $\sigma=0.05$.}
+\caption{Ablation over threshold exponent $\alpha$ at $T{=}400$, $\gamma{=}1.0$
+         (50 runs; all numbers from \texttt{results/ablation\_threshold.json}).}
 \label{tab:hyperparams}
-\begin{tabular}{ccccc}
+\begin{tabular}{cccc}
 \toprule
-$\alpha$ & $\gamma$ & Regret $R(400)$ & Verifier Calls & Accuracy \\
+$\alpha$ & Regret $R(400)$ & Verifier Calls & Call Fraction \\
 \midrule
-$0.25$ & $1.0$ & $15.3 \pm 1.1$ & $312 \pm 14$ & $0.861 \pm 0.022$ \\
-$0.50$ & $0.5$ & $12.8 \pm 0.9$ & $148 \pm 11$ & $0.853 \pm 0.024$ \\
-$0.50$ & $1.0$ & $11.4 \pm 0.8$ & $178 \pm 13$ & $0.857 \pm 0.021$ \\
-$0.50$ & $2.0$ & $10.9 \pm 0.7$ & $241 \pm 16$ & $0.862 \pm 0.020$ \\
-$0.75$ & $1.0$ & $9.7 \pm 0.6$  & $276 \pm 18$ & $0.868 \pm 0.019$ \\
-$1.00$ & $1.0$ & $8.2 \pm 0.5$  & $372 \pm 21$ & $0.871 \pm 0.018$ \\
+$0.25$ & $27.87$ & $371.9$ & $93.0\%$ \\
+$0.50$ & $18.98$ & $382.2$ & $95.5\%$ \\
+$0.75$ & $\mathbf{17.82}$ & $382.7$ & $95.7\%$ \\
+$1.00$ & $19.99$ & $387.0$ & $96.7\%$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The optimal trade-off (lowest regret for a fixed verification budget) is achieved
-near $\alpha = 0.5$, consistent with the theoretical recommendation.
+The empirically optimal exponent at $T{=}400$ is $\alpha{=}0.75$ (lowest regret).
+The theoretically recommended $\alpha{=}0.5$ is within $6.5\%$ of optimal regret.
+As discussed in Section~\ref{sec:ablation}, verification rates are uniformly high
+at $T{=}400$ because the tree remains largely unexplored; the regime where $\alpha$
+most strongly differentiates call patterns is large $B$ (${\geq}800$).
 
 \section{Notation Summary}
 \label{app:notation}
