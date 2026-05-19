@@ -103,11 +103,15 @@ The total compute budget satisfies $\mathcal{B} \leq C_{\max}$ for a known const
 \label{prob:main}
 Design an allocation policy $\pi$ that simultaneously achieves:
 \begin{enumerate}[(i)]
-  \item $R(T) = O(\sqrt{T \log K})$, and
-  \item $\mathcal{B}(\pi) = O(\sqrt{T} \log T)$.
+  \item $\mathbb{E}[R(T)] = O(\sqrt{T \log K})$, and
+  \item $\mathbb{E}[\mathcal{B}(\pi)] \leq N_{\mathcal{T}} = K^D - 1$,
+        so that the call fraction $\mathbb{E}[\mathcal{B}(\pi)]/T \to 0$ as $T \to \infty$
+        with $K, D$ fixed.
 \end{enumerate}
 \end{problem}
 
-Condition (i) guarantees near-oracle solution quality; condition (ii) guarantees that
-verifier calls are sub-linear in the search budget. Together they show that the
-computational cost of verification need not scale linearly with search effort.
+Condition (i) guarantees near-oracle solution quality. Condition (ii) guarantees that
+total verification cost is bounded by the tree size $N_{\mathcal{T}}$, independent of $T$;
+hence for any $T > N_{\mathcal{T}}$, the fraction of search steps requiring a verifier
+call falls strictly below $1$ and tends to zero as $T$ grows. Together they show that
+the marginal cost of additional search steps is eventually free of verification overhead.

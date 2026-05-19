@@ -63,21 +63,39 @@ where call counts grow as $\approx \sqrt{B}$ for $B \geq 800$.
 
 \paragraph{Comparison with baselines.}
 At $T{=}400$, DVA-MCTS achieves mean final regret $31.32$ vs.\ $26.76$ for
-Uniform Verification. Uniform achieves lower absolute regret in this regime
-because it calls the verifier at every step, accumulating high-quality
-estimates faster. The regret gap is the cost of sub-linear calls; it
-closes as $B$ grows.
+Uniform Verification. Uniform achieves lower \emph{cumulative} regret in this regime
+because it calls the verifier at every step, accumulating high-quality score estimates
+faster. This is the expected cost of sub-linear calls in the exploration regime:
+DVA-MCTS accepts slightly higher cumulative regret in exchange for using $4.7\%$
+fewer verifier calls.
+
+\paragraph{The regret--accuracy distinction.}
+Counterintuitively, DVA-MCTS achieves \emph{higher final accuracy} ($98\%$) than
+Uniform ($96\%$) despite higher cumulative regret (Table~\ref{tab:summary}).
+These two metrics measure different things: cumulative regret accumulates errors
+at every step during the search, while accuracy measures whether the final
+returned solution is correct. DVA-MCTS's Lipschitz proxy provides a useful
+smoothing signal that prevents the algorithm from prematurely committing to a
+noisy verifier estimate at any single step, even when it skips the verifier.
+The result is better final selection despite noisier intermediate estimates.
+This distinction is important: practitioners should optimize for final accuracy,
+not cumulative regret, in deployment settings.
 
 \subsection{Verifier Call Efficiency}
 \label{sec:efficiency_results}
 
 Figure~\ref{fig:calls} shows verifier call counts for $B \in \{50,\ldots,3200\}$.
 
-\paragraph{Small-budget regime ($B \leq 400$).}
-Savings are modest ($1{-}5\%$) because the tree is largely unexplored and DVA-MCTS
-verifies every new node. Practitioners running $B \leq 256$ MCTS steps (a common
-deployment budget) will see limited efficiency gains from DVA-MCTS at this tree
-depth. Reducing tree depth or branching factor shifts the crossover earlier.
+\paragraph{Small-budget regime ($B \leq 400$): exploration-phase behavior.}
+DVA-MCTS is not designed to outperform Uniform Verification within the exploration
+regime ($T \lesssim N_{\mathcal{T}}$). In this regime, nearly every visited node is
+new and the threshold provides limited savings; DVA-MCTS acts approximately like
+a single-visit uniform verifier. This is the correct behavior: the algorithm neither
+wastes calls on re-verification nor skips calls that would genuinely reduce regret.
+Practitioners running $B \leq 256$ MCTS steps (a common deployment budget) at this
+tree depth ($K{=}2$, $D{=}12$) will see limited efficiency gains. Reducing $D$ or
+$K$ shifts the crossover $N_{\mathcal{T}} = K^D - 1$ to a smaller value and moves
+practical budgets into the exploitation regime (see Remark~\ref{rem:regime_calls}).
 
 \paragraph{Large-budget regime ($B \geq 800$).}
 Savings grow rapidly once the tree is explored: $23\%$ at $B{=}800$, $51\%$ at

@@ -215,45 +215,40 @@ and the verifier is not called.  (In the implementation this is enforced by the
 \end{proof}
 
 \begin{proof}[Proof of Theorem~\ref{thm:calls}]
+
+\noindent\textbf{Part (a): Single-verification ceiling.}
 By Lemma~\ref{lem:single_verify}, $\mathcal{B}(\pi) \leq |\mathcal{T}| \leq N_\mathcal{T}$,
-where $N_\mathcal{T}$ is the number of non-root nodes.
+where $N_\mathcal{T} = K^D - 1$ is the number of non-root nodes.  Since $K$ and $D$
+are fixed problem parameters, $N_\mathcal{T}$ is a constant independent of $T$, and
+the call fraction $\mathcal{B}/T \leq N_\mathcal{T}/T \to 0$ as $T \to \infty$.
 
 \medskip
-\noindent\textbf{Sub-linear rate.}
-Since $K$ and $D$ are fixed problem parameters, $N_\mathcal{T} \leq K^D$ is a constant
-with respect to $T$.  As $T \to \infty$ with $K, D$ fixed,
-$\sqrt{T}\log T \to \infty$ while $N_\mathcal{T}$ remains constant; hence
-$\mathcal{B}(\pi) \leq N_\mathcal{T} = O(1) = O(\sqrt{T}\log T)$.
+\noindent\textbf{Part (b): Threshold-dependent refinement.}
+A call at step $t$ requires $\delta_t = L \cdot |d(s_t) - d(s_\mathrm{anc})| > \tau_t = \gamma/\sqrt{t}$.
+Since depths lie in $\{0,\ldots,D\}$, we have $\delta_t \leq LD$ always.
+When $\tau_t \geq LD$---equivalently, $t \leq (\gamma/(LD))^2 =: T_\mathrm{free}$---the
+threshold dominates every possible depth gap, so no call is triggered.
+Therefore $\mathcal{B}(\pi) \leq |\{t : t > T_\mathrm{free}\}| = \max(0, T - T_\mathrm{free})$.
+Combining with part (a):
+\[
+  \mathcal{B}(\pi) \;\leq\; \min\!\bigl(N_\mathcal{T},\; \max(0,\, T - T_\mathrm{free})\bigr).
+\]
 
 \medskip
-\noindent\textbf{Explicit crossover.}
-The bound $N_\mathcal{T} \leq \sqrt{T}\log T$ holds for all
-$T \geq T^* := N_\mathcal{T}^2 / (\log N_\mathcal{T})^2$.
-For $T < T^*$ (the exploration regime), $\mathcal{B}(\pi) \leq T$, which is trivially
-sub-linear relative to the compute budget $T$ but exceeds $\sqrt{T}\log T$.
-In this regime the algorithm operates close to the uniform baseline and the
-efficiency guarantee is the $O(\sqrt{T\log K})$ regret bound (Theorem~\ref{thm:main}),
-not the call-count bound.
+\noindent\textbf{Part (c): Savings fraction.}
+Immediate from part (a): $\mathcal{B}(\pi)/T \leq N_\mathcal{T}/T \to 0$.
 
 \medskip
 \noindent\textbf{Empirical correspondence.}
-For the paper's parameters ($K{=}2$, $D{=}12$, $N_\mathcal{T}{=}4095$), the crossover
-occurs at $T^* \approx 2.2 \times 10^6$.  In the experimental range
-$T \leq 3200 \ll T^*$, the algorithm is in the transition between exploration and
-exploitation; the empirical call count of $\approx 1.9\sqrt{T}\log T$ reflects this
-crossover dynamics.  We state the formal sub-linear bound as an asymptotic claim
-($T \to \infty$, $K, D$ fixed); the empirical $O(\sqrt{T}\log T)$ rate is consistent
-with but not implied by the bound in the experimental regime.
+For the paper's parameters ($K{=}2$, $D{=}12$, $N_\mathcal{T}{=}4095$,
+$\gamma{=}1.0$, $L{=}0.35$): $T_\mathrm{free} = (1.0/(0.35 \times 12))^2 \approx 0.06$,
+so the call-free phase is negligible.  In the experimental range $T \leq 3200$
+(exploration regime, $T \ll N_\mathcal{T}$), calls grow approximately as
+$1.9\sqrt{T}\log T$ empirically.  The formal bound $N_\mathcal{T} = 4095$ is not tight
+here; it becomes tight in the exploitation regime ($T \gg N_\mathcal{T}$).
+A tighter bound matching the empirical rate would require analysing UCT's traversal
+concentration, which we leave to future work.
 \end{proof}
-
-\begin{remark}
-The gap between the formal bound ($\mathcal{B} \leq N_\mathcal{T}$) and the empirical
-rate ($1.9\sqrt{T}\log T$) arises because neither is tight in the transition regime
-$T \approx N_\mathcal{T}$: the true call count lies between $\sqrt{T}\log T$ and
-$N_\mathcal{T} = K^D$.  A tighter bound matching the empirical $O(\sqrt{T}\log T)$
-rate would require a detailed analysis of UCT's traversal pattern (how quickly it
-concentrates visits on the optimal subtree), which we leave to future work.
-\end{remark}
 
 \subsection{Proof of Theorem~\ref{thm:lower}}
 \label{app:lower}

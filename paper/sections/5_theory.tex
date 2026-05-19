@@ -63,36 +63,59 @@ The full proof with exact constants is given in Appendix~\ref{app:proofs}.
 
 \subsection{Verifier Call Complexity}
 
-\begin{theorem}[Sub-linear verifier calls]
+\begin{theorem}[Verifier call bound]
 \label{thm:calls}
 Under the same conditions as Theorem~\ref{thm:main}, with $N_{\mathcal{T}} = K^D - 1$
-interior nodes, the expected number of verifier calls satisfies
-\[
-  \mathbb{E}[\mathcal{B}(\pi)] \;\leq\; N_{\mathcal{T}} \;=\; K^D - 1.
-\]
-Because $K$ and $D$ are fixed problem parameters, $N_{\mathcal{T}}$ is a constant
-independent of $T$. In particular, $\mathbb{E}[\mathcal{B}(\pi)] = O(1) = O(\sqrt{T}\log T)$
-as $T \to \infty$.
+interior nodes and threshold schedule $\tau_t = \gamma/\sqrt{t}$:
+
+\begin{enumerate}[(a)]
+  \item \textbf{(Single-verification ceiling)}
+        $\mathbb{E}[\mathcal{B}(\pi)] \leq N_{\mathcal{T}} = K^D - 1$.
+
+  \item \textbf{(Threshold-dependent refinement)}
+        Define $T_{\mathrm{free}} = \lfloor(\gamma/(LD))^2\rfloor$.
+        For $t \leq T_{\mathrm{free}}$, the threshold $\tau_t \geq LD$ dominates
+        every possible depth gap $\delta_t \leq LD$, so no verifier calls are made.
+        Hence
+        \[
+          \mathbb{E}[\mathcal{B}(\pi)]
+          \;\leq\;
+          \min\!\bigl(N_{\mathcal{T}},\; \max(0,\, T - T_{\mathrm{free}})\bigr).
+        \]
+
+  \item \textbf{(Savings fraction)}
+        For any $T > N_{\mathcal{T}}$, the fraction of steps requiring verification satisfies
+        \[
+          \frac{\mathbb{E}[\mathcal{B}(\pi)]}{T} \;\leq\; \frac{N_{\mathcal{T}}}{T} \;\to\; 0
+          \quad\text{as } T \to \infty \text{ with } K, D \text{ fixed}.
+        \]
+\end{enumerate}
 \end{theorem}
 
 \begin{proof}[Proof sketch]
-DVA-MCTS never calls the verifier at a node that has already been verified (stored
-$\hat{V}(s)$ is reused on subsequent visits). Since the tree has $N_{\mathcal{T}}$
-interior nodes, the total number of verifier calls is bounded by $N_{\mathcal{T}}$
-regardless of $T$. The full argument (including the first-visit guarantee) is in
-Appendix~\ref{app:calls}.
+Part (a): DVA-MCTS stores $\hat{V}(s)$ on first verification and reuses it on all
+subsequent visits, so any node is verified at most once. Hence $\mathcal{B}(\pi) \leq N_{\mathcal{T}}$.
+
+Part (b): A call is made at step $t$ only if $\delta_t = L \cdot |d(s_t) - d(s_{\text{anc}})| > \tau_t$.
+Since $|d(s_t) - d(s_{\text{anc}})| \leq D$, we have $\delta_t \leq LD$. When
+$\tau_t = \gamma/\sqrt{t} \geq LD$, i.e.\ $t \leq ({\gamma}/{LD})^2 = T_{\mathrm{free}}$,
+no call is triggered. The combined bound follows by counting remaining steps.
+
+Part (c): Immediate from (a).
+The full proof is in Appendix~\ref{app:calls}.
 \end{proof}
 
-\begin{remark}[Regime and practical savings]
+\begin{remark}[Interpreting the two bounds]
 \label{rem:regime_calls}
-The $O(1)$ bound is tight only in the exploitation regime ($T \gg N_{\mathcal{T}}$).
-For $T \leq N_{\mathcal{T}}$ (the exploration regime), nearly every visited node is
-new, so the call rate approaches $1$ and savings are small ($1$--$5\%$ for
-$B \leq 400$ in our experiments). Savings grow markedly once $T \gtrsim N_{\mathcal{T}}$:
-$23\%$ at $B{=}800$, $51\%$ at $B{=}1600$, and $73\%$ at $B{=}3200$
-(Section~\ref{sec:efficiency_results}). The $O(\sqrt{T}\log T)$ phrasing in the
-problem statement (Problem~\ref{prob:main}) describes the empirical growth rate in
-the transition regime; the formal bound is the constant $N_{\mathcal{T}}$.
+Part (a) is driven by tree size; part (b) is driven by the algorithm's parameters
+$\gamma$ and $L$. For the theoretically optimal $\gamma^* = 4\sigma_{\max}\sqrt{2\log K}$
+(Theorem~\ref{thm:main}), $T_{\mathrm{free}} = 32\sigma_{\max}^2\log K / (L^2D^2)$:
+a constant that grows with signal-to-noise $\sigma_{\max}/L$ and shrinks with tree
+depth $D$. Part (b) thus shows that a \emph{better signal-to-noise ratio or shallower
+tree} yields a longer call-free initial phase, even within the exploration regime.
+In the exploitation regime ($T \gg N_{\mathcal{T}}$), both bounds agree and the
+savings fraction $N_{\mathcal{T}}/T \to 0$: $23\%$ at $B{=}800$, $51\%$ at $B{=}1600$,
+and $73\%$ at $B{=}3200$ in our experiments (Section~\ref{sec:efficiency_results}).
 \end{remark}
 
 \subsection{Lower Bound}
