@@ -1,0 +1,28 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Results (large JSON files — include summary only)
+results/*.json
+!results/summary.json
+
+# LaTeX build artifacts
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/missfont.log
+
+# Environment
+.env
+.venv/
+venv/
+*.pyc
+
+# macOS
+.DS_Store
