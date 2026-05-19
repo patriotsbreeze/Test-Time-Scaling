@@ -59,20 +59,28 @@ We answer this question affirmatively. Specifically:
     establishing that DVA-MCTS is rate-optimal (Theorem~\ref{thm:lower}).
 
   \item \textbf{Empirical validation.} Experiments with 50 independent runs confirm
-    the $O(\sqrt{T})$ regret rate (empirical slope $0.635$, $R^2 = 0.961$) and
-    demonstrate a $73\%$ reduction in verifier calls at $B{=}3200$ with only a
-    $2$ percentage-point accuracy gap relative to exhaustive verification
+    the $O(\sqrt{T})$ regret rate (empirical slope $0.635$, $R^2 = 0.961$).
+    In the large-budget synthetic regime ($B{=}3200$, $K^D{=}4{,}096$ nodes),
+    DVA-MCTS reduces verifier calls by $73\%$ with a $2$-percentage-point accuracy
+    gap; savings grow with budget as the algorithm enters the exploitation regime
+    ($T \gg K^D$). On $100$ real GSM8K problems (Math-Shepherd PRM), DVA-MCTS
+    achieves $8.5\%$ fewer calls at $0.4$-percentage-point cost, with larger gains
+    expected for PRMs with continuous score outputs
     (Section~\ref{sec:experiments}).
 \end{enumerate}
 
 \paragraph{Significance.}
 These results provide the first formal, regret-theoretic framework for adaptive
 verifier allocation. The sub-linear verifier budget translates directly to
-wall-clock inference savings in deployed systems: for a search budget of $T{=}1600$
-steps, DVA-MCTS requires $780$ verifier calls on average versus $1601$ for uniform
-allocation---a $2.1\times$ reduction---scaling to $3.7\times$ at $T{=}3200$.
-These savings are particularly valuable when the verifier is a large neural network
-(e.g., a $7$B PRM) executed on dedicated hardware.
+wall-clock inference savings in deployed systems. In the synthetic setting, once
+the tree is sufficiently explored ($T \gg K^D$), DVA-MCTS requires $862$ verifier
+calls at $B{=}3{,}200$ versus $3{,}200$ for uniform allocation---a $3.7\times$
+reduction. On real Math-Shepherd PRM data, the gain is $8.5\%$ due to the high
+effective Lipschitz constant of binary step labels; PRMs with smooth, continuous
+score outputs are expected to yield larger savings, as their score trajectories
+satisfy the Lipschitz assumption more tightly. These efficiency gains are
+particularly valuable when the verifier is a large neural network (e.g., a $7$B
+PRM) executed on dedicated hardware.
 
 \paragraph{Organization.}
 Section~\ref{sec:related} reviews related work. Section~\ref{sec:formulation}

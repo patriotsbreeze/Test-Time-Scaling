@@ -68,8 +68,10 @@
   \includegraphics[width=\linewidth]{figures/fig2_verifier_calls.pdf}
   \caption{
     Verifier call efficiency as a function of search budget $B$.
-    \textbf{(a)} Absolute verifier calls: DVA-MCTS grows as $O(\sqrt{B}\log B)$
-    versus $O(B)$ for Uniform Verification.
+    \textbf{(a)} Absolute verifier calls: DVA-MCTS is bounded by $N_{\mathcal{T}}{=}K^D{-}1$
+    (a constant), saturating well below $O(B)$ for Uniform Verification.
+    In the transition regime ($B \leq N_{\mathcal{T}}$), empirical counts grow as
+    ${\approx}1.9\sqrt{B}\log B$.
     \textbf{(b)} DVA-MCTS calls as a percentage of Uniform Verification calls,
     confirming the increasing efficiency advantage at larger budgets (Theorem~\ref{thm:calls}).
   }
@@ -119,13 +121,14 @@
   \centering
   \includegraphics[width=\linewidth]{figures/fig6_estimated_L.pdf}
   \caption{
-    Effect of using the estimated Lipschitz constant $\hat{L}{=}0.091$ instead
+    Effect of using the estimated Lipschitz constant $\hat{L}{=}0.139$ instead
     of the true $L{=}0.35$ ($T{=}400$, 50 runs).
     \textbf{(a)} Cumulative regret curves; the underestimated $\hat{L}$ yields
-    $43\%$ higher final regret.
+    $119\%$ higher final regret. The adaptive $L$ estimator (running max of
+    observed $|V(s){-}V(s')|/\Delta d$) closes $27\%$ of this gap.
     \textbf{(b)} Final regret and verifier call count side by side.
-    Using $\hat{L}$ saves $8\%$ of verifier calls at the cost of $43\%$ more
-    regret---a meaningful but non-catastrophic degradation (see
+    Fixed $\hat{L}$ saves $4\%$ of verifier calls at the cost of $119\%$ more
+    regret; the adaptive estimator recovers accuracy with minimal extra calls (see
     Section~\ref{sec:lhat} and Remark~\ref{rem:lhat}).
   }
   \label{fig:lhat}

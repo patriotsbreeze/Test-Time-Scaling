@@ -13,6 +13,10 @@ $R(T) = O\!\left(\sqrt{T \log K}\right)$ against the oracle while invoking the v
 $O(\sqrt{T}\log T)$ times, a sub-linear reduction relative to the search budget $T$.
 We further prove a matching $\Omega(\sqrt{T})$ lower bound, establishing rate-optimality.
 Experiments with 50 independent runs confirm that the empirical regret exponent
-is $0.635$, consistent with the $O(\sqrt{T})$ prediction, and that DVA-MCTS
-reduces verifier calls by $73\%$ at budget $B{=}3200$ while staying within
-$2$ percentage points of exhaustive-verification accuracy.
+is $0.635$, consistent with the $O(\sqrt{T})$ prediction. In the large-budget
+synthetic setting ($B{=}3200$), DVA-MCTS reduces verifier calls by $73\%$ while
+staying within $2$ percentage points of exhaustive-verification accuracy; savings
+are smaller at lower budgets, reflecting the exploration--exploitation crossover
+at $T \approx K^D$. On $100$ real GSM8K problems using Math-Shepherd PRM annotations,
+DVA-MCTS achieves an $8.5\%$ call reduction at $0.4$-percentage-point accuracy cost,
+with larger savings expected for PRMs with continuous (rather than binary) score outputs.

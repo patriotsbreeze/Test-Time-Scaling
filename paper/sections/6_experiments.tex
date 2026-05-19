@@ -257,3 +257,16 @@ The $L$ parameter requires calibration to the target PRM: $L{=}0.35$ is appropri
 for the synthetic Gaussian-noise setting; $L{\approx}0.50$ for Math-Shepherd binary
 labels. The adaptive $L$ estimator of Section~\ref{sec:lhat} would identify this
 automatically from early verifier observations, eliminating the need for manual tuning.
+
+\paragraph{Lipschitz caveat for binary PRMs.}
+Math-Shepherd uses binary step labels ($+/-$), so PRM scores can jump by $1.0$ in
+a single step ($L_{\max}{=}1.0$). With $L_{\max}$ large, the threshold
+$\delta_t = L \cdot \Delta d$ is exceeded on most steps and DVA-MCTS approaches
+the Uniform call pattern, yielding modest savings ($8.5\%$). By contrast, PRMs
+with \emph{continuous} score outputs (e.g., calibrated log-probabilities or
+regression-trained reward models) satisfy the Lipschitz assumption more tightly:
+score changes are spread smoothly across steps rather than concentrated in binary
+transitions. For such PRMs, the effective $L$ is closer to the synthetic
+$L{=}0.35$, and DVA-MCTS is expected to recover savings in the $24$--$73\%$ range
+observed in the synthetic experiments. Quantifying this on a production-scale continuous PRM is an important
+direction for future work (see Section~\ref{sec:conclusion}).
