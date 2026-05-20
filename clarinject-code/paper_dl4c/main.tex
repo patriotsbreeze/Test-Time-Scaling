@@ -1,0 +1,113 @@
+\documentclass{article}
+
+% ICML 2026 style — submission (double-blind, no [accepted])
+\usepackage{icml2026}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{microtype}
+\usepackage{graphicx}
+\setlength{\emergencystretch}{2em}
+
+% Aggressive float placement
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.5}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.7}
+\setcounter{topnumber}{4}
+\setcounter{bottomnumber}{3}
+\setcounter{totalnumber}{6}
+
+% FloatBarrier without placeins package
+\makeatletter
+\newcommand{\FloatBarrier}{%
+  \vskip\z@skip\@nobreakfalse\addpenalty\@secpenalty}
+\makeatother
+
+% Colorblind-safe colors
+\definecolor{execblue}{HTML}{0072B2}
+\definecolor{clariorange}{HTML}{D55E00}
+\definecolor{defgreen}{HTML}{009E73}
+
+\newcommand{\tax}{\Delta_{\mathrm{clar}}}
+\newcommand{\asr}{\mathrm{ASR}}
+\newcommand{\tsr}{\mathrm{TSR}}
+\newcommand{\ccr}{\mathrm{CCR}}
+
+\icmltitlerunning{The Clarification Tax}
+
+\begin{document}
+
+\twocolumn[
+\icmltitle{The Clarification Tax: Measuring and Mitigating the\\
+Safety Cost of Collaborative Coding Agents}
+
+\begin{icmlauthorlist}
+\icmlauthor{Anonymous Author(s)}{anon}
+\end{icmlauthorlist}
+
+\icmlaffiliation{anon}{Anonymous Institution}
+\icmlcorrespondingauthor{Anonymous Author(s)}{anonymous@institution.edu}
+\icmlkeywords{coding agents, prompt injection, security, human-AI collaboration, LLMs}
+
+\vskip 0.3in
+]
+
+\printAffiliationsAndNotice{}
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\input{sections/1_introduction}
+\FloatBarrier
+\input{sections/2_related_work}
+\FloatBarrier
+\input{sections/3_problem_formulation}
+\FloatBarrier
+\input{sections/4_benchmark}
+\FloatBarrier
+\input{sections/5_defenses}
+\FloatBarrier
+\input{sections/6_experiments}
+\FloatBarrier
+\input{sections/7_conclusion}
+
+% -------------------------------------------------------
+% Impact Statement (required; does not count toward page limit)
+% -------------------------------------------------------
+\section*{Impact Statement}
+
+This paper studies a security vulnerability in collaborative coding agents: the
+possibility that adversarial content injected through the clarification-answer channel
+can redirect agent behavior in harmful ways. The intended societal impact is
+\emph{positive}---by surfacing and quantifying this vulnerability, we enable
+practitioners to build safer agent systems.
+
+All adversarial payloads used in our benchmark are synthetic and clearly labeled as
+test cases. They are evaluated inside a sandboxed environment with no real network
+access, and exfiltration targets use the reserved domain \texttt{example-sandbox.invalid}.
+No real systems are targeted or harmed by this research.
+
+We acknowledge a dual-use risk: detailed knowledge of injection patterns could be
+misused. We mitigate this by (1) restricting our study to injection styles already
+documented in the public adversarial-prompting literature, and (2) pairing each
+attack analysis with a corresponding defense evaluation. We follow responsible
+disclosure practices: if our benchmark reveals undocumented attack vectors, we will
+coordinate with model providers before public release.
+
+% -------------------------------------------------------
+\bibliographystyle{abbrvnat}
+\bibliography{references}
+
+\appendix
+\input{sections/A_appendix}
+
+\end{document}
