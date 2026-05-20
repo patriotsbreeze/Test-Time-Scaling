@@ -169,10 +169,16 @@ def fig3_pareto():
                     textcoords="offset points", xytext=offset.get(defense, (5, 5)),
                     fontsize=7.5)
 
-    # Execution baseline horizontal line
+    # Execution baseline — 1−ASR_exec = 0.24, below ylim=0.30, so it would be
+    # invisible as a horizontal line.  Show it instead as a labelled arrow on
+    # the y-axis spine so the reference value is still communicated.
     exec_asr = get(agg, "execution", "none", "asr")
-    ax.axhline(1 - exec_asr, color=EXEC_COLOR, linestyle="--", linewidth=1.0,
-               alpha=0.7, label=f"Exec. baseline (1−ASR={1-exec_asr:.2f})")
+    exec_sec = 1 - exec_asr   # = 0.24 — below the visible area
+    ax.annotate(f"Exec. floor\n(1−ASR={exec_sec:.2f})",
+                xy=(0.3, 0.30), xytext=(0.32, 0.355),
+                fontsize=7, color=EXEC_COLOR, alpha=0.85,
+                arrowprops=dict(arrowstyle="-|>", color=EXEC_COLOR,
+                                lw=0.8, alpha=0.7))
 
     ax.set_xlabel("Collaboration Quality (CCR)", fontsize=11)
     ax.set_ylabel(r"Attack Resistance ($1 - \mathrm{ASR}_{\mathrm{clar}}$)", fontsize=11)
@@ -181,12 +187,8 @@ def fig3_pareto():
     ax.set_xlim(0.3, 0.85)
     ax.set_ylim(0.3, 1.05)
 
-    # Legend: upper-left corner is the only clear quadrant.
-    # D1 is lower-right (0.71, 0.39), No Defense is center-left (0.49, 0.56),
-    # D3 is upper-center (0.56, 0.99), D2 is upper-right (0.72, 0.92).
-    # Upper-left (x<0.48, y>0.65) has no data points.
-    ax.legend(fontsize=8, loc="upper left", frameon=True, framealpha=0.92,
-              borderpad=0.6)
+    # No legend box — every dot is directly labelled with text above, so the
+    # legend is redundant and only causes overlaps with the data points.
     ax.grid(alpha=0.2)
     ax.spines[["top","right"]].set_visible(False)
 
