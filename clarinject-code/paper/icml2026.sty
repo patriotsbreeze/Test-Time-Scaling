@@ -52,7 +52,16 @@
 }
 
 %% Title/author machinery
-\newcommand{\icmltitle}[1]{\gdef\@icmltitle{#1}}
+\newcommand{\icmltitle}[1]{%
+  \gdef\@icmltitle{#1}%
+  % Render the title block: rule, title text, rule
+  \begin{center}
+    \rule{\linewidth}{1pt}\par\vskip 6pt
+    {\Large\bfseries #1 \par}
+    \vskip 4pt\rule{\linewidth}{1pt}
+  \end{center}
+  \vskip 0.1in
+}
 \newcommand{\icmltitlerunning}[1]{\gdef\@icmltitlerunning{#1}}
 \newcommand{\icmlkeywords}[1]{\gdef\@icmlkeywords{#1}}
 \newcommand{\icmlcorrespondingauthor}[2]{}
@@ -65,13 +74,14 @@
 \newcommand\icmlaffiliation[2]{%
   \expandafter\gdef\csname @icmlaffil#1\endcsname{#2}%
 }
-\newenvironment{icmlauthorlist}{}{}
+\newenvironment{icmlauthorlist}{%
+  \begin{center}\bfseries
+}{%
+  \end{center}\vskip 0.05in
+}
 
 \newcommand{\printAffiliationsAndNotice}[1]{%
-  \begin{center}
-    \@ifundefined{@icmlauth1}{}{\textbf{\csname @icmlauth1\endcsname}}%
-  \end{center}
-  \vskip 0.2in
+  \vskip 0.1in
 }
 
 %% Header/footer
