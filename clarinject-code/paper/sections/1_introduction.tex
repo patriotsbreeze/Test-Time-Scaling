@@ -37,12 +37,17 @@ We close both gaps for the specific setting of coding agents.
   \item A \textbf{matched empirical measurement} of the clarification tax across model
     families, using a controlled design that holds adversarial payloads fixed across
     execution and clarification conditions (Section~\ref{sec:experiments}).
-  \item A \textbf{channel-vs-state decomposition} that tests whether the amplification
-    is due to the delivery channel or the agent's interaction state (Section~\ref{sec:decompose}).
-  \item Three \textbf{provenance-aware defenses} and the first collaboration--security
-    Pareto frontier for coding agents (Section~\ref{sec:defenses}).
-  \item A concrete \textbf{deployment recommendation} for agent builders
-    (Section~\ref{sec:conclusion}).
+  \item An \textbf{unexpected negative tax} for 8B-class models: the clarification
+    channel (ASR $= 0.44$) is substantially \emph{safer} than the tool-output channel
+    (ASR $= 0.76$), rejecting the ASPI replication hypothesis and suggesting the
+    amplification effect is specific to frontier-scale instruction-hierarchy training
+    (Section~\ref{sec:main-results}).
+  \item Three \textbf{provenance-aware defenses}---prompt tagging, structured extraction,
+    and plan-diff gating---with the first collaboration--security Pareto frontier for
+    coding agents, including the finding that prompt tagging \emph{increases} ASR by
+    17 points due to tag-authority inversion in 8B models (Section~\ref{sec:defenses}).
+  \item A concrete \textbf{deployment recommendation} (D2: Structured Extraction)
+    grounded in the Pareto analysis (Section~\ref{sec:conclusion}).
 \end{enumerate}
 
 \paragraph{Scope and ethics.} This is defensive security research. All adversarial

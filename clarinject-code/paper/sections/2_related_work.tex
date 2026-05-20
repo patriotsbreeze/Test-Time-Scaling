@@ -9,10 +9,10 @@ liu2024promptinjectionattack}. \citet{yi2023benchmarkingpromptinjection} provide
 systematic taxonomy of injection vectors. The dominant mitigation strategy is
 instruction-hierarchy enforcement, in which the model is trained to give lower trust
 to content from external sources than to system-level instructions~\citep{
-openai2024instructhierarchy, anthropic2024instructionhierarchy}. Our work complements
-this line by identifying an interaction-\emph{state} amplifier that is orthogonal
-to the delivery channel: the same payload is more dangerous when it arrives as a
-clarification answer.
+openai2024instructhierarchy, anthropic2024instructionhierarchy}. Our work complements this line by examining whether the \emph{clarification interaction
+state} amplifies injection susceptibility in coding agents---and finding that for 8B-class
+models, the tool-output channel is in fact the dominant risk, motivating channel-specific
+defenses.
 
 \paragraph{Clarification in coding agents and HCI.}
 The value of clarification-seeking in task-oriented agents has been studied in
@@ -22,9 +22,9 @@ resolution through targeted questions significantly improves code quality on
 underspecified benchmarks. HiL-Bench~\citep{hilbench2024} introduces a formalized
 framework for ``blocked information'' scenarios that require human-in-the-loop
 interaction to resolve. ClarEval~\citep{clareval2024} proposes metrics for evaluating
-clarification quality beyond task completion. Our work introduces the first \emph{safety}
-dimension to this literature: clarification has a security cost that practitioners
-need to account for.
+clarification quality beyond task completion. Our work introduces the first \emph{security} dimension to this literature: the
+clarification channel is a distinct attack surface whose risk profile---relative to
+tool-output injection---is model-scale dependent and requires explicit measurement.
 
 \paragraph{Security of coding agents.}
 \citet{pearce2022asleepkeyboard} study Copilot-generated code for security vulnerabilities

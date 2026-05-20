@@ -52,11 +52,13 @@ whether it can be reduced.
 We test four hypotheses:
 
 \begin{description}
-  \item[H1 (Replication)] $\tax > 0$ for coding agents across model families.
-  \item[H2 (Channel vs.~State)] The tax is partly attributable to the agent's
-    \emph{interaction state} (having just asked a question), not only to the delivery
-    channel.
-  \item[H3 (Mitigation)] Provenance-aware defenses reduce $\tax$ significantly.
+  \item[H1 (Replication)] $\tax \neq 0$ for coding agents; specifically, we test whether
+    $\tax > 0$ as reported by ASPI for frontier general agents.
+  \item[H2 (Scale Dependence)] The sign and magnitude of $\tax$ depend on model scale
+    and instruction-hierarchy training, with sub-frontier models potentially showing
+    $\tax < 0$.
+  \item[H3 (Mitigation)] Provenance-aware defenses reduce clarification-channel ASR
+    significantly without eliminating collaboration utility.
   \item[H4 (Trade-off)] Stronger defenses impose greater collaboration cost
     (measured by $\ccr$, the clarification compliance rate).
 \end{description}
