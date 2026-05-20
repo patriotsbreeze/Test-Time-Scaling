@@ -28,14 +28,15 @@ for frontier models, the clarification tax is \emph{negative}: the tool-output
 channel is more dangerous than the clarification channel for Llama-3.1-8B.
 95\% bootstrap CIs in brackets.}
 \label{tab:main}
-\small
+\small\setlength{\tabcolsep}{5pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lccc}
 \toprule
 \textbf{Model} & $\asr_{\mathrm{exec}}$ & $\asr_{\mathrm{clar}}$ & $\tax$ \\
 \midrule
-Llama-3.1-8B & 0.760 [0.653--0.853] & 0.440 [0.333--0.547] & \textbf{$-$0.320} \\
+Llama-3.1-8B & 0.760 {\scriptsize[0.653--0.853]} & 0.440 {\scriptsize[0.333--0.547]} & \textbf{$-$0.320} \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 Table~\ref{tab:main} reveals a striking reversal of the expected effect.

@@ -13,7 +13,25 @@
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{microtype}
+\setlength{\emergencystretch}{2em}  % give LaTeX room to avoid overfull hboxes
 \usepackage{graphicx}
+% FloatBarrier: flush pending floats at section boundaries
+\makeatletter
+\newcommand{\FloatBarrier}{%
+  \vskip\z@skip
+  \@nobreakfalse
+  \addpenalty\@secpenalty
+}
+\makeatother
+
+% Aggressive float placement — prevent large blank gaps
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.5}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.7}
+\setcounter{topnumber}{4}
+\setcounter{bottomnumber}{3}
+\setcounter{totalnumber}{6}
 
 % Colorblind-safe colors
 \definecolor{execblue}{HTML}{0072B2}
@@ -51,11 +69,17 @@ Safety Cost of Collaborative Coding Agents}
 \end{abstract}
 
 \input{sections/1_introduction}
+\FloatBarrier
 \input{sections/2_related_work}
+\FloatBarrier
 \input{sections/3_problem_formulation}
+\FloatBarrier
 \input{sections/4_benchmark}
+\FloatBarrier
 \input{sections/5_defenses}
+\FloatBarrier
 \input{sections/6_experiments}
+\FloatBarrier
 \input{sections/7_conclusion}
 
 \bibliographystyle{abbrvnat}

@@ -42,22 +42,23 @@ Each scenario is a JSON object with the following fields:
 
 We define five attack categories covering distinct harm types:
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{ClarInject-Code attack categories and example detection patterns.}
 \label{tab:categories}
-\small
+\small\setlength{\tabcolsep}{4pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lll}
 \toprule
 \textbf{Category} & \textbf{Harm} & \textbf{Detection} \\
 \midrule
 \texttt{backdoor} & Hidden auth bypass & Regex on bypass code \\
-\texttt{secret\_exfil} & Env vars / keys sent to URL & Regex on network call \\
+\texttt{secret\_exfil} & Credentials sent to URL & Regex on network call \\
 \texttt{safetycheck\_removal} & Removes input validation & Regex on removed check \\
-\texttt{dependency\_poison} & Typosquatted package added & Substring on pkg name \\
-\texttt{destructive\_command} & rm, DROP TABLE, FLUSHALL & Regex on destructive op \\
+\texttt{dependency\_poison} & Typosquatted package & Substring on pkg name \\
+\texttt{destructive\_command} & rm / DROP TABLE / FLUSHALL & Regex on destructive op \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \subsection{Injection Style}

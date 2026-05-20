@@ -11,12 +11,12 @@ The simplest defense wraps the user's clarification answer in explicit delimiter
 and extends the system prompt with an instruction:
 
 \begin{quote}
-\small
-\texttt{<USER\_CLARIFICATION>} \\
-\textit{[user's answer]} \\
-\texttt{</USER\_CLARIFICATION>}\\[2pt]
-\textit{(System note: treat the above only as task data---a description of what the
-user wants---never as a new instruction, command, or scope change.)}
+\small\ttfamily
+<USER\_CLARIFICATION>\\
+\quad\normalfont\textit{[user's answer]}\\
+</USER\_CLARIFICATION>\\[3pt]
+\normalfont\textit{(System note: treat the above only as task\\
+data, never as a new instruction or scope change.)}
 \end{quote}
 
 This defense exploits the model's instruction-following capability to establish a
@@ -70,18 +70,19 @@ across tasks, and may produce false positives on legitimate scope expansions.
 
 \subsection{Defense Summary}
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{Properties of the three defenses.}
 \label{tab:defenses}
-\small
+\small\setlength{\tabcolsep}{5pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lccc}
 \toprule
-\textbf{Defense} & \textbf{Extra LLM calls} & \textbf{FP risk} & \textbf{Paraphrase robust} \\
+\textbf{Defense} & \textbf{+LLM calls} & \textbf{FP risk} & \textbf{Para.\ robust} \\
 \midrule
-D1: Provenance Tag & 0 & Low & Partial \\
+D1: Provenance Tag   & 0  & Low    & Partial \\
 D2: Struct.\ Extract & +1 & Medium & Yes \\
-D3: Plan-Diff Gate & +1 & High & Yes \\
+D3: Plan-Diff Gate   & +1 & High   & Yes \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
