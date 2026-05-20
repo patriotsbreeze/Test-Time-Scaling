@@ -1,7 +1,11 @@
 \documentclass{article}
 
-% ICML 2026 style
+% ICML 2026 style (accepted/camera-ready version)
 \usepackage[accepted]{icml2026}
+
+% times.sty (loaded by icml2026) requests Courier OT1 (pcrr7t) which is not
+% installed; override monospace with LM Typewriter. Body text stays Times Roman.
+\renewcommand{\ttdefault}{lmtt}
 
 \usepackage{amsmath}
 \usepackage{amssymb}

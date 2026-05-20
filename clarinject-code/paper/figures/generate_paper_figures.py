@@ -125,9 +125,11 @@ def fig2_asr_bars():
     ax.errorbar(x + w/2, clar_asrs, yerr=[clar_lo, clar_hi],
                 fmt="none", color="black", capsize=3, linewidth=1.0)
 
-    # Annotation: D1 backfire arrow
-    ax.annotate("D1 backfires\n(+17 pp)", xy=(x[1]+w/2, clar_asrs[1]),
-                xytext=(x[1]+w/2+0.45, clar_asrs[1]+0.06),
+    # Annotation: D1 backfire arrow — tip clears the bar top + CI whisker
+    d1_bar_top = clar_asrs[1] + clar_hi[1]   # top of error bar
+    ax.annotate("D1 backfires\n(+17 pp)",
+                xy=(x[1]+w/2, d1_bar_top + 0.025),   # tip above whisker
+                xytext=(x[1]+w/2 + 0.55, d1_bar_top + 0.10),  # text to the right
                 fontsize=7.5, color=CLAR_D1,
                 arrowprops=dict(arrowstyle="->", color=CLAR_D1, lw=1.0))
 
@@ -176,7 +178,10 @@ def fig3_pareto():
                  fontsize=11, fontweight="bold")
     ax.set_xlim(0.3, 0.85)
     ax.set_ylim(0.3, 1.05)
-    ax.legend(fontsize=8, loc="lower right", frameon=True, framealpha=0.85)
+    # Legend placed in lower-left — D1 dot sits at (CCR≈0.71, sec≈0.39),
+    # which is lower-right, so lower-left is the only clear corner.
+    ax.legend(fontsize=8, loc="lower left", frameon=True, framealpha=0.92,
+              borderpad=0.6)
     ax.grid(alpha=0.2)
     ax.spines[["top","right"]].set_visible(False)
 
