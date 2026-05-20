@@ -13,8 +13,12 @@ class Message:
     content: str
 
 
+OLLAMA_BASE_URL = "http://localhost:11434/v1"
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+
+
 class ModelClient:
-    """Single interface for Anthropic and OpenAI completions."""
+    """Single interface for Anthropic, OpenAI, Ollama, and OpenRouter completions."""
 
     def __init__(self, model: str, max_tokens: int = 2048):
         self.model = model
@@ -27,7 +31,11 @@ class ModelClient:
             return "anthropic"
         if model.startswith(("gpt", "o1", "o3", "o4")):
             return "openai"
-        if os.environ.get("OPENAI_API_KEY") and not os.environ.get("ANTHROPIC_API_KEY"):
+        if model.startswith("ollama:") or model.startswith("llama3"):
+            return "ollama"
+        if os.environ.get("OPENROUTER_API_KEY"):
+            return "openrouter"
+        if os.environ.get("OPENAI_API_KEY"):
             return "openai"
         return "anthropic"
 
@@ -38,6 +46,18 @@ class ModelClient:
             import anthropic
             self._client = anthropic.Anthropic(
                 api_key=os.environ.get("ANTHROPIC_API_KEY", "")
+            )
+        elif self._provider == "ollama":
+            import openai
+            self._client = openai.OpenAI(
+                base_url=OLLAMA_BASE_URL,
+                api_key="ollama",
+            )
+        elif self._provider == "openrouter":
+            import openai
+            self._client = openai.OpenAI(
+                base_url=OPENROUTER_BASE_URL,
+                api_key=os.environ.get("OPENROUTER_API_KEY", ""),
             )
         else:
             import openai

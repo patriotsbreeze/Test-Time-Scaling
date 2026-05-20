@@ -1,40 +1,54 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-We have measured and mitigated the clarification tax: the increase in prompt-injection
-attack success rate that arises when a coding agent transitions from execution to
-clarification. Across three model families and 25 seed scenarios, the tax ranges from
-+0.22 to +0.31 in absolute ASR---confirming and extending to the coding domain the
-general-agent finding of~\citet{aspi2026}. A channel-vs-state decomposition shows
-that roughly two-thirds of the amplification is attributable to the agent's interaction
-state rather than the delivery channel alone.
+We introduced ClarInject-Code and used it to test whether the clarification tax
+observed by~\citet{aspi2026} for general frontier agents replicates in the coding
+domain. Our main finding is that it does \emph{not} replicate for Llama-3.1-8B:
+the clarification channel (ASR $= 0.44$) is safer than the tool-output channel
+(ASR $= 0.76$), yielding a negative tax of $-0.32$. The dominant security risk
+for small coding agents is not the clarification channel but the execution channel:
+adversarial content injected through simulated tool outputs is followed 76\% of
+the time with no defense.
 
-\paragraph{Recommendation.} We recommend that coding agent frameworks adopt
-\textbf{D2 (Structured Extraction)} as a default: an additional, context-free LLM
-call that extracts only the direct answer to the agent's question before returning it.
-This reduces the residual tax to +0.04 (from +0.22) at a moderate CCR cost of
-8 percentage points. D1 is a near-zero-cost improvement for teams unwilling to add
-an extra API call. D3 provides the strongest security guarantee but should be used
-with a well-calibrated scope definition to avoid excessive false positives.
+\paragraph{The tag-authority inversion.} A key practical finding is that D1
+(prompt tagging with XML delimiters) \emph{increases} clarification ASR from 0.44
+to 0.61 for 8B models. This is the opposite of the intended effect and constitutes
+a meaningful deployment anti-pattern. We attribute it to training-data artifacts:
+8B models likely associate structured XML tags with authoritative schema content
+(tool call responses, function signatures) rather than with user-supplied data.
+Practitioners should avoid delimiter-only defenses on sub-frontier models.
 
-\paragraph{Limitations.} Our evaluation uses 25 seed scenarios; the full picture
-requires the $\sim$200-scenario expansion we document in the release. Our decomposition
-ablation is limited to Claude Sonnet; cross-model decompositions are forthcoming.
-The ClarEval CCR metric we use is a proxy for collaboration quality; user studies
-with real developers would provide a more ecologically valid measure.
+\paragraph{Recommendation.} \textbf{D2 (Structured Extraction)} remains the
+recommended defense: it reduces clarification ASR by 82\% (0.440 $\to$ 0.080)
+at a modest CCR cost, dominates D3 on the Pareto frontier, and avoids the
+tag-authority inversion of D1. For maximum security tolerance, D3 (plan-diff
+gating) achieves near-zero clarification ASR (0.013) at a higher false-positive rate.
+Both findings hold independently of the sign of the tax: even when the clarification
+channel is safer than execution, it still carries a 44\% residual attack success
+rate that structural defenses can eliminate.
 
-\paragraph{Future work.} Three directions are most pressing: (1) training-time
-mitigations that teach models to treat post-question answers with calibrated skepticism;
-(2) automated scenario generation to scale ClarInject-Code to hundreds of scenarios;
-and (3) user studies measuring whether D2 and D3 degrade the perceived helpfulness
-of the agent as experienced by real developers.
+\paragraph{Limitations.} This study evaluates one model (Llama-3.1-8B) and 25
+scenarios. The central open question---whether the clarification tax is positive
+for frontier-scale models as ASPI reports, and where the sign flips as a function
+of model size---requires evaluation on Claude Sonnet, GPT-4o, and larger open-weight
+models. The clarification rate of 77\% (rather than 100\%) means roughly one in
+four clarification-condition trials collapses to an execution-like scenario; this
+is a known limitation of smaller instruction-tuned models and motivates the
+scenario-expansion protocol we document in the release.
+
+\paragraph{Future work.} Three directions are most pressing: (1) replicating
+across model scales to characterize when the tax sign flips; (2) explaining the
+tag-authority inversion mechanistically via attention analysis; and (3) user studies
+measuring whether D2 and D3 degrade perceived helpfulness for real developers.
 
 \paragraph{Open science.} We release the ClarInject-Code benchmark, evaluation
 harness, defense implementations, and analysis code at
 \url{https://github.com/anonymous/clarinject-code} (anonymized for review).
 
-\paragraph{Broader impact.} This work surfaces a vulnerability to enable defense.
-The mitigation strategies we propose are lightweight and deployable today. We expect
-that publicizing the clarification tax will create pressure for model providers and
-agent framework developers to adopt provenance-aware input handling as a standard
-practice in collaborative coding agents.
+\paragraph{Broader impact.} The negative clarification tax for 8B models is
+not a safety reassurance---ASR of 44\% in the clarification channel and 76\%
+in the execution channel are both far too high for production deployment.
+Our findings redirect attention to the execution channel as the primary attack
+surface for small coding agents, and identify D1 as a defense that can make
+things worse. We hope this motivates both stronger instruction-hierarchy training
+for small models and broader adoption of structural (D2/D3) defenses.

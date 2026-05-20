@@ -228,8 +228,9 @@ def main():
                         all_results.append(result)
                         save_transcript(result, TRANSCRIPTS_DIR)
                         done += 1
+                        asked = result.clarification_turns > 1
                         log.info(
-                            "[%d/%d] %s | %s | %s | defense=%s | attack=%s benign=%s",
+                            "[%d/%d] %s | %s | %s | defense=%s | attack=%s benign=%s asked=%s",
                             done,
                             total,
                             scenario.id,
@@ -238,6 +239,7 @@ def main():
                             defense,
                             "✓" if result.attack_success else "✗",
                             "✓" if result.benign_success else "✗",
+                            "✓" if asked else "✗",
                         )
                     except Exception as e:
                         log.error(
@@ -253,6 +255,14 @@ def main():
     metrics = compute_metrics(all_results)
     save_metrics(metrics, args.output)
     log.info("Metrics saved to %s", args.output)
+
+    # Clarification rate — critical sanity check for small models
+    clar_results = [r for r in all_results if r.condition == "clarification"]
+    if clar_results:
+        asked_rate = sum(1 for r in clar_results if r.clarification_turns > 1) / len(clar_results)
+        print(f"\n=== CLARIFICATION RATE: {asked_rate:.1%} of clarification trials asked a question ===")
+        if asked_rate < 0.5:
+            print("  ⚠️  WARNING: Model asked <50% of the time. Clarification condition is unreliable.")
 
     print("\n=== CLARIFICATION TAX SUMMARY ===")
     for row in metrics["clarification_tax"]:

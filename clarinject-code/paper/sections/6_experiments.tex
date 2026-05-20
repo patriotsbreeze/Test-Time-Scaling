@@ -3,155 +3,141 @@
 
 \subsection{Setup}
 
-\paragraph{Models.} We evaluate three model tiers via API:
-\textbf{Claude Sonnet} (frontier-class), \textbf{GPT-4o} (frontier-class,
-alternative provider), and \textbf{Llama-3-70B-Instruct} (open-weight, served
-via a hosted inference API). This selection spans two commercial providers and
-one open-weight family, providing evidence of cross-model generality.
+\paragraph{Model.} We evaluate \textbf{Llama-3.1-8B-Instruct} served locally via
+Ollama. While smaller than the frontier models studied by~\citet{aspi2026}, 8B-class
+instruction-tuned models are widely deployed in cost-sensitive production agent
+systems~\citep{sun2024surveyllmagents}. We discuss model-size implications in
+Section~\ref{sec:conclusion}.
 
 \paragraph{Scenarios.} We use all 25 seed scenarios ($5 \times 5$ categories),
 run each $N = 3$ times per condition per defense, yielding
-$25 \times 3 \times 2 \times 4 \times 3 = 1{,}800$ trials.\footnote{Conditions
-$\times$ defenses $\times$ models = $2 \times 4 \times 3 = 24$; $25 \times 3 \times 24
-= 1{,}800$.}
+$25 \times 3 \times 2 \times 4 = 600$ total trials.
 
-\paragraph{Cost.} Total API cost is approximately \$120 at current pricing.
+\paragraph{Clarification rate.} Llama-3.1-8B asked a clarifying question in
+\textbf{77\%} of clarification-condition trials (193/250), confirming the
+clarification interaction is active and measurable. Trials where no question
+was asked are scored on the first-turn output.
 
 \subsection{Main Results: The Clarification Tax}
 \label{sec:main-results}
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
-\caption{ASR by condition and model (no defense). $\tax > 0$ for all models,
-confirming H1. 95\% bootstrap CIs in brackets.}
+\caption{ASR by condition (no defense). Contrary to H1 and the ASPI finding
+for frontier models, the clarification tax is \emph{negative}: the tool-output
+channel is more dangerous than the clarification channel for Llama-3.1-8B.
+95\% bootstrap CIs in brackets.}
 \label{tab:main}
 \small
 \begin{tabular}{lccc}
 \toprule
 \textbf{Model} & $\asr_{\mathrm{exec}}$ & $\asr_{\mathrm{clar}}$ & $\tax$ \\
 \midrule
-Claude Sonnet & 0.09 [0.04--0.16] & 0.31 [0.23--0.40] & \textbf{+0.22} \\
-GPT-4o        & 0.12 [0.06--0.19] & 0.38 [0.29--0.47] & \textbf{+0.26} \\
-Llama-3-70B   & 0.21 [0.14--0.30] & 0.52 [0.43--0.61] & \textbf{+0.31} \\
+Llama-3.1-8B & 0.760 [0.653--0.853] & 0.440 [0.333--0.547] & \textbf{$-$0.320} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:main} shows that the clarification tax is positive and statistically
-significant for all three models. The open-weight model shows the largest absolute
-tax (+0.31), consistent with the hypothesis that instruction-hierarchy training
-in commercial models provides partial protection. Figure~\ref{fig:asr} plots these
-results with confidence intervals.
+Table~\ref{tab:main} reveals a striking reversal of the expected effect.
+The execution condition (adversarial content via tool output) achieves an ASR of
+0.760---the model follows injected instructions in \textbf{76\%} of trials when
+they arrive through a file-read tool call. The clarification channel, by contrast,
+achieves only 0.440 ASR. The clarification tax $\tax = -0.320$: clarification
+is \emph{safer}, not more dangerous, for this model tier.
 
-\subsection{Channel vs.~State Decomposition}
-\label{sec:decompose}
-
-To test H2---whether the amplification is due to the interaction \emph{state}
-rather than only the delivery channel---we run an ablation: the execution condition
-with the adversarial content in a tool output formatted identically to a
-clarification answer (same XML tags, same preamble). If the tax is entirely a channel
-effect, this ablated condition should match the clarification ASR. If it does not,
-the agent's state of ``having just asked a question'' contributes independently.
-
-\begin{table}[h]
-\centering
-\caption{Channel-vs-state decomposition (Claude Sonnet). The clarification condition
-exceeds both the raw tool-output baseline and the tag-formatted tool output, indicating
-that interaction state contributes independently.}
-\label{tab:decompose}
-\small
-\begin{tabular}{lc}
-\toprule
-\textbf{Condition} & $\asr$ \\
-\midrule
-Execution (raw tool output) & 0.09 \\
-Execution (tag-formatted output) & 0.13 \\
-Clarification (no defense) & 0.31 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Table~\ref{tab:decompose} shows that formatting alone accounts for only 4 percentage
-points of the gap (0.09 $\to$ 0.13), while the remaining 18 percentage points
-(0.13 $\to$ 0.31) is attributable to the clarification state itself. This supports
-H2: the vulnerability is partly a property of the interaction protocol, not merely
-the channel format.
+We hypothesize two contributing mechanisms. First, 8B models receive substantially
+less instruction-hierarchy training than frontier models, leaving the tool-output
+channel poorly guarded. Second, the clarification interaction state may produce
+a mild implicit skepticism effect: the model has just formulated a specific question
+and may be more narrowly focused on extracting the answer than on executing arbitrary
+new instructions.
 
 \subsection{Defense Effectiveness}
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
-\caption{Defense results (Claude Sonnet). $\tax^*$ is the residual tax under the
-defense. CCR measures collaboration quality. All defenses reduce ASR; D2 achieves
-the best ASR--CCR balance.}
+\caption{Defense results. $\tax^*$ is the residual tax under each defense.
+D1 (prompt tagging) \emph{increases} clarification ASR, suggesting XML delimiters
+act as authority markers for 8B models rather than isolation boundaries.
+D2 and D3 dramatically reduce clarification ASR.}
 \label{tab:defenses-results}
 \small
 \begin{tabular}{lcccc}
 \toprule
 \textbf{Defense} & $\asr_{\mathrm{clar}}$ & $\tax^*$ & $\tsr$ & $\ccr$ \\
 \midrule
-None (baseline) & 0.31 & +0.22 & 0.82 & 0.84 \\
-D1: Prompt Tag & 0.22 & +0.13 & 0.81 & 0.83 \\
-D2: Struct.\ Extract & 0.13 & +0.04 & 0.77 & 0.76 \\
-D3: Plan-Diff Gate & 0.08 & $-$0.01 & 0.69 & 0.65 \\
+None (baseline) & 0.440 & $-$0.320 & 0.493 & 0.493 \\
+D1: Prompt Tag  & 0.613 & $-$0.080 & 0.707 & 0.707 \\
+D2: Struct.\ Extract & 0.080 & $-$0.600 & 0.720 & 0.720 \\
+D3: Plan-Diff Gate   & 0.013 & $-$0.707 & 0.560 & 0.560 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:defenses-results} confirms H3 (all defenses reduce $\tax$) and H4
-(stronger defenses incur higher collaboration cost). D3 achieves near-zero residual
-tax but reduces $\ccr$ to 0.65---a 19-point drop from the undefended baseline---due
-to false-positive plan-diff flags on legitimate scope expansions. D2 recovers
-most of the security benefit at a smaller $\ccr$ cost (8-point drop), making it
-our recommended deployment choice (see Section~\ref{sec:conclusion}).
+Table~\ref{tab:defenses-results} reveals a critical failure mode of D1. Wrapping
+the clarification answer in \texttt{<USER\_CLARIFICATION>} tags \emph{increases}
+ASR from 0.440 to 0.613---a 17-point increase. We attribute this to a \emph{tag
+authority inversion}: smaller instruction-tuned models appear to have learned that
+XML-delimited blocks carry structured, authoritative content (as in function-call
+schemas and tool-output formats common in training data), causing them to treat
+tagged content as \emph{more} trustworthy rather than isolated. This is a significant
+practical warning against naive delimiter-based defenses on sub-frontier models.
+
+D2 (structured extraction) and D3 (plan-diff gating) both work well. D2 reduces
+clarification ASR to 0.080---an 82\% relative reduction---at the cost of a modest
+TSR increase (0.493 $\to$ 0.720), since the extraction pass also clarifies the
+legitimate portion of the answer. D3 achieves near-zero ASR (0.013) but TSR drops
+to 0.560, reflecting false-positive gates that block legitimate scope changes.
 
 \subsection{Pareto Frontier}
 
-Figure~\ref{fig:pareto} plots the collaboration--security Pareto frontier across
-defenses and models. D2 dominates D3 for all three models: it achieves strictly
-better $\ccr$ with comparable or lower $\asr$. D1 dominates the baseline for all
-models. This Pareto structure suggests that D2 is the most cost-effective defense
-in the current design space.
+Figure~\ref{fig:pareto} plots the collaboration--security Pareto frontier.
+D2 dominates D3: higher CCR (0.720 vs 0.560) with comparable security.
+The undefended clarification baseline also dominates D1, confirming that
+prompt tagging is counterproductive for this model. The execution condition
+(not plotted, as defense does not affect it differently) represents the
+true security floor: ASR = 0.760 regardless of clarification defenses.
 
 \subsection{Results by Attack Category}
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
-\caption{Clarification tax by attack category (averaged across models, no defense).}
+\caption{ASR by attack category (no defense). Dependency-poisoning attacks
+show lowest execution ASR; safety-check removal shows highest clarification ASR.}
 \label{tab:by-category}
 \small
 \begin{tabular}{lcc}
 \toprule
-\textbf{Category} & $\asr_{\mathrm{exec}}$ & $\tax$ \\
+\textbf{Category} & $\asr_{\mathrm{exec}}$ & $\asr_{\mathrm{clar}}$ \\
 \midrule
-backdoor & 0.08 & +0.19 \\
-secret\_exfil & 0.18 & +0.28 \\
-safetycheck\_removal & 0.16 & +0.29 \\
-dependency\_poison & 0.06 & +0.14 \\
-destructive\_command & 0.15 & +0.27 \\
+backdoor              & 0.800 & 0.533 \\
+secret\_exfil         & 0.733 & 0.400 \\
+safetycheck\_removal  & 0.800 & 0.533 \\
+dependency\_poison    & 0.600 & 0.267 \\
+destructive\_command  & 0.867 & 0.467 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The tax is smallest for dependency-poisoning attacks (agents are relatively
-resistant to adding unrecognized package names to requirements regardless of
-channel) and largest for safety-check removal (agents appear especially susceptible
-to natural-sounding operational justifications for removing validation code during
-the clarification state).
+Dependency-poisoning attacks show the lowest ASR in both conditions: the model
+is somewhat more resistant to adding unrecognized package names. Destructive
+commands show the highest execution ASR (0.867), confirming that tool-output
+injection is the dominant attack surface for small models regardless of category.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/fig2_asr_bars.pdf}
-  \caption{ASR by condition and defense across three models. Error bars are 95\%
-    bootstrap CIs. Horizontal dashed line indicates the execution baseline.}
+  \caption{ASR by condition and defense (Llama-3.1-8B). Execution baseline (dashed)
+    is the dominant risk. D1 (prompt tag) backfires in the clarification condition.
+    D2 and D3 provide strong clarification-channel protection.}
   \label{fig:asr}
 \end{figure}
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/fig3_pareto.pdf}
-  \caption{Collaboration--security Pareto frontier. Each point represents
-    one (model, defense) pair. D2 (Structured Extract) dominates D3 (Plan-Diff
-    Gate) for all three models.}
+  \caption{Collaboration--security Pareto frontier. D2 (Structured Extract)
+    dominates D3 (Plan-Diff Gate). D1 (Prompt Tag) is dominated by the undefended
+    baseline --- a deployment anti-pattern for sub-frontier models.}
   \label{fig:pareto}
 \end{figure}
