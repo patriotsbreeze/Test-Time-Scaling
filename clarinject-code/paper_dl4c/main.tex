@@ -1,22 +1,39 @@
+% DL4C @ ICML 2026 submission — follows official ICML 2026 template exactly.
 \documentclass{article}
 
-% ICML 2026 style — submission (double-blind, no [accepted])
+% Recommended packages (from official example_paper.tex)
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+% Attempt to make hyperref and algorithmic work together better:
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Official ICML 2026 style — blind submission (no [accepted])
 \usepackage{icml2026}
 
+% times.sty (loaded by icml2026) sets \ttdefault=pcr (Courier), but the OT1
+% Courier TFM (pcrr7t) is not installed in this TeX distribution.
+% Override with Latin Modern Typewriter, which is always present.
+% Body text remains Times Roman as required by the official template.
+\renewcommand{\ttdefault}{lmtt}
+
+% Math
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{mathtools}
-\usepackage{booktabs}
+
+% Additional packages used in our paper
 \usepackage{multirow}
-\usepackage{subcaption}
 \usepackage{xcolor}
-\usepackage{hyperref}
 \usepackage{url}
-\usepackage{microtype}
-\usepackage{graphicx}
+
+% Prevent overfull hboxes
 \setlength{\emergencystretch}{2em}
 
-% Aggressive float placement
+% Float placement tuning (does not alter margins)
 \renewcommand{\topfraction}{0.9}
 \renewcommand{\bottomfraction}{0.5}
 \renewcommand{\textfraction}{0.07}
@@ -25,10 +42,9 @@
 \setcounter{bottomnumber}{3}
 \setcounter{totalnumber}{6}
 
-% FloatBarrier without placeins package
+% FloatBarrier without placeins (not installed)
 \makeatletter
-\newcommand{\FloatBarrier}{%
-  \vskip\z@skip\@nobreakfalse\addpenalty\@secpenalty}
+\newcommand{\FloatBarrier}{\vskip\z@skip\@nobreakfalse\addpenalty\@secpenalty}
 \makeatother
 
 % Colorblind-safe colors
@@ -36,30 +52,35 @@
 \definecolor{clariorange}{HTML}{D55E00}
 \definecolor{defgreen}{HTML}{009E73}
 
+% Paper-specific macros
 \newcommand{\tax}{\Delta_{\mathrm{clar}}}
 \newcommand{\asr}{\mathrm{ASR}}
 \newcommand{\tsr}{\mathrm{TSR}}
 \newcommand{\ccr}{\mathrm{CCR}}
 
+% Short running title (required — full title is too long for header)
 \icmltitlerunning{The Clarification Tax}
 
 \begin{document}
 
 \twocolumn[
-\icmltitle{The Clarification Tax: Benchmarking and Defending Against\\
-Prompt Injection Through the Clarification Channel in Coding Agents}
+  \icmltitle{The Clarification Tax: Benchmarking and Defending Against
+    Prompt Injection Through the Clarification Channel in Coding Agents}
 
-\begin{icmlauthorlist}
-\icmlauthor{Anonymous Author(s)}{anon}
-\end{icmlauthorlist}
+  % Style file removes author info automatically for blind submissions
+  \begin{icmlauthorlist}
+    \icmlauthor{Anonymous Author(s)}{anon}
+  \end{icmlauthorlist}
 
-\icmlaffiliation{anon}{Anonymous Institution}
-\icmlcorrespondingauthor{Anonymous Author(s)}{anonymous@institution.edu}
-\icmlkeywords{coding agents, prompt injection, security, human-AI collaboration, LLMs}
+  \icmlaffiliation{anon}{Anonymous Institution, Anonymous City, Anonymous Country}
+  \icmlcorrespondingauthor{Anonymous Author(s)}{anonymous@institution.edu}
 
-\vskip 0.3in
+  \icmlkeywords{coding agents, prompt injection, security, human-AI collaboration, LLMs}
+
+  \vskip 0.3in
 ]
 
+% Required — prints affiliation footnote and "Under review" notice
 \printAffiliationsAndNotice{}
 
 \begin{abstract}
@@ -80,9 +101,7 @@ Prompt Injection Through the Clarification Channel in Coding Agents}
 \FloatBarrier
 \input{sections/7_conclusion}
 
-% -------------------------------------------------------
-% Impact Statement (required; does not count toward page limit)
-% -------------------------------------------------------
+% Impact Statement — required by ICML; does NOT count toward page limit
 \section*{Impact Statement}
 
 This paper studies a security vulnerability in collaborative coding agents: the
@@ -91,20 +110,18 @@ can redirect agent behavior in harmful ways. The intended societal impact is
 \emph{positive}---by surfacing and quantifying this vulnerability, we enable
 practitioners to build safer agent systems.
 
-All adversarial payloads used in our benchmark are synthetic and clearly labeled as
-test cases. They are evaluated inside a sandboxed environment with no real network
-access, and exfiltration targets use the reserved domain \texttt{example-sandbox.invalid}.
-No real systems are targeted or harmed by this research.
+All adversarial payloads in our benchmark are synthetic and clearly labeled as
+test cases, evaluated in a sandboxed environment with no real network access.
+Exfiltration targets use the reserved domain \texttt{example-sandbox.invalid}.
+No real systems are targeted or harmed.
 
-We acknowledge a dual-use risk: detailed knowledge of injection patterns could be
-misused. We mitigate this by (1) restricting our study to injection styles already
-documented in the public adversarial-prompting literature, and (2) pairing each
-attack analysis with a corresponding defense evaluation. We follow responsible
-disclosure practices: if our benchmark reveals undocumented attack vectors, we will
-coordinate with model providers before public release.
+We acknowledge a dual-use risk: knowledge of injection patterns could be misused.
+We mitigate this by (1) restricting our study to injection styles already documented
+in the public adversarial-prompting literature, and (2) pairing every attack analysis
+with a corresponding defense evaluation. If our benchmark reveals undocumented attack
+vectors, we will follow coordinated disclosure with model providers before public release.
 
-% -------------------------------------------------------
-\bibliographystyle{abbrvnat}
+\bibliographystyle{icml2026}
 \bibliography{references}
 
 \appendix

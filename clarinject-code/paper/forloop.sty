@@ -1,0 +1,16 @@
+% Minimal forloop.sty — compatible replacement for the missing forloop package.
+% Provides \forloop[step]{counter}{initial}{condition}{body}
+% Used by icml2026.sty for affiliation printing.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{forloop}[2024/01/01 minimal forloop implementation]
+\RequirePackage{ifthen}
+
+\newcommand{\forloop}[5][1]{%
+  \setcounter{#2}{#3}%
+  \ifthenelse{#4}{%
+    #5%
+    \addtocounter{#2}{#1}%
+    \forloop[#1]{#2}{\value{#2}}{#4}{#5}%
+  }{}%
+}
+\endinput
