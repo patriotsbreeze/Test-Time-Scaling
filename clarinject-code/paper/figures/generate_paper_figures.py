@@ -161,13 +161,15 @@ def fig3_pareto():
         sec  = 1 - asr
         ax.scatter(ccr, sec, color=color, s=90, zorder=3,
                    edgecolors="white", linewidths=0.8, label=DEFENSE_LABELS[defense])
-        offset = {"none": (4, -12), "prompt_tag": (4, 5),
-                  "structured_extract": (4, 5), "plan_diff_gate": (4, 5)}
+        # Per-dot label offsets — push "No Defense" upward so the legend
+        # (upper-left) doesn't overlap its text
+        offset = {"none": (5, 6), "prompt_tag": (5, 5),
+                  "structured_extract": (5, 5), "plan_diff_gate": (5, 5)}
         ax.annotate(DEFENSE_LABELS[defense], (ccr, sec),
-                    textcoords="offset points", xytext=offset.get(defense, (4,5)),
+                    textcoords="offset points", xytext=offset.get(defense, (5, 5)),
                     fontsize=7.5)
 
-    # Execution baseline (shown as diamond at right edge — not on CCR axis)
+    # Execution baseline horizontal line
     exec_asr = get(agg, "execution", "none", "asr")
     ax.axhline(1 - exec_asr, color=EXEC_COLOR, linestyle="--", linewidth=1.0,
                alpha=0.7, label=f"Exec. baseline (1−ASR={1-exec_asr:.2f})")
@@ -178,18 +180,23 @@ def fig3_pareto():
                  fontsize=11, fontweight="bold")
     ax.set_xlim(0.3, 0.85)
     ax.set_ylim(0.3, 1.05)
-    # Legend placed in lower-left — D1 dot sits at (CCR≈0.71, sec≈0.39),
-    # which is lower-right, so lower-left is the only clear corner.
-    ax.legend(fontsize=8, loc="lower left", frameon=True, framealpha=0.92,
+
+    # Legend: upper-left corner is the only clear quadrant.
+    # D1 is lower-right (0.71, 0.39), No Defense is center-left (0.49, 0.56),
+    # D3 is upper-center (0.56, 0.99), D2 is upper-right (0.72, 0.92).
+    # Upper-left (x<0.48, y>0.65) has no data points.
+    ax.legend(fontsize=8, loc="upper left", frameon=True, framealpha=0.92,
               borderpad=0.6)
     ax.grid(alpha=0.2)
     ax.spines[["top","right"]].set_visible(False)
 
-    # Mark D1 as dominated (below baseline dashed line)
+    # Mark D1 as dominated — text placed to the left and inside the plot
+    # (previously y was below ylim=0.3)
     d1_ccr = get(agg, "clarification", "prompt_tag", "ccr")
     d1_sec = 1 - get(agg, "clarification", "prompt_tag", "asr")
-    ax.annotate("dominated\n(anti-pattern)", (d1_ccr, d1_sec),
-                xytext=(d1_ccr - 0.12, d1_sec - 0.09),
+    ax.annotate("dominated\n(anti-pattern)",
+                xy=(d1_ccr, d1_sec),
+                xytext=(d1_ccr - 0.17, d1_sec - 0.06),   # stays above ylim=0.3
                 fontsize=7, color=CLAR_D1,
                 arrowprops=dict(arrowstyle="->", color=CLAR_D1, lw=0.8))
 
