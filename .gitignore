@@ -6,9 +6,12 @@ build/
 .eggs/
 *.egg
 
-# Results (large JSON files — include summary only)
+# Results (large JSON files — include summary and key experiment outputs)
 results/*.json
 !results/summary.json
+!results/adaptive_l_comparison.json
+!results/gsm8k_prm_results.json
+!results/gsm8k_prm_dataset.json
 
 # LaTeX build artifacts
 paper/*.aux

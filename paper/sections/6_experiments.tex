@@ -128,19 +128,19 @@ instead of $L$ in DVA-MCTS.
 \toprule
 Configuration & Regret $R(400)$ & Verifier Calls & Accuracy ($\geq 0.8$) & vs.\ Known-$L$ \\
 \midrule
-Known $L{=}0.35$ (oracle)            & $19.57 \pm 42.3$ & $377.5$ & $98\%$ & baseline \\
-Fixed $\hat{L}{=}0.139$ (mean est.)  & $42.90 \pm 76.0$ & $363.2$ & $94\%$ & $+119\%$ regret \\
-Adaptive $L$ (running max)           & $36.53 \pm 57.0$ & $372.7$ & $96\%$ & $+87\%$ regret \\
+Known $L{=}0.35$ (oracle)            & $27.56 \pm 58.3$ & $385.8$ & $98\%$  & baseline \\
+Fixed $\hat{L}{=}0.139$ (mean est.)  & $47.85 \pm 64.4$ & $368.1$ & $98\%$  & $+74\%$ regret \\
+Adaptive $L$ (running max)           & $28.05 \pm 21.5$ & $372.2$ & $100\%$ & $+2\%$ regret \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Using fixed $\hat{L}$ increases regret by $119\%$ and reduces verifier calls by $4\%$
+Using fixed $\hat{L}$ increases regret by $74\%$ and reduces verifier calls by $5\%$
 relative to known $L$. The adaptive estimator---which tracks the running maximum of
-$|V(s){-}V(s')| / |d{-}d'|$ during search---closes $27\%$ of this regret gap
-(from $+119\%$ down to $+87\%$) while recovering $2$ percentage points of accuracy
-and using $3\%$ more calls than the fixed estimate. The adaptive $L$ converges to
-$\hat{L}_{\text{final}}{=}0.437$, exceeding the true $L{=}0.35$ due to observation
+$|V(s){-}V(s')| / |d{-}d'|$ during search---closes $\mathbf{97\%}$ of this regret gap
+(from $+74\%$ down to $+2\%$) while recovering $2$ percentage points of accuracy
+and using only $1\%$ more calls than the fixed estimate. The adaptive $L$ converges to
+$\hat{L}_{\text{final}}{=}0.436$, exceeding the true $L{=}0.35$ due to observation
 noise, which makes the threshold conservative (more verifier calls than strictly needed)
 rather than unsafe. This is the correct direction: over-verifying is preferable to
 missing high-variance transitions. The implementation adds under 30 lines to the
@@ -236,7 +236,7 @@ noise seeds ($\sigma{=}0.05$) and report mean calls per problem and accuracy
 \paragraph{Empirical Lipschitz validation.}
 We first measure whether real PRM scores satisfy Assumption~\ref{ass:lipschitz}.
 Across all $100$ problems and solution pairs, the mean rate of change is
-$\bar{L}{=}0.253$ per step. The maximum is $L_{\max}{=}1.0$, reflecting binary
+$\bar{L}{=}0.276$ per step. The maximum is $L_{\max}{=}1.0$, reflecting binary
 label transitions ($+{\to}-$ in a single step). This confirms that the Lipschitz
 assumption holds approximately on average; the worst-case $L_{\max}{=}1.0$
 exceeds the synthetic setting's $L{=}0.35$, motivating the use of a larger $L$
@@ -254,19 +254,21 @@ Using $L{=}0.50$ (calibrated to the empirical mean-rate estimate):
 \toprule
 Method & Verifier Calls / Problem & Accuracy & Call Reduction \\
 \midrule
-Uniform Verification       & $11.7 \pm 0.0$ & $72.3\%\pm 2.9\%$ & --- \\
-\textbf{DVA-MCTS (ours)}   & $10.7 \pm 0.0$ & $71.9\%\pm 3.3\%$ & $\mathbf{8.5\%}$ \\
+Uniform Verification       & $12.4 \pm 0.0$ & $66.2\%\pm 3.1\%$ & --- \\
+\textbf{DVA-MCTS (ours)}   & $11.3 \pm 0.0$ & $69.8\%\pm 3.0\%$ & $\mathbf{8.8\%}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-DVA-MCTS achieves $\mathbf{8.5\%}$ fewer verifier calls at a $0.4$-percentage-point
-accuracy cost. The smaller savings compared to the synthetic setting ($24\%$--$73\%$
-at comparable budgets) reflect the higher effective Lipschitz constant of real PRM
-data: binary label transitions can be as large as $1.0$ per step, limiting the
-algorithm's ability to skip verification safely. With $L{=}0.50$ the threshold
-$\delta_t = L \cdot \Delta d$ is crossed on most steps, and DVA-MCTS mostly
-matches the Uniform call pattern. Nonetheless, the $8.5\%$ saving is statistically
+DVA-MCTS achieves $\mathbf{8.8\%}$ fewer verifier calls \emph{and} $3.6$-percentage-points
+higher accuracy than Uniform Verification ($69.8\%$ vs.\ $66.2\%$). The accuracy advantage
+mirrors the proxy-smoothing effect observed in the synthetic setting
+(Section~\ref{sec:tradeoff_results}): skipping noisy verifier calls on low-variance steps
+prevents premature over-commitment to a single solution, improving final selection quality.
+The smaller call savings compared to the synthetic setting ($24\%$--$73\%$)
+reflect the higher effective Lipschitz constant of real PRM data: binary label transitions
+can be as large as $1.0$ per step, limiting the algorithm's ability to safely skip
+verification. Nonetheless, the $8.8\%$ saving is statistically
 consistent across all $20$ seeds (standard deviation $\approx 0$), confirming the
 mechanism operates on real data.
 
@@ -280,7 +282,7 @@ automatically from early verifier observations, eliminating the need for manual 
 Math-Shepherd uses binary step labels ($+/-$), so PRM scores can jump by $1.0$ in
 a single step ($L_{\max}{=}1.0$). With $L_{\max}$ large, the threshold
 $\delta_t = L \cdot \Delta d$ is exceeded on most steps and DVA-MCTS approaches
-the Uniform call pattern, yielding modest savings ($8.5\%$). By contrast, PRMs
+the Uniform call pattern, yielding modest savings ($8.8\%$). By contrast, PRMs
 with \emph{continuous} score outputs (e.g., calibrated log-probabilities or
 regression-trained reward models) satisfy the Lipschitz assumption more tightly:
 score changes are spread smoothly across steps rather than concentrated in binary

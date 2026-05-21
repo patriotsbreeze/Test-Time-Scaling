@@ -189,11 +189,19 @@ into DVA-MCTS reduces the threshold $\delta_t = \hat{L} \cdot |d{-}d_{\text{anc}
 causing the algorithm to skip the verifier in some high-variance transitions that
 should have been checked. The resulting regret bound of Theorem~\ref{thm:main}
 degrades by a factor of $(L / \hat{L})$ on the estimation-error term.
-Empirically (Section~\ref{sec:lhat}), using $\hat{L}{=}0.091$ in place of $L{=}0.35$
-increases final regret by $43\%$ while reducing verifier calls by $8\%$.
+Two estimation methods are studied empirically (Section~\ref{sec:lhat}).
+The \emph{global pair estimator} $\hat{L}_{\text{pair}} = \mathbb{E}[|V(s){-}V(s')|/|d{-}d'|]$
+across all depth-gap pairs yields $\hat{L}_{\text{pair}}{=}0.091$, a $4\times$ underestimate,
+because cancellation across multi-step gaps amplifies the bias.
+The \emph{sequential step estimator} $\hat{L}_{\text{seq}} = \mathbb{E}[|V(s){-}V(s_{\text{prev}})|]$
+from single-step differences yields $\hat{L}_{\text{seq}}{=}0.139$, less biased but still
+$2.5\times$ below the true $L{=}0.35$.
+Using $\hat{L}_{\text{seq}}{=}0.139$ (Table~\ref{tab:lhat}) increases final regret by $74\%$
+while reducing verifier calls by $5\%$ relative to oracle $L$.
 An adaptive estimator tracking the running maximum of $|V(s){-}V(s')| / |d{-}d'|$
-gives a consistent estimate of $L$; empirically it closes $27\%$ of the regret
-gap between fixed $\hat{L}$ and oracle $L$
+gives a consistent online estimate of $L$; empirically it closes $97\%$ of the regret
+gap between fixed $\hat{L}$ and oracle $L$, recovering $100\%$ accuracy at a
+$1\%$ increase in verifier calls relative to the fixed estimate
 (Section~\ref{sec:lhat}).
 \end{remark}
 

@@ -383,7 +383,7 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     if args.download or not DATASET_PATH.exists():
-        download_dataset()
+        download_dataset(max_rows=2000)
     run_gsm8k_experiment(
         n_problems=args.problems,
         budget=args.budget,

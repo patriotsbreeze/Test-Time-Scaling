@@ -1,0 +1,35 @@
+{
+  "experiment": "gsm8k_prm",
+  "n_problems": 100,
+  "budget": 400,
+  "n_runs": 20,
+  "config": {
+    "L": 0.5,
+    "sigma": 0.05,
+    "alpha": 0.5,
+    "gamma": 1.0
+  },
+  "lipschitz_validation": {
+    "n_pairs": 1504,
+    "empirical_L_mean": 0.2755429964539007,
+    "empirical_L_std": 0.3843068897809427,
+    "empirical_L_max": 1.0,
+    "empirical_L_p95": 1.0,
+    "empirical_L_p99": 1.0
+  },
+  "results": {
+    "DVA-MCTS": {
+      "mean_calls": 11.3035,
+      "std_calls": 0.027798381247835437,
+      "mean_accuracy": 0.6975,
+      "std_accuracy": 0.030475399915341542
+    },
+    "Uniform": {
+      "mean_calls": 12.400000000000002,
+      "std_calls": 1.7763568394002505e-15,
+      "mean_accuracy": 0.6615,
+      "std_accuracy": 0.031188940347501387
+    }
+  },
+  "dva_call_reduction_pct": 8.84274193548389
+}

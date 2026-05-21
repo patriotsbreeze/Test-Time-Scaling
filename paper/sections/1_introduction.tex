@@ -68,8 +68,8 @@ We answer this question affirmatively. Specifically:
     DVA-MCTS reduces verifier calls by $73\%$ with a $2$-percentage-point accuracy
     gap; savings grow with budget as the algorithm enters the exploitation regime
     ($T \gg K^D$). On $100$ real GSM8K problems (Math-Shepherd PRM), DVA-MCTS
-    achieves $8.5\%$ fewer calls at $0.4$-percentage-point cost, with larger gains
-    expected for PRMs with continuous score outputs
+    achieves $8.8\%$ fewer calls while improving accuracy by $3.6$ percentage points,
+    with larger call savings expected for PRMs with continuous score outputs
     (Section~\ref{sec:experiments}).
 \end{enumerate}
 
@@ -79,8 +79,9 @@ verifier allocation. The sub-linear verifier budget translates directly to
 wall-clock inference savings in deployed systems. In the synthetic setting, once
 the tree is sufficiently explored ($T \gg K^D$), DVA-MCTS requires $862$ verifier
 calls at $B{=}3{,}200$ versus $3{,}200$ for uniform allocation---a $3.7\times$
-reduction. On real Math-Shepherd PRM data, the gain is $8.5\%$ due to the high
-effective Lipschitz constant of binary step labels; PRMs with smooth, continuous
+reduction. On real Math-Shepherd PRM data, the call reduction is $8.8\%$ (with an additional
+$3.6$-percentage-point accuracy improvement) due to the proxy-smoothing effect;
+the modest call savings reflect the high effective Lipschitz constant of binary step labels; PRMs with smooth, continuous
 score outputs are expected to yield larger savings, as their score trajectories
 satisfy the Lipschitz assumption more tightly. These efficiency gains are
 particularly valuable when the verifier is a large neural network (e.g., a $7$B
