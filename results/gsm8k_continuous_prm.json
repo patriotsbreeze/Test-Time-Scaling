@@ -1,0 +1,59 @@
+{
+  "experiment": "gsm8k_continuous_prm",
+  "n_problems": 100,
+  "budget": 400,
+  "n_runs": 20,
+  "config": {
+    "L_dva_tight": 0.155,
+    "L_dva_moderate": 0.311,
+    "L_dva_conservative": 0.5,
+    "L_dva_used": 0.155,
+    "L_binary": 0.5,
+    "sigma": 0.05,
+    "alpha": 0.5,
+    "gamma": 1.0
+  },
+  "lipschitz_validation_binary": {
+    "n_pairs": 1504,
+    "empirical_L_mean": 0.2755429964539007,
+    "empirical_L_std": 0.3843068897809427,
+    "empirical_L_max": 1.0,
+    "empirical_L_p95": 1.0,
+    "empirical_L_p99": 1.0
+  },
+  "lipschitz_validation_continuous": {
+    "n_pairs": 1504,
+    "empirical_L_mean": 0.13714723699763595,
+    "empirical_L_std": 0.16341070977860409,
+    "empirical_L_max": 0.5,
+    "empirical_L_p50": 0.08333333333333333,
+    "empirical_L_p75": 0.2,
+    "empirical_L_p90": 0.33333333333333337,
+    "empirical_L_p95": 0.5,
+    "empirical_L_p99": 0.5,
+    "consecutive_L_mean": 0.15535714285714286,
+    "consecutive_L_p90": 0.5
+  },
+  "results": {
+    "DVA-MCTS-Cont": {
+      "mean_calls": 6.217499999999999,
+      "std_calls": 0.010428326807307191,
+      "mean_accuracy": 0.5959999999999999,
+      "std_accuracy": 0.033226495451672305
+    },
+    "Uniform-Cont": {
+      "mean_calls": 12.400000000000002,
+      "std_calls": 1.7763568394002505e-15,
+      "mean_accuracy": 0.6319999999999999,
+      "std_accuracy": 0.030919249667480633
+    },
+    "DVA-MCTS-Binary": {
+      "mean_calls": 11.303999999999998,
+      "std_calls": 0.03200000000000003,
+      "mean_accuracy": 0.6925,
+      "std_accuracy": 0.03096368841078206
+    }
+  },
+  "dva_cont_call_reduction_pct": 49.85887096774195,
+  "note": "Running-average scores V_cont(k,d)=mean(labels[0..d]). Consecutive-step L mean=0.155 << L_binary_max=1.0; DVA uses L_dva=0.155 (tight=mean), yielding 49.9% call savings. L options: tight=0.155, moderate=0.311, conservative=0.500. Binary L_mean=0.276."
+}

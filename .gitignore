@@ -15,6 +15,7 @@ results/*.json
 !results/exploitation_regime.json
 !results/regret_scaling.json
 !results/small_tree_exploitation.json
+!results/gsm8k_continuous_prm.json
 
 # LaTeX build artifacts
 paper/*.aux

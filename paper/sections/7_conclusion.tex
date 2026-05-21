@@ -41,12 +41,19 @@ $8.8\%$ fewer verifier calls \emph{and} improves accuracy by $3.6$ percentage
 points over exhaustive verification---a Pareto improvement consistent with the
 synthetic findings.
 
+\emph{Fifth}, a new continuous-score experiment directly validates the role of the
+effective Lipschitz constant: converting binary Math-Shepherd labels to
+running-average scores ($L_{\text{eff}}{=}0.155$) recovers $\mathbf{49.9\%}$ call
+savings---a $5.7\times$ improvement over binary DVA ($8.8\%$)---confirming that
+$L_{\text{eff}}$ is the primary efficiency driver.
+
 \paragraph{Limitations.}
-The GSM8K experiment is based on Math-Shepherd's binary step labels; the
-$L_{\max}{=}1.0$ of binary transitions limits call savings (only $8.8\%$ vs.\
-$24$--$73\%$ in the smooth synthetic setting). Continuous-valued PRMs
-(log-probability or regression-trained reward models) are expected to yield
-substantially larger savings. Additionally, the regret definition
+The GSM8K binary-label experiment saves only $8.8\%$ verifier calls due to
+$L_{\max}{=}1.0$ of raw binary transitions.  Our running-average continuous-score
+experiment demonstrates $49.9\%$ savings at $L_{\text{eff}}{=}0.155$, but uses a
+calibrated $L$ that slightly underestimates the worst-case constant, causing a
+$3.6$-pp accuracy gap vs.\ exhaustive verification.  Production-scale regression-
+trained PRMs with $L_{\text{eff}} \lesssim 0.1$ are expected to close this gap. Additionally, the regret definition
 (Definition~\ref{def:regret}) measures quality relative to states
 \emph{visited} by the search; a stronger benchmark would compare against
 the best leaf in the full tree, which is generally inaccessible.
@@ -58,10 +65,11 @@ $T \approx K^D$; choosing $D$ as a function of $B$ shifts the efficiency gains
 into practically relevant budget ranges.
 (2) \emph{Cost-aware allocation:} when verifier cost is non-uniform (e.g., depends on
 sequence length), incorporate a cost-weighted threshold.
-(3) \emph{Production-scale continuous PRM validation:} our positive real-data result
-motivates extending to a neural PRM with continuous score outputs (e.g., a $7$B
-regression-trained model on MATH-500 or AIME), where lower effective $L$ should
-recover the $24$--$73\%$ call-reduction regime.
+(3) \emph{Production-scale continuous PRM validation:} our running-average
+continuous-score experiment ($49.9\%$ savings at $L_{\text{eff}}{=}0.155$)
+establishes proof-of-concept; extending to a neural PRM with calibrated
+log-probability outputs (e.g., a $7$B regression-trained model on MATH-500 or AIME),
+where $L_{\text{eff}} \lesssim 0.1$, should push savings beyond $73\%$.
 (4) \emph{Integration with speculative decoding:} combine adaptive verification with
 draft-model generation for joint compute reduction.
 

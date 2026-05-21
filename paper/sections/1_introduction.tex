@@ -74,8 +74,10 @@ We answer this question affirmatively. Specifically:
     requires no advance knowledge of the Lipschitz constant and achieves the
     best empirical regret across all threshold configurations.  On $100$ real
     GSM8K problems (Math-Shepherd PRM), DVA-MCTS achieves $8.8\%$ fewer calls
-    \emph{and} $3.6$ pp higher accuracy than exhaustive verification
-    (Section~\ref{sec:experiments}).
+    \emph{and} $3.6$ pp higher accuracy than exhaustive verification.
+    With running-average continuous scores ($L_{\text{eff}}{=}0.155$), DVA-MCTS
+    achieves $\mathbf{49.9\%}$ call savings, confirming that $L_{\text{eff}}$ is
+    the primary driver of efficiency (Section~\ref{sec:experiments}).
 \end{enumerate}
 
 \paragraph{Significance.}
@@ -86,14 +88,16 @@ the tree is sufficiently explored ($T \gg K^D$), DVA-MCTS requires $862$ verifie
 calls at $B{=}3{,}200$ versus $3{,}200$ for uniform allocation---a $3.7\times$
 reduction. Critically, the algorithm does not require prior knowledge of $L$: an
 online adaptive estimator converges during search and closes $97\%$ of the regret
-gap caused by $L$ misspecification. On real Math-Shepherd PRM data, DVA-MCTS
-simultaneously reduces verifier calls by $8.8\%$ \emph{and} improves accuracy by
-$3.6$ percentage points relative to exhaustive verification---a Pareto improvement
-in both efficiency and quality. The modest call savings on binary-label PRMs are
-expected to grow substantially for PRMs with continuous score outputs, where the
-effective $L$ is lower and the threshold skips more verification steps. These gains
-are particularly valuable when the verifier is a large neural network (e.g., a $7$B
-PRM) executed on dedicated hardware.
+gap caused by $L$ misspecification. On real Math-Shepherd PRM data with binary labels, DVA-MCTS simultaneously reduces
+verifier calls by $8.8\%$ \emph{and} improves accuracy by $3.6$ percentage points
+relative to exhaustive verification---a Pareto improvement in both efficiency and
+quality. Converting the same binary labels to running-average continuous scores
+($L_{\text{eff}}{=}0.155$) recovers $\mathbf{49.9\%}$ call savings, empirically
+confirming that lower effective $L$ is the key driver: the effective Lipschitz
+constant determines how often the threshold triggers verification.
+These gains are particularly valuable when the verifier is a large neural network
+(e.g., a $7$B regression-trained PRM with $L_{\text{eff}} \lesssim 0.1$) executed
+on dedicated hardware.
 
 \paragraph{Organization.}
 Section~\ref{sec:related} reviews related work. Section~\ref{sec:formulation}

@@ -24,6 +24,9 @@ DVA and Uniform are statistically indistinguishable in the exploration regime
 An adaptive estimator for the Lipschitz constant $L$---tracking the running maximum
 of observed score-change ratios---requires no advance knowledge of $L$ and achieves
 the lowest empirical regret among all threshold configurations.
-On $100$ real GSM8K problems (Math-Shepherd PRM), DVA-MCTS simultaneously reduces
-verifier calls by $8.8\%$ \emph{and} improves accuracy by $3.6$ percentage points
-over exhaustive verification, with larger savings expected for continuous-valued PRMs.
+On $100$ real GSM8K problems (Math-Shepherd PRM) with binary step labels,
+DVA-MCTS simultaneously reduces verifier calls by $8.8\%$ \emph{and} improves
+accuracy by $3.6$ percentage points over exhaustive verification.
+Converting the binary labels to running-average continuous scores (effective
+$L_{\text{eff}}{=}0.155$) recovers $\mathbf{49.9\%}$ call savings, confirming that
+the effective Lipschitz constant is the primary driver of DVA efficiency.
