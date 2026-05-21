@@ -42,12 +42,13 @@ algorithms \citep{auer2002finite}.
 
 When $b_t = 0$ (verifier not called), the algorithm sets
 \[
-  \hat{v}_t \;=\; \hat{V}(s_{\text{anc}}) + L \cdot (d(s_t) - d(s_{\text{anc}})) \cdot \eta_t,
+  \hat{v}_t \;=\; \hat{V}(s_{\text{anc}}),
 \]
-where $\eta_t \in [-1, 1]$ is a pessimistic correction that defaults to $0$
-(neutral proxy). This proxy is guaranteed to satisfy
+i.e.\ the ancestor's cached score is used directly (neutral proxy, $\eta_t \equiv 0$).
+This proxy satisfies
 $|\hat{v}_t - V(s_t)| \leq L \cdot |d(s_t) - d(s_{\text{anc}})| + \sigma_{\max}$
-under Assumptions~\ref{ass:lipschitz}--\ref{ass:noise}.
+under Assumptions~\ref{ass:lipschitz}--\ref{ass:noise}, consistent with
+the ``use proxy'' branch of Algorithm~\ref{alg:dva}.
 
 \subsection{UCB Selection with Verifier Budget}
 
@@ -107,6 +108,6 @@ Algorithm~\ref{alg:dva} gives the complete DVA-MCTS procedure.
 Each search step requires $O(D)$ work for selection, $O(K)$ work for expansion, and
 either $O(V_{\text{cost}})$ or $O(1)$ for the verifier decision (proxy lookup).
 The total work per step is $O(D + K + V_{\text{cost}} \cdot b_t)$. Since
-$\sum_{t=1}^T b_t \leq N_{\mathcal{T}} = K^D - 1$ by Theorem~\ref{thm:calls}(a),
-the total verification cost is at most $O(V_{\text{cost}} \cdot K^D)$, a constant
+$\sum_{t=1}^T b_t \leq N_{\mathcal{T}} = K(K^D-1)/(K-1)$ by Theorem~\ref{thm:calls}(a),
+the total verification cost is at most $O(V_{\text{cost}} \cdot N_{\mathcal{T}})$, a constant
 independent of~$T$, compared to $O(V_{\text{cost}} \cdot T)$ for uniform verification.

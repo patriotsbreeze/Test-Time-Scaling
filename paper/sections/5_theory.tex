@@ -183,11 +183,12 @@ argument via Pinsker's inequality and Fano's method is in Appendix~\ref{app:lowe
 
 \begin{corollary}[Rate-optimality]
 \label{cor:optimal}
-DVA-MCTS achieves the minimax-optimal regret \emph{rate} $\Theta(\sqrt{T \log K})$:
-the upper bound (Theorem~\ref{thm:main}) and lower bound (Theorem~\ref{thm:lower})
-agree on the rate up to $\sqrt{\log K}$.  The constant $C(K,D)$ is conservative
-by a factor $\Phi(K,D)$ relative to the tight $D{=}1$ value; this is a proof artifact
-(Remark~\ref{rem:constant_tightness}), not a property of the algorithm.
+DVA-MCTS achieves $O(\sqrt{T \log K})$ regret (Theorem~\ref{thm:main}) while the
+minimax lower bound (Theorem~\ref{thm:lower}) gives $\Omega(\sqrt{T})$, establishing
+rate-optimality up to the $\sqrt{\log K}$ factor.
+The constant $C(K,D)$ is conservative by a factor $\Phi(K,D)$ relative to the tight
+$D{=}1$ value; this is a proof artifact (Remark~\ref{rem:constant_tightness}),
+not a property of the algorithm.
 \end{corollary}
 
 \subsection{Finite-Sample Behaviour and the Exploration Regime}

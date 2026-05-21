@@ -105,7 +105,7 @@ The total compute budget satisfies $\mathcal{B} \leq C_{\max}$ for a known const
 Design an allocation policy $\pi$ that simultaneously achieves:
 \begin{enumerate}[(i)]
   \item $\mathbb{E}[R(T)] = O(\sqrt{T \log K})$, and
-  \item $\mathbb{E}[\mathcal{B}(\pi)] \leq N_{\mathcal{T}} = K^D - 1$,
+  \item $\mathbb{E}[\mathcal{B}(\pi)] \leq N_{\mathcal{T}} = K(K^D-1)/(K-1)$,
         so that the call fraction $\mathbb{E}[\mathcal{B}(\pi)]/T \to 0$ as $T \to \infty$
         with $K, D$ fixed.
 \end{enumerate}

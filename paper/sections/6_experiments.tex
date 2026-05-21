@@ -514,6 +514,18 @@ high-variance steps.  The exact gap matches the binary DVA accuracy advantage
 ($+3.6$ pp): in both cases, DVA's proxy-smoothing effect is comparable in
 magnitude to the estimation error from skipped calls.
 
+\begin{remark}[Scope of formal guarantees]
+Because $L_{\text{DVA}}{=}0.155 < L_{\max}{=}0.5$, Assumption~\ref{ass:lipschitz}
+may be violated at depth-0 transitions of the running-average score; consequently,
+the formal regret bound of Theorem~\ref{thm:main} does not apply to this
+configuration with the calibrated $L$.
+The $49.9\%$ call savings and the $3.6$-pp accuracy gap are \emph{empirical} results
+with a calibrated (rather than worst-case) Lipschitz parameter.
+Production regression-trained PRMs with $L_{\text{eff}} \lesssim 0.1$ should
+satisfy Assumption~\ref{ass:lipschitz} globally and recover both the savings
+and the formal guarantees simultaneously.
+\end{remark}
+
 \paragraph{Key implication.}
 The effective Lipschitz constant is the principal determinant of DVA efficiency.
 Binary labels give $L_{\text{eff}}\approx 0.28$, limiting savings to $8.8\%$.
