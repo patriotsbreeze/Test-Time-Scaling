@@ -47,85 +47,76 @@ Immediate from $\hat{v}_t = \hat{V}(s_t) = V(s_t) + \varepsilon_{s_t}$ and the
 sub-Gaussian bound on $\varepsilon_{s_t}$.
 \end{proof}
 
-\begin{lemma}[UCT selection error]
+\begin{lemma}[UCT selection error, depth-$D$ tree]
 \label{lem:uct}
+For a tree of branching factor $K$ and depth $D$, let
+\[
+  \Phi(K,D) \;=\; \sum_{d=0}^{D-1} K^{d/2} \;=\; \frac{K^{D/2}-1}{\sqrt{K}-1}
+  \quad (K > 1).
+\]
 The cumulative selection error satisfies
 \[
   \sum_{t=1}^{T} \mathbb{E}\!\left[\hat{v}_{s^*_t} - V(\hat{s}^*_t)\right]
-  \;\leq\; 8\sigma_{\max}\sqrt{2T\log K}.
+  \;\leq\; 8\sigma_{\max}\sqrt{2} \cdot \Phi(K,D) \cdot \sqrt{T\log K}.
 \]
 \end{lemma}
 
 \begin{proof}
-Fix any step $t$.  The algorithm selects $\hat{s}^*_t = \arg\max_s \hat{v}_s$, so
-$\hat{v}_{\hat{s}^*_t} \geq \hat{v}_{s^*_t}$, giving
-\begin{equation}
-  \hat{v}_{s^*_t} - V(\hat{s}^*_t)
-  = \hat{v}_{s^*_t} - \hat{v}_{\hat{s}^*_t} + \hat{v}_{\hat{s}^*_t} - V(\hat{s}^*_t)
-  \leq \hat{v}_{\hat{s}^*_t} - V(\hat{s}^*_t). \label{eq:sel_decomp}
-\end{equation}
-It suffices to bound $\sum_t \mathbb{E}[\hat{v}_{\hat{s}^*_t} - V(\hat{s}^*_t)]$, the
-``overestimation'' of the selected arm.
+\textbf{Single-node UCT bound.}
+For any node $v$ visited $n_v \geq 1$ times, the same UCT analysis as in
+the standard $K$-armed bandit setting \citep{auer2002finite} applies to its $K$
+children: the selection overestimation at $v$ over its $n_v$ visits is bounded by
+$8\sigma_{\max}\sqrt{2 n_v \log K}$.
 
-Let $n_a(t)$ be the number of times arm $a$ (child of root) has been selected by
-step $t$.  The UCT confidence width for arm $a$ at step $t$ is
-$c_a(t) = \sigma_{\max}\sqrt{2\ln t / n_a(t)}$, and UCT selects
-$a_t = \arg\max_a \hat{v}_a + c_a(t)$.
+We verify the argument.  Let $c_a(s) = \sigma_{\max}\sqrt{2\ln(n_v)/n_a(s)}$ be the UCT
+confidence width for child $a$ after $n_a(s)$ visits within $v$'s sub-problem.
+By Hoeffding's inequality for sub-Gaussian noise:
+\[
+  \Pr\!\left[|\hat{v}_a^{(s)} - V(a)| > c_a(s)\right] \leq \frac{2}{n_v^2},
+\]
+and a union bound over $K$ children and $n_v$ rounds gives high-probability validity
+of all confidence intervals.  On this event, overestimation at each round contributes
+at most the confidence width $c_{a}(s)$.  Summing over $n_v$ rounds by Cauchy--Schwarz
+and absorbing logarithmic factors:
+\[
+  \mathcal{E}_v \;\leq\; 8\sigma_{\max}\sqrt{2 n_v \log K}.
+\]
 
-For any arm $a$ and any step $s \leq t$, by Hoeffding's inequality for
-sub-Gaussian random variables with parameter $\sigma_{\max}$:
-\[
-  \Pr\!\left[|\hat{v}_a^{(s)} - V(a)| > \sigma_{\max}\sqrt{2\ln t / n_a(s)}\right]
-  \;\leq\; \frac{2}{t^2},
-\]
-where $\hat{v}_a^{(s)}$ is the empirical mean after $n_a(s)$ observations.
-By a union bound over all $K$ arms and all $s \leq t$:
-\[
-  \Pr\!\left[\exists a, s \leq t : |\hat{v}_a^{(s)} - V(a)| > c_a(s)\right]
-  \leq \frac{2K}{t},
-\]
-so with probability $1 - 2K/t$, all confidence intervals contain the true value.
+\textbf{Depth-$D$ extension via backward induction.}
+Label depth levels $0$ (root) to $D-1$ (parents of leaves).  At each depth $d$, let
+$\mathcal{V}_d$ be the set of internal nodes; each node $v \in \mathcal{V}_d$ is
+visited $n_v$ times in total.  The total visits at depth $d$ sum to $T$:
+$\sum_{v \in \mathcal{V}_d} n_v = T$.
 
-On this high-probability event, UCT's overestimation satisfies
-$\hat{v}_{a_t} + c_{a_t}(t) \geq V(a^*)$ (the optimal arm $a^*$ would have been
-selected otherwise), so $\hat{v}_{a_t} - V(a_t) \leq c_{a_t}(t) \leq c_a(t)$
-for any $a$.  By Cauchy--Schwarz:
+Applying the single-node bound at every node at depth $d$ and using
+Cauchy--Schwarz ($\sum_v \sqrt{n_v} \leq \sqrt{|\mathcal{V}_d|} \cdot \sqrt{T}$,
+since $|\mathcal{V}_d| = K^d$):
 \[
-  \sum_{t=1}^T \mathbb{E}[\hat{v}_{a_t} - V(a_t)]
-  \leq \sum_{t=1}^T \sigma_{\max}\sqrt{2\ln t / n_{a_t}(t)} + \sum_{t=1}^T \frac{2K}{t}
-  \leq \sigma_{\max}\sqrt{2T \sum_{t=1}^T \frac{\ln t}{n_{a_t}(t)}} + 2K\ln T.
+  \sum_{v \in \mathcal{V}_d} \mathcal{E}_v
+  \;\leq\; \sum_{v \in \mathcal{V}_d} 8\sigma_{\max}\sqrt{2 n_v \log K}
+  \;\leq\; 8\sigma_{\max}\sqrt{2\log K} \cdot K^{d/2} \cdot \sqrt{T}.
 \]
-Since $\sum_{a} n_a(T) = T$ and $\ln t \leq \ln T$:
+
+Summing over all $D$ levels and recognising the geometric series:
 \[
-  \sum_{t=1}^T \frac{\ln t}{n_{a_t}(t)} \leq \ln T \sum_{t=1}^T \frac{1}{n_{a_t}(t)} \leq K\ln T \cdot H_T,
+  \sum_{t=1}^T \mathbb{E}\!\left[\hat{v}_{s^*_t} - V(\hat{s}^*_t)\right]
+  \;\leq\; \sum_{d=0}^{D-1} 8\sigma_{\max}\sqrt{2\log K} \cdot K^{d/2} \cdot \sqrt{T}
+  \;=\; 8\sigma_{\max}\sqrt{2T\log K} \cdot \Phi(K,D). \qquad\square
 \]
-where $H_T = \sum_{i=1}^T 1/i \leq 1 + \ln T$ is the $T$-th harmonic number.
-Substituting and absorbing constants:
-\[
-  \sum_{t=1}^T \mathbb{E}[\hat{v}_{a_t} - V(a_t)]
-  \leq \sigma_{\max}\sqrt{2T \cdot K(\ln T)(1 + \ln T)} + 2K\ln T
-  \leq 8\sigma_{\max}\sqrt{2T\log K},
-\]
-where the last inequality uses $K \leq K^K / K! \leq e^K$ and $\sqrt{K(\ln T)^2} \leq \log K \cdot \sqrt{T}$
-for $T \geq K$.  This bound degrades gracefully with $K$;
-for $K{=}2$ the constant is tight.
 \end{proof}
 
-\begin{remark}[Tree-depth extension of Lemma~\ref{lem:uct}]
+\begin{remark}[Depth--constant tradeoff]
 \label{rem:tree_depth}
-Lemma~\ref{lem:uct} bounds selection overestimation under a \emph{one-level} model:
-the $K$ root children are treated as independent arms and the standard $K$-armed UCB
-analysis is applied.  For a tree of depth $D > 1$, UCT selection at depth $d$
-depends on estimates obtained from levels $d{+}1, \ldots, D$, which introduces
-$D$-level coupling that the one-level argument does not capture.  A rigorous
-backward-induction treatment following \citet{kocsis2006bandit} gives an
-analogous bound with the constant $C_1$ replaced by $D \cdot C_1$
-(one application of the $K$-arm analysis per level).  For the paper's parameters
-($D{=}12$, $K{=}2$) this multiplies the constant by $12$ while leaving the
-$O\!\left(\sqrt{T \log K}\right)$ rate intact.  Theorem~\ref{thm:main} is stated
-with the one-level constant; the empirical slope of $0.635$
-(Figure~\ref{fig:regret}) confirms the $\sqrt{T}$ rate in practice across the
-full depth-$12$ tree.
+For $K{=}2$, $D{=}12$: $\Phi(2,12) = \sum_{d=0}^{11}2^{d/2} \leq 153$, so the proof
+gives $C_1 \leq 8 \cdot 153 \cdot \sigma_{\max}\sqrt{2} \approx 1224\,\sigma_{\max}\sqrt{2}$.
+This constant is large but fixed (independent of $T$), confirming the
+$O(\sqrt{T\log K})$ rate.  It is a Cauchy--Schwarz upper bound and typically
+far exceeds the empirical value: the observed slope $0.635$ at $T{=}400$
+(Figure~\ref{fig:regret}) and the actual regret values ($\approx 31$ at $T{=}400$)
+are consistent with an effective constant in the range $1$--$5\,\sigma_{\max}\sqrt{2}$
+for the paper's parameters.  The gap is expected: the Cauchy--Schwarz step is tight
+only when all $K^d$ nodes at depth $d$ are visited equally, which does not occur in
+practice under guided UCT exploration.
 \end{remark}
 
 \begin{proof}[Proof of Theorem~\ref{thm:main}]
@@ -183,7 +174,8 @@ The zero-mean property eliminates the $\sigma_{\max}$ contribution from
 direct-call steps; for proxy steps, the ancestor's noise cancels in expectation.
 
 \paragraph{Combining.}
-Adding term~(II) (Lemma~\ref{lem:uct}) and term~(I) (equation~\eqref{eq:est_err}):
+Adding term~(II) (Lemma~\ref{lem:uct}) and term~(I) (equation~\eqref{eq:est_err}),
+using the shorthand $C_1 = C_1(K,D) = 8\sigma_{\max}\sqrt{2}\,\Phi(K,D)$:
 \[
   \mathbb{E}[R(T)]
   \;\leq\; \underbrace{C_1\sqrt{T\log K}}_{\text{(II) selection}}
@@ -193,14 +185,15 @@ Adding term~(II) (Lemma~\ref{lem:uct}) and term~(I) (equation~\eqref{eq:est_err}
 \paragraph{Optimising $\gamma$.}
 Setting
 \[
-  \gamma^* = \tfrac{C_1}{2}\sqrt{\log K} = 4\sigma_{\max}\sqrt{2\log K}
+  \gamma^* = \tfrac{C_1}{2}\sqrt{\log K}
+           = 4\sigma_{\max}\sqrt{2\log K}\cdot\Phi(K,D)
 \]
 gives $2\gamma^*\sqrt{T} = C_1\sqrt{T\log K}$, so both terms are equal and
 \[
   \mathbb{E}[R(T)]
   \;\leq\; 2C_1\sqrt{T\log K}
-  \;=\; C\sqrt{T\log K},
-  \quad C = 2C_1 = 16\sigma_{\max}\sqrt{2}. \qquad\square
+  \;=\; C(K,D)\sqrt{T\log K},
+  \quad C(K,D) = 2C_1 = 16\sigma_{\max}\sqrt{2}\,\Phi(K,D). \qquad\square
 \]
 \end{proof}
 

@@ -13,16 +13,17 @@ $R(T) = O\!\left(\sqrt{T \log K}\right)$ against the oracle while invoking the v
 at most $N_{\mathcal{T}} = K^D - 1$ times in total---a constant independent of~$T$---so
 the call fraction $\mathcal{B}/T \to 0$ as $T \to \infty$.
 We further prove a matching $\Omega(\sqrt{T})$ lower bound, establishing rate-optimality.
-Experiments with 50 independent runs confirm that the empirical regret exponent
-is $0.635$, consistent with the $O(\sqrt{T})$ prediction. In the large-budget
-synthetic setting ($B{=}3200$), DVA-MCTS reduces verifier calls by $73\%$ while
-staying within $2$ percentage points of exhaustive-verification accuracy; savings
-are smaller at lower budgets, reflecting the exploration--exploitation crossover
-at $T \approx K^D$. An adaptive estimator for the Lipschitz constant $L$---which
-tracks the running maximum of observed score-change ratios during search---closes
-$97\%$ of the regret gap between a misspecified estimate and the oracle $L$,
-recovering full accuracy with only $1\%$ additional verifier calls. On $100$ real
-GSM8K problems using Math-Shepherd PRM annotations, DVA-MCTS achieves an $8.8\%$
-call reduction \emph{and} a $3.6$-percentage-point accuracy improvement over
-exhaustive verification, with larger call savings expected for PRMs with continuous
-(rather than binary) score outputs.
+Experiments with 50 matched-pair runs confirm the $O(\sqrt{T})$ regret rate (empirical
+exponent $0.635$).  A new exploitation-regime experiment spanning
+$B \in \{400, \ldots, 16{,}384\}$ directly validates Theorem~\ref{thm:calls}:
+DVA call counts grow by only $2.7\times$ as the budget grows $40\times$,
+reaching $\mathbf{93.7\%}$ call savings at $B{=}16{,}384$ with $100\%$ accuracy
+identical to Uniform Verification.  Matched-pair Wilcoxon tests confirm that
+DVA and Uniform are statistically indistinguishable in the exploration regime
+($T \ll K^D$; $p > 0.10$), as expected by the theory.
+An adaptive estimator for the Lipschitz constant $L$---tracking the running maximum
+of observed score-change ratios---requires no advance knowledge of $L$ and achieves
+the lowest empirical regret among all threshold configurations.
+On $100$ real GSM8K problems (Math-Shepherd PRM), DVA-MCTS simultaneously reduces
+verifier calls by $8.8\%$ \emph{and} improves accuracy by $3.6$ percentage points
+over exhaustive verification, with larger savings expected for continuous-valued PRMs.

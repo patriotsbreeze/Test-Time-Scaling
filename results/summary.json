@@ -1,11 +1,11 @@
 {
-  "total_elapsed_s": 16.0,
+  "total_elapsed_s": 1042.7,
   "experiments_run": [
-    "adaptive_l"
+    "exploitation"
   ],
   "config": {
     "budget": 400,
-    "n_runs": 50,
+    "n_runs": 20,
     "seed": 42,
     "lipschitz_L": 0.35,
     "noise_sigma": 0.05

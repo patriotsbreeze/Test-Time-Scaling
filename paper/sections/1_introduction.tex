@@ -62,17 +62,19 @@ We answer this question affirmatively. Specifically:
     algorithm must incur $\Omega(\sqrt{T})$ regret on some problem instance,
     establishing that DVA-MCTS is rate-optimal (Theorem~\ref{thm:lower}).
 
-  \item \textbf{Empirical validation.} Experiments with 50 independent runs confirm
+  \item \textbf{Empirical validation.} Experiments with 50 matched-pair runs confirm
     the $O(\sqrt{T})$ regret rate (empirical slope $0.635$, $R^2 = 0.961$).
-    In the large-budget synthetic regime ($B{=}3200$, $K^D{=}4{,}096$ nodes),
-    DVA-MCTS reduces verifier calls by $73\%$ with a $2$-percentage-point accuracy
-    gap; savings grow with budget as the algorithm enters the exploitation regime
-    ($T \gg K^D$). An adaptive online estimator for $L$ closes $97\%$ of the regret
-    gap caused by $L$ misspecification, recovering full accuracy with only $1\%$
-    additional verifier calls. On $100$ real GSM8K problems (Math-Shepherd PRM),
-    DVA-MCTS achieves $8.8\%$ fewer calls \emph{and} $3.6$ percentage points higher
-    accuracy than exhaustive verification, with larger call savings expected for PRMs
-    with continuous score outputs
+    A new exploitation-regime experiment ($B \in \{400, \ldots, 16{,}384\}$)
+    directly validates Theorem~\ref{thm:calls}: DVA call counts grow by $2.7\times$
+    while the budget grows $40\times$, achieving $\mathbf{93.7\%}$ call savings at
+    $B{=}16{,}384$ with $100\%$ accuracy matching Uniform Verification.
+    All pairwise comparisons in the exploration regime are statistically
+    non-significant (Wilcoxon $p > 0.10$), confirming the theoretical prediction
+    that savings require $T \gg K^D$. An adaptive online estimator for $L$
+    requires no advance knowledge of the Lipschitz constant and achieves the
+    best empirical regret across all threshold configurations.  On $100$ real
+    GSM8K problems (Math-Shepherd PRM), DVA-MCTS achieves $8.8\%$ fewer calls
+    \emph{and} $3.6$ pp higher accuracy than exhaustive verification
     (Section~\ref{sec:experiments}).
 \end{enumerate}
 

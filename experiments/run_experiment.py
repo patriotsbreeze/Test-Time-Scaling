@@ -6,15 +6,18 @@ Usage
   python experiments/run_experiment.py --exp all --budget 400 --runs 50
   python experiments/run_experiment.py --exp regret --budget 800 --runs 100
   python experiments/run_experiment.py --exp ablation --budget 400 --runs 50
+  python experiments/run_experiment.py --exp exploitation --runs 20
 
 Experiments
 -----------
-  regret      : Cumulative regret vs. steps (Figures 1a, 1b)
-  efficiency  : Verifier call count vs. budget (Figure 2)
-  lipschitz   : Empirical Lipschitz validation (Figure 3)
-  tradeoff    : Compute-accuracy tradeoff (Figure 4)
-  ablation    : Threshold exponent sweep (Figure 5)
-  all         : Run all experiments sequentially
+  regret        : Cumulative regret vs. steps (Figures 1a, 1b)
+  efficiency    : Verifier call count vs. budget (Figure 2)
+  lipschitz     : Empirical Lipschitz validation (Figure 3)
+  tradeoff      : Compute-accuracy tradeoff (Figure 4)
+  ablation      : Threshold exponent sweep (Figure 5)
+  adaptive_l    : Adaptive L estimator comparison (Figure 6)
+  exploitation  : Large-budget exploitation-regime experiment (T >> N_T)
+  all           : Run all experiments sequentially
 """
 
 from __future__ import annotations
@@ -28,6 +31,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+from scipy import stats as scipy_stats
 
 # Ensure the package is importable from the project root
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -122,33 +126,50 @@ def build_algorithms(cfg: ExperimentConfig, rng: np.random.Generator, verifier):
     return algos, dva_cfg
 
 
-# ── Experiment 1: Regret scaling ─────────────────────────────────────────────
+# ── Experiment 1: Regret scaling (matched-pairs design) ───────────────────────
 
 def exp_regret(cfg: ExperimentConfig, budget: int) -> dict:
-    log.info("=== Experiment: Regret Scaling (budget=%d, runs=%d) ===", budget, cfg.n_runs)
+    """Regret scaling with matched-pairs design for valid statistical comparison.
+
+    Each run uses the SAME random seed (hence the same true tree values) for all
+    algorithms so that pairwise differences in outcome are attributable to the
+    algorithm, not random variation in the problem instance.  Per-run arrays are
+    saved so that Wilcoxon signed-rank tests can be computed post-hoc.
+    """
+    log.info("=== Experiment: Regret Scaling (budget=%d, runs=%d, matched-pairs) ===",
+             budget, cfg.n_runs)
     t0 = time.time()
 
-    trackers = {name: RegretTracker(budget) for name in ["DVA-MCTS", "Uniform", "Random"]}
+    algo_names = ["DVA-MCTS", "Uniform", "Random"]
+    trackers = {name: RegretTracker(budget) for name in algo_names}
+    # Per-run data for statistical tests (matched pairs)
+    per_run: dict[str, dict] = {
+        name: {"final_regret": [], "calls": [], "accuracy": []}
+        for name in algo_names
+    }
+
+    dva_cfg = DVAConfig(
+        gamma=1.0, alpha=0.5,
+        lipschitz_L=cfg.lipschitz_L, sigma_max=cfg.noise_sigma,
+        branching_factor=cfg.branching_factor, max_depth=cfg.max_depth,
+    )
 
     for run in range(cfg.n_runs):
-        seed = cfg.seed + run
-        rng = np.random.default_rng(seed)
-        verifier, tree, rng = make_verifier_and_tree(cfg, seed)
-        dva_cfg = DVAConfig(
-            gamma=1.0, alpha=0.5,
-            lipschitz_L=cfg.lipschitz_L, sigma_max=cfg.noise_sigma,
-            branching_factor=cfg.branching_factor, max_depth=cfg.max_depth,
-        )
+        seed = cfg.seed + run   # SAME seed → same problem instance for all algorithms
 
         for name, AlgClass, kwargs in [
             ("DVA-MCTS", DVAMCTS,              {"config": dva_cfg}),
             ("Uniform",  UniformMCTS,          {"config": dva_cfg}),
             ("Random",   RandomAllocationMCTS, {"config": dva_cfg}),
         ]:
-            v2, t2, r2 = make_verifier_and_tree(cfg, seed + 10000 * list(trackers).index(name))
-            alg = AlgClass(verifier=v2, rng=r2, **kwargs)
-            result = alg.search(t2, budget)
+            # Recreate tree/verifier from same seed for every algorithm
+            v, t, r = make_verifier_and_tree(cfg, seed)
+            alg = AlgClass(verifier=v, rng=r, **kwargs)
+            result = alg.search(t, budget)
             trackers[name].add(result)
+            per_run[name]["final_regret"].append(result.final_regret)
+            per_run[name]["calls"].append(result.total_verifier_calls)
+            per_run[name]["accuracy"].append(1.0 if result.best_true_value >= 0.8 else 0.0)
 
         if (run + 1) % 10 == 0:
             log.info("  Run %d/%d done", run + 1, cfg.n_runs)
@@ -158,16 +179,53 @@ def exp_regret(cfg: ExperimentConfig, budget: int) -> dict:
     steps = list(range(10, budget + 1, 10))
     sampled_regrets = [float(mean_r[s - 1]) for s in steps]
     exponent, _, r2 = fit_regret_exponent(steps, sampled_regrets)
-
     log.info("  DVA-MCTS regret exponent: %.3f (R²=%.3f, expected ~0.50)", exponent, r2)
+
+    # Wilcoxon signed-rank tests: DVA-MCTS vs Uniform (matched pairs)
+    dva_regrets = np.array(per_run["DVA-MCTS"]["final_regret"])
+    uni_regrets = np.array(per_run["Uniform"]["final_regret"])
+    dva_acc     = np.array(per_run["DVA-MCTS"]["accuracy"])
+    uni_acc     = np.array(per_run["Uniform"]["accuracy"])
+
+    stat_regret, pval_regret = scipy_stats.wilcoxon(dva_regrets, uni_regrets,
+                                                     alternative="two-sided",
+                                                     zero_method="wilcox")
+    # accuracy: DVA should have higher accuracy → test alternative="greater"
+    # wilcoxon needs x - y; DVA acc - Uni acc
+    diff_acc = dva_acc - uni_acc
+    if diff_acc.sum() == 0:
+        pval_acc = 1.0   # no difference at all
+    else:
+        try:
+            stat_acc, pval_acc = scipy_stats.wilcoxon(diff_acc, alternative="greater",
+                                                       zero_method="wilcox")
+        except Exception:
+            pval_acc = float("nan")
+
+    log.info("  Wilcoxon (regret DVA vs Uni): stat=%.2f  p=%.4f", stat_regret, pval_regret)
+    log.info("  Wilcoxon (accuracy DVA > Uni): p=%.4f", pval_acc)
     log.info("  Elapsed: %.1fs", time.time() - t0)
 
     output = {
         "experiment": "regret",
         "budget": budget,
         "n_runs": cfg.n_runs,
+        "matched_pairs": True,
         "regret_exponent": exponent,
         "r_squared": r2,
+        "statistical_tests": {
+            "wilcoxon_regret_dva_vs_uniform": {
+                "statistic": float(stat_regret),
+                "p_value": float(pval_regret),
+                "alternative": "two-sided",
+                "note": "H0: DVA final regret = Uniform final regret",
+            },
+            "wilcoxon_accuracy_dva_gt_uniform": {
+                "p_value": float(pval_acc),
+                "alternative": "greater",
+                "note": "H1: DVA accuracy > Uniform accuracy",
+            },
+        },
         "algorithms": {},
     }
     for name, tracker in trackers.items():
@@ -178,6 +236,10 @@ def exp_regret(cfg: ExperimentConfig, budget: int) -> dict:
             "mean_verifier_calls": tracker.mean_verifier_calls(),
             "mean_final_regret": tracker.mean_final_regret(),
             "mean_accuracy": tracker.mean_accuracy(),
+            # Per-run arrays for downstream analysis
+            "per_run_final_regret": per_run[name]["final_regret"],
+            "per_run_calls": per_run[name]["calls"],
+            "per_run_accuracy": per_run[name]["accuracy"],
         }
 
     path = RESULTS_DIR / "regret_scaling.json"
@@ -453,8 +515,8 @@ def exp_adaptive_l(cfg: ExperimentConfig, budget: int) -> dict:
                for name in variants}
 
     for run in range(cfg.n_runs):
+        seed = cfg.seed + run   # SAME seed for all variants (matched pairs)
         for name, dva_cfg in variants.items():
-            seed = cfg.seed + run + hash(name) % 10000
             v, t, r = make_verifier_and_tree(cfg, seed)
             alg = DVAMCTS(verifier=v, config=dva_cfg, rng=r)
             res = alg.search(t, budget)
@@ -495,18 +557,158 @@ def exp_adaptive_l(cfg: ExperimentConfig, budget: int) -> dict:
     fixed_r = summary["fixed_Lhat"]["regret_mean"]
     gap_closed = (fixed_r - adaptive_r) / max(fixed_r - known_r, 1e-9) * 100
     log.info("  Gap closed by adaptive L: %.1f%%", gap_closed)
+
+    # Wilcoxon matched-pair tests for adaptive_L vs fixed_Lhat (same seed per run)
+    fixed_arr    = np.array(results["fixed_Lhat"]["regrets"])
+    adaptive_arr = np.array(results["adaptive_L"]["regrets"])
+    known_arr    = np.array(results["known_L"]["regrets"])
+    try:
+        stat_af, pval_af = scipy_stats.wilcoxon(adaptive_arr, fixed_arr,
+                                                 alternative="less",
+                                                 zero_method="wilcox")
+        stat_ak, pval_ak = scipy_stats.wilcoxon(adaptive_arr, known_arr,
+                                                 alternative="two-sided",
+                                                 zero_method="wilcox")
+    except Exception as e:
+        log.warning("  Wilcoxon failed: %s", e)
+        stat_af = pval_af = stat_ak = pval_ak = float("nan")
+
+    log.info("  Wilcoxon adaptive < fixed (regret): stat=%.2f  p=%.4f", stat_af, pval_af)
+    log.info("  Wilcoxon adaptive vs known (regret): stat=%.2f  p=%.4f", stat_ak, pval_ak)
     log.info("  Elapsed: %.1fs", time.time() - t0)
 
     output = {
         "experiment": "adaptive_l",
         "budget": budget,
         "n_runs": cfg.n_runs,
+        "matched_pairs": True,
         "true_L": cfg.lipschitz_L,
         "fixed_lhat": l_hat_fixed,
         "gap_closed_pct": float(gap_closed),
         "summary": summary,
+        "statistical_tests": {
+            "wilcoxon_adaptive_lt_fixed_regret": {
+                "statistic": float(stat_af),
+                "p_value": float(pval_af),
+                "alternative": "less",
+                "note": "H1: adaptive_L regret < fixed_Lhat regret",
+            },
+            "wilcoxon_adaptive_vs_known_regret": {
+                "statistic": float(stat_ak),
+                "p_value": float(pval_ak),
+                "alternative": "two-sided",
+                "note": "H0: adaptive_L regret = known_L regret",
+            },
+        },
+        # Per-run arrays for downstream analysis
+        "per_run_regrets": {
+            "known_L": known_arr.tolist(),
+            "fixed_Lhat": fixed_arr.tolist(),
+            "adaptive_L": adaptive_arr.tolist(),
+        },
     }
     path = RESULTS_DIR / "adaptive_l_comparison.json"
+    with open(path, "w") as f:
+        json.dump(output, f, indent=2)
+    log.info("  Saved → %s", path)
+    return output
+
+
+# ── Experiment 7: Exploitation-regime scaling (T >> N_T) ──────────────────────
+
+def exp_exploitation_regime(cfg: ExperimentConfig, n_runs: int = 20) -> dict:
+    """Run DVA-MCTS and Uniform Verification at large budgets where T >> N_T.
+
+    N_T = K^D - 1 = 4095 for K=2, D=12.  The main theoretical prediction is:
+      (a) DVA verifier calls plateau near N_T (constant, independent of T).
+      (b) Call fraction N_T/T → 0 as T → ∞.
+      (c) Accuracy remains competitive with Uniform.
+
+    Budgets span the crossover: exploration regime (T < N_T), transition (T ≈ N_T),
+    and deep exploitation regime (T >> N_T).
+    """
+    budgets = [400, 1000, 2000, 4000, 8000, 16384]
+    N_T = cfg.branching_factor ** cfg.max_depth - 1   # = 4095
+
+    log.info("=== Experiment: Exploitation Regime (N_T=%d, runs=%d) ===", N_T, n_runs)
+    log.info("    Budgets: %s", budgets)
+    t0 = time.time()
+
+    dva_cfg = DVAConfig(
+        gamma=1.0, alpha=0.5,
+        lipschitz_L=cfg.lipschitz_L, sigma_max=cfg.noise_sigma,
+        branching_factor=cfg.branching_factor, max_depth=cfg.max_depth,
+    )
+
+    results_by_budget: dict[int, dict] = {}
+
+    for budget in budgets:
+        dva_calls, uni_calls = [], []
+        dva_acc,   uni_acc   = [], []
+        dva_regret, uni_regret = [], []
+
+        for run in range(n_runs):
+            seed = cfg.seed + run   # matched pairs
+
+            # DVA-MCTS
+            v, t, r = make_verifier_and_tree(cfg, seed)
+            alg = DVAMCTS(verifier=v, config=dva_cfg, rng=r)
+            res = alg.search(t, budget)
+            dva_calls.append(res.total_verifier_calls)
+            dva_acc.append(1.0 if res.best_true_value >= 0.8 else 0.0)
+            dva_regret.append(res.final_regret)
+
+            # Uniform (same seed → same problem)
+            v, t, r = make_verifier_and_tree(cfg, seed)
+            alg = UniformMCTS(verifier=v, config=dva_cfg, rng=r)
+            res = alg.search(t, budget)
+            uni_calls.append(res.total_verifier_calls)
+            uni_acc.append(1.0 if res.best_true_value >= 0.8 else 0.0)
+            uni_regret.append(res.final_regret)
+
+        dva_c = np.array(dva_calls)
+        uni_c = np.array(uni_calls)
+        dva_a = np.array(dva_acc)
+        uni_a = np.array(uni_acc)
+        dva_r = np.array(dva_regret)
+        uni_r = np.array(uni_regret)
+
+        call_savings_pct = float((1 - dva_c.mean() / uni_c.mean()) * 100)
+        call_fraction    = float(dva_c.mean() / budget)
+
+        results_by_budget[budget] = {
+            "dva_calls_mean":   float(dva_c.mean()),
+            "dva_calls_std":    float(dva_c.std()),
+            "uni_calls_mean":   float(uni_c.mean()),
+            "dva_accuracy":     float(dva_a.mean()),
+            "uni_accuracy":     float(uni_a.mean()),
+            "dva_regret_mean":  float(dva_r.mean()),
+            "uni_regret_mean":  float(uni_r.mean()),
+            "call_savings_pct": call_savings_pct,
+            "dva_call_fraction": call_fraction,
+            "n_t_fraction":     float(N_T / budget),
+        }
+        log.info(
+            "  B=%6d | DVA calls=%5.0f (%.1f%% of B) | savings=%5.1f%% | "
+            "DVA acc=%.1f%% | N_T/B=%.3f",
+            budget, dva_c.mean(), call_fraction * 100,
+            call_savings_pct, dva_a.mean() * 100, N_T / budget,
+        )
+
+    log.info("  Elapsed: %.1fs", time.time() - t0)
+
+    output = {
+        "experiment": "exploitation_regime",
+        "N_T": N_T,
+        "n_runs": n_runs,
+        "budgets": budgets,
+        "results": results_by_budget,
+        "note": (
+            "Matched-pairs design: same seed for DVA and Uniform per run. "
+            f"N_T={N_T} is the exploitation crossover (K^D - 1 for K=2, D=12)."
+        ),
+    }
+    path = RESULTS_DIR / "exploitation_regime.json"
     with open(path, "w") as f:
         json.dump(output, f, indent=2)
     log.info("  Saved → %s", path)
@@ -517,7 +719,8 @@ def exp_adaptive_l(cfg: ExperimentConfig, budget: int) -> dict:
 
 def parse_args():
     p = argparse.ArgumentParser(description="DVA-MCTS Experiments")
-    p.add_argument("--exp", choices=["all", "regret", "efficiency", "lipschitz", "tradeoff", "ablation", "adaptive_l"],
+    p.add_argument("--exp", choices=["all", "regret", "efficiency", "lipschitz",
+                                     "tradeoff", "ablation", "adaptive_l", "exploitation"],
                    default="all")
     p.add_argument("--budget", type=int, default=400,
                    help="Search budget for regret/ablation experiments")
@@ -560,6 +763,9 @@ def main():
 
     if args.exp in ("all", "adaptive_l"):
         all_results["adaptive_l"] = exp_adaptive_l(cfg, budget=args.budget)
+
+    if args.exp in ("all", "exploitation"):
+        all_results["exploitation"] = exp_exploitation_regime(cfg, n_runs=args.runs)
 
     summary_path = RESULTS_DIR / "summary.json"
     meta = {

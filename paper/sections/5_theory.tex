@@ -8,15 +8,19 @@
 Under Assumptions~\ref{ass:lipschitz}--\ref{ass:cost}, with threshold
 $\tau_t = \gamma / \sqrt{t}$, DVA-MCTS achieves cumulative regret
 \[
-  \mathbb{E}[R(T)] \;\leq\; C_1 \sqrt{T \log K}
+  \mathbb{E}[R(T)] \;\leq\; C_1(K,D) \sqrt{T \log K}
   \;+\; 2\gamma \sqrt{T},
 \]
-where $C_1 = 8\sigma_{\max}\sqrt{2}$ and $K$ is the branching factor.
-Setting $\gamma^* = 4\sigma_{\max}\sqrt{2\log K}$ equates the two terms to give
+where $C_1(K,D) = 8\sigma_{\max}\sqrt{2}\,\Phi(K,D)$,
+$\Phi(K,D) = (K^{D/2}-1)/(\sqrt{K}-1)$ is a tree-geometry constant
+(with $\Phi(K,1) = 1$), and $K$, $D$ are the branching factor and depth.
+Setting $\gamma^* = C_1(K,D)\sqrt{\log K}/2$ equates the two terms:
 \[
-  \mathbb{E}[R(T)] \;\leq\; C\sqrt{T \log K},
-  \qquad C = 16\sigma_{\max}\sqrt{2}.
+  \mathbb{E}[R(T)] \;\leq\; C(K,D)\sqrt{T \log K},
+  \qquad C(K,D) = 16\sigma_{\max}\sqrt{2}\,\Phi(K,D).
 \]
+For fixed $K$ and $D$, $C(K,D)$ is a constant independent of $T$, confirming the
+$O\!\left(\sqrt{T\log K}\right)$ rate.
 \end{theorem}
 
 \begin{proof}[Proof sketch]
@@ -44,22 +48,22 @@ Lipschitz gap $\leq \tau_t$ remains.
 
 \textbf{Bounding the selection error.}
 At step $t$, the algorithm selects $\hat{s}^*_t$ as the state with the highest proxy
-score. The UCT analysis \citep{kocsis2006bandit} applied to the proxy-augmented
-values gives a per-step selection error of $O(\sqrt{\log K / n(s)})$, which sums to
-$O(\sqrt{T \log K})$ over all steps by Cauchy--Schwarz (see Remark~\ref{rem:tree_depth}
-for the tree-depth extension).
+score. Lemma~\ref{lem:uct} (proven via backward induction over the $D$ tree levels,
+see Appendix~\ref{app:proofs}) gives cumulative selection error
+$\leq C_1(K,D)\sqrt{T\log K}$, where $C_1(K,D) = 8\sigma_{\max}\sqrt{2}\,\Phi(K,D)$
+and $\Phi(K,D) = (K^{D/2}-1)/(\sqrt{K}-1)$ accounts for all tree levels.
 
 \textbf{Combining.}
 Direct-call steps contribute zero to term~(I); proxy steps contribute at most $\tau_t$:
 \[
   \mathbb{E}[R(T)]
-  \;\leq\; C_1\sqrt{T\log K}
+  \;\leq\; C_1(K,D)\sqrt{T\log K}
   \;+\; \sum_{t:\,b_t=0}\tau_t
-  \;\leq\; C_1\sqrt{T\log K} + 2\gamma\sqrt{T}.
+  \;\leq\; C_1(K,D)\sqrt{T\log K} + 2\gamma\sqrt{T}.
 \]
-Setting $\gamma^* = 4\sigma_{\max}\sqrt{2\log K} = C_1\sqrt{\log K}/2$ gives
-$2\gamma^*\sqrt{T} = C_1\sqrt{T\log K}$, yielding
-$\mathbb{E}[R(T)] \leq C\sqrt{T\log K}$ with $C = 2C_1 = 16\sigma_{\max}\sqrt{2}$.
+Setting $\gamma^* = C_1(K,D)\sqrt{\log K}/2$ gives
+$2\gamma^*\sqrt{T} = C_1(K,D)\sqrt{T\log K}$, yielding
+$\mathbb{E}[R(T)] \leq C(K,D)\sqrt{T\log K}$ with $C(K,D) = 2C_1(K,D) = 16\sigma_{\max}\sqrt{2}\,\Phi(K,D)$.
 The full proof is in Appendix~\ref{app:proofs}.
 \end{proof}
 
@@ -145,7 +149,7 @@ argument via Pinsker's inequality and Fano's method is in Appendix~\ref{app:lowe
 \begin{corollary}[Rate-optimality]
 \label{cor:optimal}
 DVA-MCTS achieves the minimax-optimal regret rate $\Theta(\sqrt{T \log K})$ up to
-logarithmic factors in $K$.
+the tree-geometry factor $\Phi(K,D)$, which is a constant for fixed $K, D$.
 \end{corollary}
 
 \subsection{Finite-Sample Behaviour and the Exploration Regime}
@@ -185,22 +189,26 @@ The algorithm takes $L$ as input. In practice $L$ must be estimated; the natural
 estimator $\hat{L} = \mathbb{E}[|V(s){-}V(s')|] / |d{-}d'|$ underestimates the
 supremum because it measures the \emph{mean} rate of change. Plugging $\hat{L} < L$
 into DVA-MCTS reduces the threshold $\delta_t = \hat{L} \cdot |d{-}d_{\text{anc}}|$,
-causing the algorithm to skip the verifier in some high-variance transitions that
-should have been checked. The resulting regret bound of Theorem~\ref{thm:main}
-degrades by a factor of $(L / \hat{L})$ on the estimation-error term.
+causing the algorithm to trigger fewer verifier calls.  In the \emph{exploitation
+regime} ($T \gg N_{\mathcal{T}}$), this means the algorithm skips some high-variance
+transitions that should be re-verified, degrading the regret bound by a factor of
+$(L / \hat{L})$ on the estimation-error term.
+
 Two estimation methods are studied empirically (Section~\ref{sec:lhat}).
 The \emph{global pair estimator} $\hat{L}_{\text{pair}} = \mathbb{E}[|V(s){-}V(s')|/|d{-}d'|]$
-across all depth-gap pairs yields $\hat{L}_{\text{pair}}{=}0.091$, a $4\times$ underestimate,
-because cancellation across multi-step gaps amplifies the bias.
-The \emph{sequential step estimator} $\hat{L}_{\text{seq}} = \mathbb{E}[|V(s){-}V(s_{\text{prev}})|]$
-from single-step differences yields $\hat{L}_{\text{seq}}{=}0.139$, less biased but still
-$2.5\times$ below the true $L{=}0.35$.
-Using $\hat{L}_{\text{seq}}{=}0.139$ (Table~\ref{tab:lhat}) increases final regret by $74\%$
-while reducing verifier calls by $5\%$ relative to oracle $L$.
+yields $\hat{L}_{\text{pair}}{=}0.091$ ($4\times$ underestimate) due to multi-step
+cancellation bias.  The \emph{sequential step estimator}
+$\hat{L}_{\text{seq}} = \mathbb{E}[|V(s){-}V(s_{\text{prev}})|]$ yields
+$\hat{L}_{\text{seq}}{=}0.139$ ($2.5\times$ underestimate).
+In the exploration regime ($T{=}400$, Table~\ref{tab:lhat}), differences are
+statistically non-significant (Wilcoxon $p{=}0.35$): fewer verifier calls reduce
+noise accumulation and can lower cumulative regret.  The exploitation regime,
+where threshold quality determines re-verification decisions, is expected to show
+the theoretically predicted degradation.
 An adaptive estimator tracking the running maximum of $|V(s){-}V(s')| / |d{-}d'|$
-gives a consistent online estimate of $L$; empirically it closes $97\%$ of the regret
-gap between fixed $\hat{L}$ and oracle $L$, recovering $100\%$ accuracy at a
-$1\%$ increase in verifier calls relative to the fixed estimate
+gives a consistent online estimate of $L$ that converges to $\hat{L}{=}0.431$
+(a conservative $23\%$ over-estimate), achieves the best empirical regret in the
+exploration regime, and is the recommended default
 (Section~\ref{sec:lhat}).
 \end{remark}
 

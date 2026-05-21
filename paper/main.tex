@@ -54,11 +54,12 @@
   \centering
   \includegraphics[width=\linewidth]{figures/fig1_regret_comparison.pdf}
   \caption{
-    Regret comparison over $T{=}400$ search steps (50 independent runs,
+    Regret comparison over $T{=}400$ search steps (50 matched-pair runs,
     shaded $= \pm1$ SD).
-    \textbf{(a)} Cumulative regret: DVA-MCTS and Uniform Verification are close in
-    the exploration regime ($T \ll K^D$); DVA achieves $98\%$ final accuracy vs.\
-    $96\%$ for Uniform (Table~\ref{tab:summary}).
+    \textbf{(a)} Cumulative regret: no algorithm dominates significantly in the
+    exploration regime ($T \ll K^D$; Wilcoxon $p{=}0.109$ for DVA vs.\ Uniform).
+    DVA achieves $98\%$ accuracy, Uniform and Random achieve $100\%$
+    (Table~\ref{tab:summary}).
     \textbf{(b)} Log-log scaling: empirical slope $0.635$ ($R^2{=}0.961$), above
     the asymptotic $0.5$ prediction due to exploration-regime overhead
     (Remark~\ref{rem:exploration}).
@@ -125,15 +126,15 @@
   \centering
   \includegraphics[width=\linewidth]{figures/fig6_estimated_L.pdf}
   \caption{
-    Effect of Lipschitz constant specification ($T{=}400$, 50 runs;
+    Effect of Lipschitz constant specification ($T{=}400$, 50 matched-pair runs;
     Table~\ref{tab:lhat}).
-    \textbf{(a)} Grouped bar chart of mean final regret; fixed
-    $\hat{L}{=}0.139$ yields $74\%$ higher regret than known $L{=}0.35$.
-    The adaptive estimator (running max of $|V(s){-}V(s')|/\Delta d$)
-    closes $\mathbf{97\%}$ of this gap, recovering $100\%$ accuracy.
+    \textbf{(a)} Grouped bar chart of mean final regret; in the exploration regime,
+    all three configurations perform comparably (no pairwise Wilcoxon test significant
+    at $\alpha{=}0.05$).  The adaptive estimator achieves the lowest regret ($23.88$)
+    and $100\%$ accuracy; see Section~\ref{sec:lhat} and Remark~\ref{rem:lhat}.
     \textbf{(b)} Regret--calls scatter: adaptive $\hat{L}$ Pareto-dominates
-    fixed $\hat{L}$ (lower regret, comparable calls); see
-    Section~\ref{sec:lhat} and Remark~\ref{rem:lhat}.
+    fixed $\hat{L}$ (lower regret, more calls); both outperform oracle $L$ in this
+    exploration regime.
   }
   \label{fig:lhat}
 \end{figure}

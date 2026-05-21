@@ -11,23 +11,35 @@ $\mathcal{B}/T \to 0$ as $T \to \infty$---a sub-linear reduction in verification
 overhead. A matching $\Omega(\sqrt{T})$ lower
 bound establishes rate-optimality.
 
-Three empirical findings strengthen the theoretical picture.
-First, the large-budget synthetic experiments confirm the $O(\sqrt{T})$ scaling
-and show $73\%$ fewer verifier calls than exhaustive verification at $B{=}3{,}200$
-with only a $2$-percentage-point accuracy gap.
-Second, the adaptive Lipschitz estimator---which tracks the running maximum of
-observed $|V(s){-}V(s')|/|d{-}d'|$ ratios during search---closes $\mathbf{97\%}$
-of the regret gap between a misspecified fixed $\hat{L}$ and the oracle $L$,
-recovering full accuracy ($100\%$) with only $1\%$ more verifier calls than the
-fixed estimate. This near-complete recovery means DVA-MCTS requires no advance
-knowledge of $L$ in practice: the online estimator converges to a conservative
-over-estimate within the first few hundred steps.
-Third, on $100$ real GSM8K problems (Math-Shepherd PRM), DVA-MCTS uses $8.8\%$
-fewer verifier calls \emph{and} improves accuracy by $3.6$ percentage points over
-exhaustive verification---a Pareto improvement on both efficiency and quality metrics.
-The accuracy gain arises from the same proxy-smoothing mechanism observed in the
-synthetic setting: skipping verifier calls on low-variance steps prevents premature
-commitment to noisy estimates, improving final solution selection.
+Four empirical findings strengthen the theoretical picture.
+
+\emph{First}, a new exploitation-regime experiment ($B \in \{400,\ldots,16{,}384\}$,
+matched pairs) directly validates Theorem~\ref{thm:calls}: DVA call counts grow from
+$381$ to $1{,}032$ as $B$ grows $40\times$, while Uniform calls grow linearly.
+At $B{=}16{,}384$, DVA uses $\mathbf{93.7\%}$ fewer verifier calls than Uniform
+while achieving identical accuracy ($100\%$). The empirical call fraction $6.3\%$
+is $4\times$ smaller than the theoretical bound $N_{\mathcal{T}}/B = 25\%$,
+confirming that the Cauchy--Schwarz analysis is conservative in practice.
+
+\emph{Second}, a matched-pairs comparison at $T{=}400$ (exploration regime,
+50 runs) shows no statistically significant difference between DVA-MCTS, Uniform
+Verification, and Random Allocation in cumulative regret or accuracy ($p > 0.10$
+for all pairwise Wilcoxon tests). This is the expected behaviour: in the
+exploration regime all algorithms verify nearly every new node, and the threshold's
+discrimination between ``call'' and ``skip'' is limited.
+
+\emph{Third}, the adaptive Lipschitz estimator---tracking the running maximum of
+observed $|V(s){-}V(s')|/|d{-}d'|$ ratios---converges to $\hat{L}{=}0.431$
+(a $23\%$ over-estimate of the true $L{=}0.35$), achieving the lowest cumulative
+regret ($23.88$) and $100\%$ accuracy among all three Lipschitz configurations.
+No pairwise Wilcoxon test is significant at $T{=}400$, confirming that the
+exploration regime is insufficiently sensitive to threshold specification; the
+exploitation regime is where correct $L$ matters most.
+
+\emph{Fourth}, on $100$ real GSM8K problems (Math-Shepherd PRM), DVA-MCTS uses
+$8.8\%$ fewer verifier calls \emph{and} improves accuracy by $3.6$ percentage
+points over exhaustive verification---a Pareto improvement consistent with the
+synthetic findings.
 
 \paragraph{Limitations.}
 The GSM8K experiment is based on Math-Shepherd's binary step labels; the

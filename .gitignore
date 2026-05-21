@@ -12,6 +12,8 @@ results/*.json
 !results/adaptive_l_comparison.json
 !results/gsm8k_prm_results.json
 !results/gsm8k_prm_dataset.json
+!results/exploitation_regime.json
+!results/regret_scaling.json
 
 # LaTeX build artifacts
 paper/*.aux
