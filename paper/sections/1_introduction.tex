@@ -70,7 +70,7 @@ We answer this question affirmatively. Specifically:
     $B{=}16{,}384$ with $100\%$ accuracy matching Uniform Verification.
     All pairwise comparisons in the exploration regime are statistically
     non-significant (Wilcoxon $p > 0.10$), confirming the theoretical prediction
-    that savings require $T \gg K^D$. An adaptive online estimator for $L$
+    that large savings require $T \gtrsim N_{\mathcal{T}}$. An adaptive online estimator for $L$
     requires no advance knowledge of the Lipschitz constant and achieves the
     best empirical regret across all threshold configurations.  On $100$ real
     GSM8K problems (Math-Shepherd PRM), DVA-MCTS achieves $8.8\%$ fewer calls
@@ -82,22 +82,36 @@ We answer this question affirmatively. Specifically:
 
 \paragraph{Significance.}
 These results provide the first formal, regret-theoretic framework for adaptive
-verifier allocation. The sub-linear verifier budget translates directly to
-wall-clock inference savings in deployed systems. In the synthetic setting, once
-the tree is sufficiently explored ($T \gg K^D$), DVA-MCTS requires $862$ verifier
-calls at $B{=}3{,}200$ versus $3{,}200$ for uniform allocation---a $3.7\times$
-reduction. Critically, the algorithm does not require prior knowledge of $L$: an
-online adaptive estimator converges during search and closes $97\%$ of the regret
-gap caused by $L$ misspecification. On real Math-Shepherd PRM data with binary labels, DVA-MCTS simultaneously reduces
-verifier calls by $8.8\%$ \emph{and} improves accuracy by $3.6$ percentage points
-relative to exhaustive verification---a Pareto improvement in both efficiency and
-quality. Converting the same binary labels to running-average continuous scores
-($L_{\text{eff}}{=}0.155$) recovers $\mathbf{49.9\%}$ call savings, empirically
-confirming that lower effective $L$ is the key driver: the effective Lipschitz
-constant determines how often the threshold triggers verification.
-These gains are particularly valuable when the verifier is a large neural network
-(e.g., a $7$B regression-trained PRM with $L_{\text{eff}} \lesssim 0.1$) executed
-on dedicated hardware.
+verifier allocation. Efficiency unfolds across three budget regimes:
+
+\begin{itemize}
+  \item \emph{Exploration} ($B \ll N_{\mathcal{T}}{=}8{,}190$ for $K{=}2$, $D{=}12$):
+    DVA's threshold rarely fires on first-visit nodes; savings are modest (${<}5\%$).
+    All algorithms are statistically indistinguishable ($p{>}0.10$, Wilcoxon).
+
+  \item \emph{Transition} ($B \lesssim N_{\mathcal{T}}$):
+    As the tree fills, the Lipschitz proxy substitutes for increasingly many verifier
+    calls: $23\%$ savings at $B{=}800$, $51\%$ at $B{=}1{,}600$,
+    $73\%$ at $B{=}3{,}200$ (requiring only $862$ calls vs.\ $3{,}200$ for Uniform).
+
+  \item \emph{Exploitation} ($B \gg N_{\mathcal{T}}$):
+    DVA call counts plateau (single-verification ceiling, Theorem~\ref{thm:calls}(a)):
+    $\mathbf{93.7\%}$ savings at $B{=}16{,}384$ with $100\%$ accuracy,
+    identical to Uniform Verification.
+    A small-tree experiment ($K{=}2$, $D{=}4$, $N_{\mathcal{T}}{=}30$) makes this
+    regime directly checkable at budget $B{=}400$: $94.6\%$ savings.
+\end{itemize}
+
+Crucially, \emph{no advance knowledge of $L$ is required}: the adaptive
+$\hat{L}$ estimator tracks the running maximum of observed score-change ratios,
+converges to $\hat{L}{=}0.431$ (a conservative $23\%$ over-estimate), and achieves
+the lowest empirical regret ($23.88$) and $100\%$ accuracy.
+The effective Lipschitz constant $L_{\text{eff}}$ is the primary efficiency driver.
+On Math-Shepherd binary PRMs ($L_{\text{eff}}{=}0.5$), DVA achieves $8.8\%$ savings
+\emph{and} $3.6$ pp accuracy gain. Converting to running-average continuous scores
+($L_{\text{eff}}{=}0.155$) recovers $\mathbf{49.9\%}$ savings---confirming the
+prediction that neural regression PRMs with $L_{\text{eff}} \lesssim 0.1$ will
+exceed $73\%$ savings on production systems.
 
 \paragraph{Organization.}
 Section~\ref{sec:related} reviews related work. Section~\ref{sec:formulation}

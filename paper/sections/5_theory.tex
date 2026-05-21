@@ -147,9 +147,16 @@ $\gamma$ and $L$. For the theoretically optimal $\gamma^* = 4\sigma_{\max}\sqrt{
 a constant that grows with signal-to-noise $\sigma_{\max}/L$ and shrinks with tree
 depth $D$. Part (b) thus shows that a \emph{better signal-to-noise ratio or shallower
 tree} yields a longer call-free initial phase, even within the exploration regime.
-In the exploitation regime ($T \gg N_{\mathcal{T}}$), both bounds agree and the
-savings fraction $N_{\mathcal{T}}/T \to 0$: $23\%$ at $B{=}800$, $51\%$ at $B{=}1600$,
-and $73\%$ at $B{=}3200$ in our experiments (Section~\ref{sec:efficiency_results}).
+Three distinct regimes emerge empirically (see also Section~\ref{sec:regime}):
+\emph{exploration} ($B \ll N_{\mathcal{T}}$, savings ${<}5\%$);
+\emph{transition} ($B \lesssim N_{\mathcal{T}}$, proxy mechanism active,
+savings $23\%$--$73\%$ for $B \in [800, 3200]$);
+and \emph{exploitation} ($B \gg N_{\mathcal{T}}$, single-verification ceiling active,
+savings $\to N_{\mathcal{T}}/B \to 0$: $93.7\%$ at $B{=}16{,}384$,
+and $94.6\%$ at $B{=}400$ for the small-tree setting $K{=}2$, $D{=}4$).
+In the exploitation regime, both parts (a) and (b) of Theorem~\ref{thm:calls} agree
+and the savings fraction $N_{\mathcal{T}}/T \to 0$
+(Section~\ref{sec:exploitation_results}).
 \end{remark}
 
 \subsection{Lower Bound}
@@ -185,33 +192,37 @@ by a factor $\Phi(K,D)$ relative to the tight $D{=}1$ value; this is a proof art
 
 \subsection{Finite-Sample Behaviour and the Exploration Regime}
 
-\begin{remark}[Exploration vs.\ exploitation regimes]
+\begin{remark}[Three budget regimes]
 \label{rem:exploration}
 Theorem~\ref{thm:main} is an asymptotic statement as $T \to \infty$.
-At finite $T$, the algorithm passes through two distinct regimes determined by the
-tree size $N_{\mathcal{T}} = K(K^D-1)/(K-1)$:
+At finite $T$, the algorithm passes through three distinct regimes determined by
+$N_{\mathcal{T}} = K(K^D-1)/(K-1)$ (Section~\ref{sec:regime}):
 
 \begin{enumerate}[(i)]
-  \item \textbf{Exploration regime} ($T \lesssim N_{\mathcal{T}}$): Most visited
-    nodes are new. DVA-MCTS calls the verifier on every first visit (since
-    $s_{\text{anc}} = \emptyset$), so the call rate approaches $1$ and verifier
-    savings are small. The regret slope in log-log space is higher than $0.5$
-    because the near-unit call rate adds a $\Theta(T)$ overhead; this bias
-    vanishes as $T/K^D \to \infty$.
-  \item \textbf{Exploitation regime} ($T \gg N_{\mathcal{T}}$): Most visited
-    nodes already have stored observations; the threshold $\tau_t$ governs
-    whether re-verification is triggered. Call counts plateau at
-    $N_{\mathcal{T}}$ (Theorem~\ref{thm:calls}(a)), the call fraction
-    $N_{\mathcal{T}}/T \to 0$, and the $O(\sqrt{T\log K})$ regret rate
-    emerges.
+  \item \textbf{Exploration} ($T \ll N_{\mathcal{T}}$): Most visited nodes are new.
+    DVA calls the verifier on every first visit ($s_{\text{anc}} = \emptyset$),
+    call rate $\approx 1$, savings ${<}5\%$.  The log-log regret slope exceeds $0.5$
+    due to $\Theta(T)$ first-visit overhead; this bias vanishes as
+    $T/N_{\mathcal{T}} \to \infty$.
+
+  \item \textbf{Transition} ($T \lesssim N_{\mathcal{T}}$): The tree is partially
+    covered.  DVA's Lipschitz proxy substitutes for verifier calls at first-visit
+    nodes whose parent score is within threshold $\tau_t$.  Savings grow from
+    ${\sim}5\%$ to ${\sim}73\%$ across $B \in [400, 3200]$ (proxy mechanism).
+
+  \item \textbf{Exploitation} ($T \gg N_{\mathcal{T}}$): Most nodes have stored
+    observations.  The single-verification ceiling
+    (Theorem~\ref{thm:calls}(a)) dominates: call count $\leq N_{\mathcal{T}}$,
+    savings fraction $N_{\mathcal{T}}/T \to 0$, and the $O(\sqrt{T\log K})$
+    rate emerges cleanly.
 \end{enumerate}
 
-In the experiments of Section~\ref{sec:experiments} ($K{=}2$, $D{=}12$,
-$N_{\mathcal{T}}{=}8{,}190$), budgets $B \leq 400$ are firmly in the exploration
-regime, which explains the empirical slope of $0.635$ at $T{=}400$.
-The transition is visible in Figure~\ref{fig:calls}: efficiency savings accelerate
-markedly for $B \geq 800$, consistent with the exploitation regime beginning around
-$B \approx N_{\mathcal{T}}$.
+In the main experiments ($K{=}2$, $D{=}12$, $N_{\mathcal{T}}{=}8{,}190$),
+budgets $B \leq 400$ are firmly in the exploration regime (explains slope $0.635$
+at $T{=}400$); $B \in [800, 3200]$ are in the transition regime; and $B{=}16{,}384$
+first enters the exploitation regime.  The small-tree setting ($K{=}2$, $D{=}4$,
+$N_{\mathcal{T}}{=}30$) makes the exploitation plateau accessible at $B{=}100$
+(Section~\ref{sec:small_tree_results}).
 \end{remark}
 
 \begin{remark}[Sensitivity to Lipschitz constant estimation]

@@ -13,20 +13,23 @@ $R(T) = O\!\left(\sqrt{T \log K}\right)$ against the oracle while invoking the v
 at most $N_{\mathcal{T}} = K(K^D-1)/(K-1)$ times in total---a constant independent of~$T$---so
 the call fraction $\mathcal{B}/T \to 0$ as $T \to \infty$.
 We further prove a matching $\Omega(\sqrt{T})$ lower bound, establishing rate-optimality.
-Experiments with 50 matched-pair runs confirm the $O(\sqrt{T})$ regret rate (empirical
-exponent $0.635$).  A new exploitation-regime experiment spanning
-$B \in \{400, \ldots, 16{,}384\}$ directly validates Theorem~\ref{thm:calls}:
-DVA call counts grow by only $2.7\times$ as the budget grows $40\times$,
-reaching $\mathbf{93.7\%}$ call savings at $B{=}16{,}384$ with $100\%$ accuracy
-identical to Uniform Verification.  Matched-pair Wilcoxon tests confirm that
-DVA and Uniform are statistically indistinguishable in the exploration regime
-($T \ll K^D$; $p > 0.10$), as expected by the theory.
-An adaptive estimator for the Lipschitz constant $L$---tracking the running maximum
-of observed score-change ratios---requires no advance knowledge of $L$ and achieves
-the lowest empirical regret among all threshold configurations.
-On $100$ real GSM8K problems (Math-Shepherd PRM) with binary step labels,
-DVA-MCTS simultaneously reduces verifier calls by $8.8\%$ \emph{and} improves
-accuracy by $3.6$ percentage points over exhaustive verification.
-Converting the binary labels to running-average continuous scores (effective
-$L_{\text{eff}}{=}0.155$) recovers $\mathbf{49.9\%}$ call savings, confirming that
-the effective Lipschitz constant is the primary driver of DVA efficiency.
+Empirically, DVA efficiency unfolds across three regimes: an \emph{exploration}
+regime ($B \ll N_{\mathcal{T}}$) where all algorithms are statistically equivalent
+($p{>}0.10$, Wilcoxon); a \emph{transition} regime ($B \lesssim N_{\mathcal{T}}$)
+where the Lipschitz proxy mechanism delivers $5$--$73\%$ savings; and an
+\emph{exploitation} regime ($B \gg N_{\mathcal{T}}$) where the single-verification
+ceiling yields savings exceeding $90\%$.
+The exploitation regime is demonstrated at two scales:
+$\mathbf{93.7\%}$ savings at $B{=}16{,}384$ ($K{=}2$, $D{=}12$, $N_{\mathcal{T}}{=}8{,}190$);
+and $\mathbf{94.6\%}$ savings at $B{=}400$ for the directly-checkable small-tree
+setting ($K{=}2$, $D{=}4$, $N_{\mathcal{T}}{=}30$), where DVA call counts plateau at
+$21.5 < N_{\mathcal{T}}$, directly confirming the call-ceiling theorem.
+An adaptive $\hat{L}$ estimator---tracking the running maximum of observed
+score-change ratios---requires no advance knowledge of $L$ and achieves the lowest
+empirical regret.
+On $100$ real GSM8K problems (Math-Shepherd PRM) with binary labels, DVA-MCTS
+reduces calls by $8.8\%$ while improving accuracy by $3.6$ pp.
+Converting binary labels to running-average continuous scores
+($L_{\text{eff}}{=}0.155$) recovers $\mathbf{49.9\%}$ call savings, confirming
+that $L_{\text{eff}}$ is the primary driver: neural regression-trained PRMs with
+$L_{\text{eff}} \lesssim 0.1$ are predicted to exceed $73\%$ savings.

@@ -57,7 +57,7 @@
     Regret comparison over $T{=}400$ search steps (50 matched-pair runs,
     shaded $= \pm1$ SD).
     \textbf{(a)} Cumulative regret: no algorithm dominates significantly in the
-    exploration regime ($T \ll K^D$; Wilcoxon $p{=}0.109$ for DVA vs.\ Uniform).
+    exploration regime ($T \ll N_{\mathcal{T}}{=}8{,}190$; Wilcoxon $p{=}0.109$ for DVA vs.\ Uniform).
     DVA achieves $98\%$ accuracy, Uniform and Random achieve $100\%$
     (Table~\ref{tab:summary}).
     \textbf{(b)} Log-log scaling: empirical slope $0.635$ ($R^2{=}0.961$), above
@@ -71,13 +71,16 @@
   \centering
   \includegraphics[width=\linewidth]{figures/fig2_verifier_calls.pdf}
   \caption{
-    Verifier call efficiency as a function of search budget $B$.
-    \textbf{(a)} Absolute verifier calls: DVA-MCTS is bounded by $N_{\mathcal{T}}{=}K(K^D{-}1)/(K{-}1)$
-    (a constant), saturating well below $O(B)$ for Uniform Verification.
-    In the transition regime ($B \leq N_{\mathcal{T}}$), empirical counts grow as
-    ${\approx}1.9\sqrt{B}\log B$.
-    \textbf{(b)} DVA-MCTS calls as a percentage of Uniform Verification calls,
-    confirming the increasing efficiency advantage at larger budgets (Theorem~\ref{thm:calls}).
+    Verifier call efficiency as a function of search budget $B$
+    (range $B{=}50$--$3{,}200$; all data in the transition regime, $B < N_{\mathcal{T}}{=}8{,}190$).
+    \textbf{(a)} Absolute verifier calls: DVA-MCTS is bounded by the theoretical
+    ceiling $N_{\mathcal{T}} = K(K^D{-}1)/(K{-}1)$ (constant, independent of $B$).
+    In the transition regime, empirical counts grow as ${\approx}1.9\sqrt{B}\log B$
+    as the Lipschitz proxy substitutes for increasingly many first-visit calls.
+    \textbf{(b)} DVA-MCTS calls as a fraction of Uniform, showing increasing
+    efficiency from ${\approx}5\%$ savings at $B{=}400$ to $73\%$ at $B{=}3{,}200$.
+    Full exploitation-regime savings ($93.7\%$ at $B{=}16{,}384$) are shown in
+    Table~\ref{tab:exploitation} (Section~\ref{sec:exploitation_results}).
   }
   \label{fig:calls}
 \end{figure}
@@ -100,10 +103,12 @@
   \centering
   \includegraphics[width=0.65\linewidth]{figures/fig4_compute_accuracy.pdf}
   \caption{
-    Compute--accuracy tradeoff (50 runs per budget).
+    Compute--accuracy tradeoff (50 runs per budget; transition regime,
+    $B{=}50$--$3{,}200 < N_{\mathcal{T}}{=}8{,}190$).
     DVA-MCTS matches Uniform Verification within $2$ percentage points at all
-    budgets $B \geq 400$ while using up to $73\%$ fewer verifier calls at
-    $B{=}3{,}200$. Random-path Best-of-$N$ fails in deep trees
+    $B \geq 400$ while using up to $73\%$ fewer verifier calls at $B{=}3{,}200$
+    (proxy mechanism).
+    Random-path Best-of-$N$ fails in deep trees
     ($0\%$ accuracy; see Section~\ref{sec:tradeoff_results}).
   }
   \label{fig:tradeoff}

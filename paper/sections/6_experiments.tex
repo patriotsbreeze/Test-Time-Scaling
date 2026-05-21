@@ -32,18 +32,38 @@ that determines the \emph{exploration threshold} discussed in Section~\ref{sec:r
     (Section~\ref{sec:tradeoff_results}).
 \end{itemize}
 
-\subsection{Two Budget Regimes}
+\subsection{Three Budget Regimes}
 \label{sec:regime}
 
-A key structural observation explains the budget-dependent pattern of results.
-The tree has $N_{\mathcal{T}} = 8{,}190$ non-root nodes. For budget $B \ll 8{,}190$ (the
-\emph{exploration regime}), nearly every node visited is new, so DVA-MCTS calls
-the verifier on first visit regardless of the threshold. Efficiency savings only
-materialise once the tree is sufficiently explored (the \emph{exploitation regime},
-$B \gtrsim N_{\mathcal{T}}$), when the threshold begins suppressing re-verification of known
-subtrees. This structural split explains why $5\%$ savings at $B{=}400$ grows to
-$73\%$ at $B{=}3{,}200$, and motivates future work on adaptive tree-size selection
-(Section~\ref{sec:conclusion}).
+The budget-dependent pattern of DVA-MCTS savings is governed by three distinct
+regimes, determined by the tree's $N_{\mathcal{T}} = 8{,}190$ non-root nodes.
+
+\begin{description}
+  \item[\emph{Exploration} ($B \ll N_{\mathcal{T}}$):] Nearly every visited node is new.
+    DVA calls the verifier on first visit regardless of the threshold (no ancestor
+    in memory).  All three algorithms are statistically indistinguishable
+    ($p{>}0.10$, Wilcoxon; Table~\ref{tab:summary}).  Savings are ${<}5\%$.
+
+  \item[\emph{Transition} ($B \lesssim N_{\mathcal{T}}$):] The tree is partially explored.
+    DVA's Lipschitz proxy substitutes for verifier calls on nodes whose parent's
+    score is within threshold range.  Savings grow monotonically with $B$:
+    $23\%$ at $B{=}800$, $51\%$ at $B{=}1{,}600$, $73\%$ at $B{=}3{,}200$
+    (Figure~\ref{fig:calls}).  This \emph{proxy mechanism} is the main driver of
+    savings in the budget ranges most commonly used in practice.
+
+  \item[\emph{Exploitation} ($B \gg N_{\mathcal{T}}$):] Most nodes already have stored
+    observations; the \emph{single-verification ceiling} (Theorem~\ref{thm:calls}(a))
+    dominates.  DVA call counts plateau near $N_{\mathcal{T}} \ll B$, giving
+    $93.7\%$ savings at $B{=}16{,}384$ (Section~\ref{sec:exploitation_results}).
+    At smaller trees ($K{=}2$, $D{=}4$, $N_{\mathcal{T}}{=}30$), the exploitation
+    regime is accessible at $B{=}400$: $94.6\%$ savings
+    (Section~\ref{sec:small_tree_results}).
+\end{description}
+
+This three-regime picture explains why savings of $5\%$ at $B{=}400$ grow to
+$73\%$ at $B{=}3{,}200$ (proxy mechanism, transition regime) and then $93.7\%$
+at $B{=}16{,}384$ (plateau, exploitation regime).  It also motivates using smaller
+trees ($D{<}12$) or wider budgets to reach the exploitation regime in practice.
 
 \subsection{Regret Scaling}
 \label{sec:regret_results}
@@ -96,24 +116,31 @@ statistically relevant comparison (Section~\ref{sec:exploitation_results}).
 
 Figure~\ref{fig:calls} shows verifier call counts for $B \in \{50,\ldots,3200\}$.
 
-\paragraph{Small-budget regime ($B \leq 400$): exploration-phase behavior.}
-DVA-MCTS is not designed to outperform Uniform Verification within the exploration
-regime ($T \lesssim N_{\mathcal{T}}$). In this regime, nearly every visited node is
-new and the threshold provides limited savings; DVA-MCTS acts approximately like
-a single-visit uniform verifier. This is the correct behavior: the algorithm neither
-wastes calls on re-verification nor skips calls that would genuinely reduce regret.
-Practitioners running $B \leq 256$ MCTS steps at this tree depth ($K{=}2$, $D{=}12$)
-will see limited efficiency gains. Reducing $D$ or $K$ shifts the crossover
-$N_{\mathcal{T}} = K(K^D-1)/(K-1)$ to a smaller value (see Remark~\ref{rem:regime_calls}
-and Section~\ref{sec:small_tree_results}).
+\paragraph{Small-budget exploration regime ($B \leq 400$).}
+At $B{=}50$--$400$ ($\ll N_{\mathcal{T}}{=}8{,}190$), DVA-MCTS is in the exploration
+regime: nearly every visited node is new and has no ancestor in memory, so the
+verifier is called on first visit regardless of the threshold.  Savings are
+limited (${\leq}5\%$) and all algorithms are statistically equivalent
+(Table~\ref{tab:summary}).  This is the \emph{correct and expected} behavior;
+it does not reflect a weakness of DVA but rather the regime where the tree
+is too large relative to the budget.  Practitioners with $B \leq N_{\mathcal{T}}$
+should reduce $D$ or $K$: for $K{=}2$, $D{=}4$ ($N_{\mathcal{T}}{=}30$), even
+$B{=}100$ is $3\times$ past the crossover and delivers $79\%$ savings
+(Section~\ref{sec:small_tree_results}).
 
-\paragraph{Large-budget regime ($B \geq 800$): call plateau.}
-Savings grow rapidly once the tree is explored: $23\%$ at $B{=}800$, $51\%$ at
-$B{=}1600$, and $\mathbf{73\%}$ at $B{=}3{,}200$.  The full exploitation-regime
-behavior---where DVA call counts plateau well below $N_{\mathcal{T}} = 8{,}190$
-while Uniform calls grow as $\mathcal{B} = B$---is documented in
-Section~\ref{sec:exploitation_results} and is the primary empirical validation
-of Theorem~\ref{thm:calls}.
+\paragraph{Large-budget transition regime ($B \geq 800$, $B \lesssim N_{\mathcal{T}}$): proxy savings.}
+As the tree fills in the transition regime ($B \in [800, 3{,}200]$, still short of
+$N_{\mathcal{T}}{=}8{,}190$), DVA's Lipschitz proxy increasingly substitutes for
+verifier calls: $23\%$ savings at $B{=}800$, $51\%$ at $B{=}1{,}600$, and
+$\mathbf{73\%}$ at $B{=}3{,}200$.  These savings are driven by the
+\emph{proxy mechanism}: nodes first visited while their Lipschitz-ancestor's
+score is within $\tau_t$ of the expected difference use the proxy instead.
+The full exploitation-regime behavior---where DVA call counts plateau at the
+single-verification ceiling well below $N_{\mathcal{T}} = 8{,}190$ while Uniform
+calls grow as $\mathcal{B} = B$---is documented in Section~\ref{sec:exploitation_results}
+and provides the primary empirical validation of Theorem~\ref{thm:calls}(a).
+The small-tree experiment (Section~\ref{sec:small_tree_results}) demonstrates
+this plateau directly at $B{=}400$.
 
 \subsection{Exploitation-Regime Scaling ($T \gg N_{\mathcal{T}}$)}
 \label{sec:exploitation_results}

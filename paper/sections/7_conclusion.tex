@@ -7,28 +7,42 @@ resource allocation and exploiting the Lipschitz structure of process reward mod
 we proved that DVA-MCTS achieves $O(\sqrt{T\log K})$ regret against the oracle
 allocation policy while invoking the verifier at most $N_{\mathcal{T}} = K(K^D-1)/(K-1)$
 times in total---a constant independent of~$T$, so the call fraction
-$\mathcal{B}/T \to 0$ as $T \to \infty$---a sub-linear reduction in verification
-overhead. A matching $\Omega(\sqrt{T})$ lower
+$\mathcal{B}/T \to 0$ as $T \to \infty$. A matching $\Omega(\sqrt{T})$ lower
 bound establishes rate-optimality.
 
-Four empirical findings strengthen the theoretical picture.
+DVA's efficiency unfolds across three distinct budget regimes: an
+\emph{exploration regime} ($B \ll N_{\mathcal{T}}$) where savings are negligible
+and all algorithms are equivalent; a \emph{transition regime} ($B \lesssim N_{\mathcal{T}}$)
+where the Lipschitz proxy mechanism delivers $5$--$73\%$ savings; and an
+\emph{exploitation regime} ($B \gg N_{\mathcal{T}}$) where the single-verification
+ceiling dominates and savings exceed $90\%$.
 
-\emph{First}, a new exploitation-regime experiment ($B \in \{400,\ldots,16{,}384\}$,
-matched pairs) directly validates Theorem~\ref{thm:calls}: DVA call counts grow from
-$381$ to $1{,}032$ as $B$ grows $40\times$, while Uniform calls grow linearly.
-At $B{=}16{,}384$, DVA uses $\mathbf{93.7\%}$ fewer verifier calls than Uniform
-while achieving identical accuracy ($100\%$). The empirical call fraction $6.3\%$
-is $8\times$ smaller than the theoretical bound $N_{\mathcal{T}}/B = 8{,}190/16{,}384 \approx 50\%$,
-confirming that the Cauchy--Schwarz analysis is conservative in practice.
+Five empirical findings strengthen the theoretical picture.
 
-\emph{Second}, a matched-pairs comparison at $T{=}400$ (exploration regime,
+\emph{First}, the large-tree exploitation experiment ($K{=}2$, $D{=}12$,
+$B \in \{400,\ldots,16{,}384\}$, matched pairs) directly validates
+Theorem~\ref{thm:calls}: DVA call counts grow from $381$ to $1{,}032$ ($2.7\times$)
+as $B$ grows $40\times$, while Uniform calls grow linearly.
+At $B{=}16{,}384 \gtrsim N_{\mathcal{T}}{=}8{,}190$, DVA uses $\mathbf{93.7\%}$
+fewer verifier calls while achieving identical accuracy ($100\%$). The empirical
+fraction $6.3\%$ is $8\times$ below the theorem bound $N_{\mathcal{T}}/B \approx 50\%$,
+confirming that UCT's guided exploration is much more efficient than the worst-case
+Cauchy--Schwarz analysis.
+
+\emph{Second (small-tree)}, the small-tree experiment ($K{=}2$, $D{=}4$,
+$N_{\mathcal{T}}{=}30$) makes the exploitation regime accessible at $B{=}100$
+($3\times N_{\mathcal{T}}$), directly demonstrating the call plateau at $21.5 < 30$
+predicted by Theorem~\ref{thm:calls}(a), and delivering $\mathbf{94.6\%}$ savings
+at $B{=}400$ with no accuracy cost (Section~\ref{sec:small_tree_results}).
+
+\emph{Third}, a matched-pairs comparison at $T{=}400$ (exploration regime,
 50 runs) shows no statistically significant difference between DVA-MCTS, Uniform
 Verification, and Random Allocation in cumulative regret or accuracy ($p > 0.10$
 for all pairwise Wilcoxon tests). This is the expected behaviour: in the
 exploration regime all algorithms verify nearly every new node, and the threshold's
 discrimination between ``call'' and ``skip'' is limited.
 
-\emph{Third}, the adaptive Lipschitz estimator---tracking the running maximum of
+\emph{Fourth}, the adaptive Lipschitz estimator---tracking the running maximum of
 observed $|V(s){-}V(s')|/|d{-}d'|$ ratios---converges to $\hat{L}{=}0.431$
 (a $23\%$ over-estimate of the true $L{=}0.35$), achieving the lowest cumulative
 regret ($23.88$) and $100\%$ accuracy among all three Lipschitz configurations.
@@ -36,12 +50,12 @@ No pairwise Wilcoxon test is significant at $T{=}400$, confirming that the
 exploration regime is insufficiently sensitive to threshold specification; the
 exploitation regime is where correct $L$ matters most.
 
-\emph{Fourth}, on $100$ real GSM8K problems (Math-Shepherd PRM), DVA-MCTS uses
+\emph{Fifth}, on $100$ real GSM8K problems (Math-Shepherd PRM), DVA-MCTS uses
 $8.8\%$ fewer verifier calls \emph{and} improves accuracy by $3.6$ percentage
 points over exhaustive verification---a Pareto improvement consistent with the
 synthetic findings.
 
-\emph{Fifth}, a new continuous-score experiment directly validates the role of the
+\emph{Sixth}, a new continuous-score experiment directly validates the role of the
 effective Lipschitz constant: converting binary Math-Shepherd labels to
 running-average scores ($L_{\text{eff}}{=}0.155$) recovers $\mathbf{49.9\%}$ call
 savings---a $5.7\times$ improvement over binary DVA ($8.8\%$)---confirming that
@@ -61,8 +75,9 @@ the best leaf in the full tree, which is generally inaccessible.
 \paragraph{Future directions.}
 Several extensions remain:
 (1) \emph{Adaptive tree depth:} the exploration--exploitation crossover occurs at
-$T \approx K^D$; choosing $D$ as a function of $B$ shifts the efficiency gains
-into practically relevant budget ranges.
+$T \approx N_{\mathcal{T}} = K(K^D-1)/(K-1)$; choosing $D$ as a function of $B$
+(e.g., $D \leq \log_K(B/2)$) shifts the exploitation regime into practically
+relevant budget ranges, as demonstrated by the $K{=}2$, $D{=}4$ experiment.
 (2) \emph{Cost-aware allocation:} when verifier cost is non-uniform (e.g., depends on
 sequence length), incorporate a cost-weighted threshold.
 (3) \emph{Production-scale continuous PRM validation:} our running-average
