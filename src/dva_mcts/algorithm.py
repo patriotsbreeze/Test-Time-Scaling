@@ -56,8 +56,8 @@ class SearchResult:
             return self.oracle_best_true_value - self.best_true_value
         return self.step_records[-1].cumulative_regret
 
-    @property
-    def accuracy(self, threshold: float = 0.8) -> bool:
+    def is_accurate(self, threshold: float = 0.8) -> bool:
+        """Return True if the best solution's true quality meets *threshold*."""
         return self.best_true_value >= threshold
 
 

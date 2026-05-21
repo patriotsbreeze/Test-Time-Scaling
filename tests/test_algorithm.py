@@ -151,23 +151,36 @@ class TestBestOfN:
 
 
 class TestComparativeRegret:
-    """Integration tests checking that DVA-MCTS is competitive with Uniform."""
+    """
+    Integration tests checking that DVA-MCTS is competitive with Uniform.
+
+    All comparisons use *matched pairs*: each run uses the same random seed for
+    both the tree and the verifier so that observed differences are attributable
+    to the algorithm, not to lucky/unlucky problem instances.
+    """
 
     def test_dva_regret_not_much_worse_than_uniform(self):
         """
-        DVA-MCTS should achieve final regret within 3x of Uniform
-        (the bound factor accounts for finite-budget effects).
+        DVA-MCTS should achieve final regret within 3x of Uniform.
+
+        The generous bound accounts for finite-budget exploration effects.
+        Matched-pair design: same tree/verifier per seed, independent search RNGs
+        to avoid one algorithm's choices influencing the other.
         """
         budget = 200
         n_runs = 20
         dva_regrets, uni_regrets = [], []
 
         for seed in range(n_runs):
-            for cls, store in [(DVAMCTS, dva_regrets), (UniformMCTS, uni_regrets)]:
-                tree, verifier, cfg, rng = make_setup(seed=seed + cls.__name__.__hash__() % 1000)
-                alg = cls(verifier=verifier, config=cfg, rng=rng)
-                res = alg.search(tree, budget)
-                store.append(res.final_regret)
+            # Build the problem instance once; run both algorithms on it.
+            tree_dva, verifier_dva, cfg, rng_dva = make_setup(seed=seed)
+            tree_uni, verifier_uni, _,   rng_uni = make_setup(seed=seed)
+
+            dva = DVAMCTS(verifier=verifier_dva, config=cfg, rng=rng_dva)
+            uni = UniformMCTS(verifier=verifier_uni, config=cfg, rng=rng_uni)
+
+            dva_regrets.append(dva.search(tree_dva, budget).final_regret)
+            uni_regrets.append(uni.search(tree_uni, budget).final_regret)
 
         mean_dva = np.mean(dva_regrets)
         mean_uni = np.mean(uni_regrets)
@@ -177,23 +190,40 @@ class TestComparativeRegret:
         )
 
     def test_dva_uses_fewer_calls_than_uniform(self):
+        """
+        DVA-MCTS must use fewer verifier calls than Uniform on the same trees.
+
+        Matched-pair design ensures any call-count gap is structural (algorithmic)
+        rather than an artefact of easier/harder problem instances.
+        """
         budget = 150
         n_runs = 15
         dva_calls, uni_calls = [], []
 
         for seed in range(n_runs):
-            # Use different seed offsets to give each algorithm a distinct tree
-            for cls, store, offset in [
-                (DVAMCTS,     dva_calls, 0),
-                (UniformMCTS, uni_calls, 50000),
-            ]:
-                tree, verifier, cfg, rng = make_setup(seed=seed + offset)
-                alg = cls(verifier=verifier, config=cfg, rng=rng)
-                res = alg.search(tree, budget)
-                store.append(res.total_verifier_calls)
+            # Same problem instance; independent search RNGs.
+            tree_dva, verifier_dva, cfg, rng_dva = make_setup(seed=seed)
+            tree_uni, verifier_uni, _,   rng_uni = make_setup(seed=seed)
+
+            dva = DVAMCTS(verifier=verifier_dva, config=cfg, rng=rng_dva)
+            uni = UniformMCTS(verifier=verifier_uni, config=cfg, rng=rng_uni)
+
+            dva_calls.append(dva.search(tree_dva, budget).total_verifier_calls)
+            uni_calls.append(uni.search(tree_uni, budget).total_verifier_calls)
 
         # DVA should call verifier less often than Uniform (which calls at every step)
         assert np.mean(dva_calls) < np.mean(uni_calls), (
             f"DVA-MCTS mean calls {np.mean(dva_calls):.1f} should be < "
             f"Uniform mean calls {np.mean(uni_calls):.1f}"
         )
+
+    def test_is_accurate_helper(self):
+        """SearchResult.is_accurate() should reflect threshold correctly."""
+        tree, verifier, cfg, rng = make_setup()
+        alg = DVAMCTS(verifier, cfg, rng)
+        result = alg.search(tree, budget=30)
+        # Property should return a bool, not raise AttributeError
+        assert isinstance(result.is_accurate(0.0), bool)   # always True
+        assert isinstance(result.is_accurate(1.1), bool)   # always False
+        assert result.is_accurate(0.0) is True
+        assert result.is_accurate(1.1) is False

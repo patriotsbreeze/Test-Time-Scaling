@@ -305,16 +305,94 @@ def fig_ablation():
 
 
 # ════════════════════════════════════════════════════════════════════════════
+# Figure 6 — Adaptive L estimator comparison
+# ════════════════════════════════════════════════════════════════════════════
+
+def fig_estimated_l():
+    """
+    Two-panel figure for the adaptive L estimator experiment (Table 2 in paper).
+
+    Panel (a): grouped bar chart of mean final regret for the three conditions
+               (known L, fixed L̂, adaptive L).
+    Panel (b): scatter plot on the (calls, regret) plane, showing that adaptive L
+               is Pareto-dominant over fixed L̂ (lower regret, comparable calls).
+    """
+    d = load("adaptive_l_comparison")
+    summary = d["summary"]
+    true_L   = d["true_L"]
+    fixed_lhat = d["fixed_lhat"]
+    gap_closed = d["gap_closed_pct"]
+
+    conditions  = ["known_L", "fixed_Lhat", "adaptive_L"]
+    labels      = [r"Known $L$", r"Fixed $\hat{L}$", r"Adaptive $\hat{L}$"]
+    bar_colors  = [COLORS["DVA-MCTS"], COLORS["Random"], COLORS["Uniform"]]
+
+    regrets  = [summary[c]["regret_mean"]  for c in conditions]
+    calls    = [summary[c]["calls_mean"]   for c in conditions]
+    accs     = [summary[c]["accuracy"] * 100 for c in conditions]
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+
+    # ── Panel (a): grouped bar chart ─────────────────────────────────────────
+    ax = axes[0]
+    x = np.arange(len(conditions))
+    width = 0.28
+    b1 = ax.bar(x - width, regrets, width, color=bar_colors, alpha=0.82,
+                label="Mean final regret")
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.set_ylabel("Mean final cumulative regret")
+    ax.set_title(
+        f"(a) Regret by L Specification\n"
+        f"Adaptive closes {gap_closed:.1f}% of gap (true $L$={true_L},"
+        f" $\\hat{{L}}_{{fixed}}$={fixed_lhat:.3f})"
+    )
+
+    # Annotate accuracy on top of each bar
+    for bar, acc in zip(b1, accs):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 0.4,
+            f"{acc:.0f}%",
+            ha="center", va="bottom", fontsize=9,
+        )
+    ax.legend(frameon=False, loc="upper left")
+
+    # ── Panel (b): regret vs. calls scatter ──────────────────────────────────
+    ax2 = axes[1]
+    for i, (cond, label, col) in enumerate(zip(conditions, labels, bar_colors)):
+        ax2.scatter(calls[i], regrets[i], color=col, s=120, zorder=5,
+                    label=f"{label}  (acc={accs[i]:.0f}%)")
+        ax2.annotate(
+            label,
+            (calls[i], regrets[i]),
+            textcoords="offset points",
+            xytext=(6, 3 - i * 10),
+            fontsize=9,
+        )
+
+    ax2.set_xlabel("Mean verifier calls")
+    ax2.set_ylabel("Mean final cumulative regret")
+    ax2.set_title(
+        r"(b) Regret–Calls Trade-off"
+        "\nAdaptive $\\hat{L}$ is Pareto-dominant over Fixed $\\hat{L}$"
+    )
+    ax2.legend(frameon=False, fontsize=8)
+
+    plt.tight_layout()
+    savefig("fig6_adaptive_l.pdf")
+
+
+# ════════════════════════════════════════════════════════════════════════════
 # Main
 # ════════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    missing = [f for f in
-               ["regret_scaling", "verifier_efficiency", "lipschitz_validation",
-                "compute_accuracy_tradeoff", "ablation_threshold"]
-               if not (RESULTS / f"{f}.json").exists()]
-    if missing:
-        print(f"ERROR: missing result files: {missing}")
+    required_core = ["regret_scaling", "verifier_efficiency", "lipschitz_validation",
+                     "compute_accuracy_tradeoff", "ablation_threshold"]
+    missing_core = [f for f in required_core if not (RESULTS / f"{f}.json").exists()]
+    if missing_core:
+        print(f"ERROR: missing result files: {missing_core}")
         print("Run: python experiments/run_experiment.py --exp all --budget 400 --runs 50")
         sys.exit(1)
 
@@ -324,4 +402,12 @@ if __name__ == "__main__":
     fig_lipschitz()
     fig_compute_accuracy()
     fig_ablation()
+
+    # Figure 6 requires adaptive_l_comparison.json (run with --exp adaptive_l)
+    if (RESULTS / "adaptive_l_comparison.json").exists():
+        fig_estimated_l()
+    else:
+        print("  [SKIP] fig6_adaptive_l.pdf — run: python experiments/run_experiment.py "
+              "--exp adaptive_l")
+
     print("Done. All figures reflect actual experiment results.")

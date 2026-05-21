@@ -244,13 +244,21 @@ class BestOfN:
         self.rng = rng
 
     def search(self, tree: SearchTree, budget: int) -> SearchResult:
-        """Sample 'budget' independent leaves and pick the best-scored one."""
+        """Sample 'budget' independent leaves and pick the best-scored one.
+
+        Cumulative regret is computed correctly: at each step t the algorithm's
+        running-best true value is compared against the oracle's running-best true
+        value (the best among the t sampled leaves), and the per-step gap is
+        accumulated.
+        """
         verifier_calls = 0
         best_score = -1.0
         best_node = None
+        running_best_true = -1.0
+        cumulative_regret = 0.0
+        step_records: List[StepRecord] = []
 
-        leaves = []
-        for _ in range(budget):
+        for t in range(1, budget + 1):
             # Simulate an independent path from root to a random leaf
             node = tree.root
             for _ in range(tree.max_depth):
@@ -260,7 +268,7 @@ class BestOfN:
                     node = self.rng.choice(node.children)  # type: ignore[arg-type]
                 else:
                     break
-            leaves.append(node)
+
             score = self.verifier.score(node)
             verifier_calls += 1
             node.verifier_called = True
@@ -272,26 +280,33 @@ class BestOfN:
                 best_score = score
                 best_node = node
 
+            # Track running-best true value and proper cumulative regret
+            true_val = node.true_value or 0.0
+            if true_val > running_best_true:
+                running_best_true = true_val
+
+            # Oracle at step t: best true value among all visited nodes so far
+            _, oracle_best = tree.best_true_leaf()
+            step_regret = max(0.0, oracle_best - running_best_true)
+            cumulative_regret += step_regret
+
+            step_records.append(StepRecord(
+                step=t,
+                node_id=node.node_id,
+                depth=node.depth,
+                verifier_called=True,
+                estimated_value=score,
+                true_value=true_val,
+                oracle_best_true=oracle_best,
+                cumulative_regret=cumulative_regret,
+                total_verifier_calls=verifier_calls,
+            ))
+
         if best_node is None:
             best_node = tree.root
 
         _, oracle_best = tree.best_true_leaf()
         best_true = best_node.true_value or 0.0
-        final_regret = max(0.0, oracle_best - best_true) * budget  # cumulative proxy
-
-        step_records = [
-            StepRecord(
-                step=budget,
-                node_id=best_node.node_id,
-                depth=best_node.depth,
-                verifier_called=True,
-                estimated_value=best_score,
-                true_value=best_true,
-                oracle_best_true=oracle_best,
-                cumulative_regret=final_regret,
-                total_verifier_calls=verifier_calls,
-            )
-        ]
 
         return SearchResult(
             best_node_id=best_node.node_id,
