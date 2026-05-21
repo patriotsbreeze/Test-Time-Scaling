@@ -25,7 +25,7 @@ verifier satisfying our Lipschitz assumption.
 
 \paragraph{Monte Carlo Tree Search for LLMs.}
 MCTS was adapted for LLM reasoning by \citet{yao2023tree} (Tree of Thoughts) and
-further developed in \citet{chen2024alphamath,zhang2024llamaberry,liu2023don}.
+further developed in \citet{chen2024alphamath,zhang2024llamaberry,hao2023reasoning}.
 \citet{guo2025deepseek} integrates MCTS with PRMs in a reinforcement learning
 framework. Unlike these works, we do not modify the search tree structure; instead,
 we provide an adaptive calling policy for the verifier oracle that reduces its cost.
@@ -53,9 +53,12 @@ Reducing computation by skipping expensive operations in learned models has a ri
 history: early-exit classifiers \citep{teerapittayanon2016branchynet}, adaptive depth
 transformers \citep{graves2016adaptive,elbayad2020depth}, and speculative decoding
 \citep{leviathan2023fast} all reduce cost while preserving output quality.
-Most related is \citet{liu2024speculative}, who applies speculative execution ideas to
-reasoning chains. Our work differs by providing a \emph{regret guarantee} for the
-online decision to invoke or skip the verifier, rather than an empirical speedup.
+Most related is speculative decoding \citep{leviathan2023fast}, which reduces
+sequential generation cost by drafting with a cheap model and verifying with a large
+one.  Our work provides an analogous guarantee for the \emph{verification step
+itself}: rather than accelerating token generation, DVA-MCTS adaptively decides
+\emph{whether} to call the verifier at each search node, with a formal regret
+bound rather than only an empirical speedup.
 
 \paragraph{Online resource allocation and bandits.}
 Dynamic verifier allocation is formally related to online learning under a compute

@@ -261,38 +261,74 @@ concentration, which we leave to future work.
 \label{app:lower}
 
 \begin{proof}
-Consider the following family of two-node problem instances indexed by
-$\Delta \in (0, 1/2)$. Let $\mathcal{T}$ consist of root $s_0$ with two children
-$s_+$ and $s_-$. The true values are:
+We bound \emph{cumulative} regret $R(T) = \sum_{t=1}^T [V(s_t^*) - V(\hat{s}_t^*)]$
+by lower-bounding the per-step error probability at every step $t$, not merely at
+the final step.
+
+\paragraph{Hard instance family.}
+Let $\mathcal{T}$ consist of root $s_0$ with two children $s_+$ and $s_-$.
+Choose $\Delta = \sigma/(2\sqrt{T})$ and let $\theta \in \{+1,-1\}$ be chosen
+uniformly at random, defining:
+\begin{align*}
+  \mathcal{I}^{(+)}: &\quad V(s_+) = \tfrac{1}{2}+\Delta,\; V(s_-) = \tfrac{1}{2}-\Delta,\\
+  \mathcal{I}^{(-)}: &\quad V(s_+) = \tfrac{1}{2}-\Delta,\; V(s_-) = \tfrac{1}{2}+\Delta.
+\end{align*}
+Verifier observations satisfy $\hat{V}(s) = V(s)+\varepsilon$ with
+$\varepsilon \sim \mathcal{N}(0,\sigma^2)$.
+For $t \geq 2$ (after both nodes have been visited at least once),
+$s_t^* = s_+$ under $\mathcal{I}^{(+)}$ and $s_t^* = s_-$ under $\mathcal{I}^{(-)}$.
+
+\paragraph{Per-step regret via total variation.}
+Denote by $\mathcal{H}_t$ the algorithm's complete history up to step $t$ and let
+$n_t = \sum_{i=1}^t b_i$ be the total verifier calls through step $t$.
+Each call contributes KL divergence $\mathrm{KL}(\mathcal{N}(\Delta,\sigma^2)\|\mathcal{N}(-\Delta,\sigma^2))
+= 2\Delta^2/\sigma^2$ between the two instances.
+By the chain rule and Pinsker's inequality:
 \[
-  \text{Instance } (+): \quad V(s_+) = \tfrac{1}{2} + \Delta,\; V(s_-) = \tfrac{1}{2} - \Delta.
+  \mathrm{TV}\!\left(\mathcal{H}_t^{(+)},\, \mathcal{H}_t^{(-)}\right)
+  \;\leq\; \sqrt{\tfrac{1}{2}\,n_t \cdot \tfrac{2\Delta^2}{\sigma^2}}
+  \;=\; \Delta\sqrt{\tfrac{n_t}{\sigma^2}}.
 \]
+Since $\hat{s}_t^*$ is a measurable function of $\mathcal{H}_t$, the
+data-processing inequality and Le~Cam's two-point method give:
 \[
-  \text{Instance } (-): \quad V(s_+) = \tfrac{1}{2} - \Delta,\; V(s_-) = \tfrac{1}{2} + \Delta.
+  \Pr\!\left[\hat{s}_t^* \neq s_t^*\right]
+  \;\geq\; \tfrac{1}{2}\!\left(1 - \mathrm{TV}\!\left(\mathcal{H}_t^{(+)},\mathcal{H}_t^{(-)}\right)\right)
+  \;\geq\; \tfrac{1}{2}\!\left(1 - \Delta\sqrt{n_t/\sigma^2}\right).
 \]
-Both instances are chosen uniformly at random. The optimal action is to return $s_+$
-in instance $(+)$ and $s_-$ in instance $(-)$.
+When $\hat{s}_t^* \neq s_t^*$, the per-step regret is $V(s_t^*) - V(\hat{s}_t^*) = 2\Delta$.
+Hence:
+\[
+  \mathbb{E}[r_t] \;=\; 2\Delta\,\Pr\!\left[\hat{s}_t^* \neq s_t^*\right]
+  \;\geq\; \Delta\!\left(1 - \Delta\sqrt{n_t/\sigma^2}\right).
+\]
 
-At any step $t$ where the verifier is called at $s_+$, the algorithm observes
-$\hat{V}(s_+) = V(s_+) + \varepsilon_t$ with $\varepsilon_t \sim \mathcal{N}(0, \sigma^2)$.
-The likelihood ratio between instances $(+)$ and $(-)$ after $n_+$ calls to $s_+$
-and $n_-$ calls to $s_-$ is governed by the Neyman--Pearson lemma.
+\paragraph{Summing over all steps.}
+Let $B_T = n_T = \sum_{t=1}^T b_t$ be the total verifier calls.
+Since $n_t \leq B_T$ for all $t$:
+\begin{align}
+  \mathbb{E}[R(T)]
+  &= \sum_{t=2}^T \mathbb{E}[r_t]
+   \;\geq\; (T-1)\Delta\!\left(1 - \Delta\sqrt{B_T/\sigma^2}\right). \label{eq:lb_sum}
+\end{align}
 
-By Pinsker's inequality, any test that identifies the correct instance with probability
-$\geq 3/4$ requires the KL divergence between the observation distributions to be
-$\geq \ln(3)/2$. The KL divergence per observation is
-$\text{KL}(\mathcal{N}(\Delta, \sigma^2) \| \mathcal{N}(-\Delta, \sigma^2)) = 2\Delta^2/\sigma^2$.
-Hence we need at least $n \geq \sigma^2\ln(3)/(4\Delta^2)$ calls.
-
-Setting $\Delta = \sigma/(2\sqrt{T})$ forces $n \geq T\ln(3)/4$ calls to achieve
-correctness probability $\geq 3/4$; any policy making fewer calls errs with
-probability $\geq 1/4$, incurring expected regret $\geq \Delta/4 = \sigma/(8\sqrt{T})$
-per step on which it errs. Summing over $T$ steps gives total regret
-$\geq \sigma\sqrt{T}/8$.
-Collecting: expected regret
-$\geq T \cdot \tfrac{1}{4} \cdot \Delta = T \cdot \tfrac{1}{4} \cdot \tfrac{\sigma}{2\sqrt{T}}
-= \tfrac{\sigma\sqrt{T}}{8}$,
-so $\mathbb{E}[R(T)] \geq \frac{\sigma}{8}\sqrt{T}$.
+\paragraph{Setting $\Delta$ and concluding.}
+Substituting $\Delta = \sigma/(2\sqrt{T})$:
+\[
+  \Delta\sqrt{B_T/\sigma^2} = \frac{\sqrt{B_T}}{2\sqrt{T}} \;\leq\; \frac{1}{2},
+\]
+where the last inequality holds because $B_T \leq T$ (at most one call per step).
+Inserting into \eqref{eq:lb_sum}:
+\[
+  \mathbb{E}[R(T)]
+  \;\geq\; (T-1) \cdot \frac{\sigma}{2\sqrt{T}} \cdot \left(1 - \tfrac{1}{2}\right)
+  \;=\; \frac{\sigma(T-1)}{4\sqrt{T}}
+  \;\geq\; \frac{\sigma}{8}\sqrt{T}
+  \qquad\text{for all } T \geq 2.
+\]
+This bound holds for \emph{every} policy $\pi$ on this instance family,
+regardless of the number of verifier calls made.
+Hence $\mathbb{E}[R(T)] \geq \frac{\sigma}{8}\sqrt{T}$.
 \end{proof}
 
 \section{Hyperparameter Sensitivity}

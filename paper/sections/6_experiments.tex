@@ -398,8 +398,20 @@ the smaller $\Phi$ value.
 To test whether DVA-MCTS provides efficiency gains with a real process reward model,
 we evaluate on $100$ GSM8K problems from the Math-Shepherd dataset
 \citep{wang2024math}.
-Each problem has $K{=}4$ candidate step-by-step solutions annotated by a trained
-reward model with binary step labels ($+{=}$correct path, $-{=}$incorrect path).
+
+\paragraph{Setup clarification.}
+We use Math-Shepherd's \emph{static annotation trees}: each problem provides a
+pre-enumerated set of $K{=}4$ candidate step-by-step solution paths, each annotated
+at every step by the Math-Shepherd trained reward model with binary step labels
+($+{=}$correct path, $-{=}$incorrect path).  DVA-MCTS and the baselines operate
+as a search policy over this fixed annotation tree, selecting which nodes to
+``verify'' (i.e., read the stored label from the dataset) versus proxy.
+This is a deliberately conservative evaluation: the algorithm cannot adaptively
+generate new branches, so the tree is small ($K{=}4$, shallow depth), and
+$N_{\mathcal{T}}$ is correspondingly small, placing the experiments firmly in the
+exploration/transition boundary.  Extending to live MCTS with a generative LLM
+calling Math-Shepherd or a neural regression PRM at inference time is the natural
+next step and is described as future work in Section~\ref{sec:conclusion}.
 
 \paragraph{Statistical methodology.}
 We run DVA-MCTS and Uniform Verification with budget $B{=}400$ over $20$ independent

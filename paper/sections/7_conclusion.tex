@@ -62,14 +62,32 @@ savings---a $5.7\times$ improvement over binary DVA ($8.8\%$)---confirming that
 $L_{\text{eff}}$ is the primary efficiency driver.
 
 \paragraph{Limitations.}
-The GSM8K binary-label experiment saves only $8.8\%$ verifier calls due to
-$L_{\max}{=}1.0$ of raw binary transitions.  Our running-average continuous-score
-experiment demonstrates $49.9\%$ savings at $L_{\text{eff}}{=}0.155$, but uses a
-calibrated $L$ that slightly underestimates the worst-case constant, causing a
-$3.6$-pp accuracy gap vs.\ exhaustive verification.  Production-scale regression-
-trained PRMs with $L_{\text{eff}} \lesssim 0.1$ are expected to close this gap. Additionally, the regret definition
-(Definition~\ref{def:regret}) measures quality relative to states
-\emph{visited} by the search; a stronger benchmark would compare against
+\emph{Synthetic-dominated evaluation.}
+The main regret and efficiency experiments use a synthetic \texttt{LipschitzVerifier}
+with a known ground-truth value function, which enables exact oracle comparison but
+differs from deployed neural PRMs.  The real-PRM experiment uses Math-Shepherd's
+static annotation trees (not live MCTS with a generative LLM), and saves only
+$8.8\%$ verifier calls due to $L_{\max}{=}1.0$ of raw binary transitions.
+The running-average continuous-score variant demonstrates $49.9\%$ savings
+($L_{\text{eff}}{=}0.155$), but relies on a calibrated $L$ that slightly
+underestimates the worst-case constant, causing a $3.6$-pp accuracy gap.
+Validation on a neural regression-trained PRM (e.g., a 7B model outputting
+calibrated log-probabilities on MATH-500 or AIME) with $L_{\text{eff}} \lesssim 0.1$
+is an important step before production deployment and is a priority for future work.
+
+\emph{Exploration-regime coverage.}
+For the main tree ($K{=}2$, $D{=}12$, $N_{\mathcal{T}}{=}8{,}190$), budgets
+$B \leq 3{,}200$ lie below $N_{\mathcal{T}}$, and significant savings ($>5\%$) only
+emerge in the transition regime ($B \gtrsim 800$).  Practitioners operating
+at small budgets should match $D$ to their budget via
+$D \leq \lfloor\log_K(B/2)\rfloor$: for example, $K{=}2$, $D{=}4$
+($N_{\mathcal{T}}{=}30$) puts even $B{=}100$ well into the exploitation regime
+($94.6\%$ savings at $B{=}400$), as demonstrated in
+Section~\ref{sec:small_tree_results}.
+
+\emph{Regret benchmark.}
+The regret definition (Definition~\ref{def:regret}) measures quality relative to
+states \emph{visited} by the search; a stronger benchmark would compare against
 the best leaf in the full tree, which is generally inaccessible.
 
 \paragraph{Future directions.}
