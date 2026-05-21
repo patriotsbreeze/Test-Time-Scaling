@@ -52,7 +52,7 @@ We answer this question affirmatively. Specifically:
     where $T$ is the total number of search steps, $K$ is the branching factor,
     and $C$ is a constant depending on the Lipschitz parameter and verifier noise
     (Theorem~\ref{thm:main}). DVA-MCTS simultaneously invokes the verifier at most
-    $N_{\mathcal{T}} = K^D - 1$ times total, so the call fraction $\mathcal{B}/T \to 0$
+    $N_{\mathcal{T}} = K(K^D-1)/(K-1)$ times total, so the call fraction $\mathcal{B}/T \to 0$
     as $T \to \infty$ with $K, D$ fixed. The threshold $\tau_t$ additionally
     provides a $T_{\mathrm{free}} = \lfloor(\gamma/(LD))^2\rfloor$-step call-free
     initial phase whose length grows with signal-to-noise ratio $\sigma_{\max}/L$

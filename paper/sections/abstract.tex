@@ -10,7 +10,7 @@ against an oracle that knows the optimal allocation in hindsight. Under a
 \emph{Lipschitz score continuity} assumption on the PRM---which we validate
 empirically---we prove that DVA-MCTS achieves cumulative regret
 $R(T) = O\!\left(\sqrt{T \log K}\right)$ against the oracle while invoking the verifier
-at most $N_{\mathcal{T}} = K^D - 1$ times in total---a constant independent of~$T$---so
+at most $N_{\mathcal{T}} = K(K^D-1)/(K-1)$ times in total---a constant independent of~$T$---so
 the call fraction $\mathcal{B}/T \to 0$ as $T \to \infty$.
 We further prove a matching $\Omega(\sqrt{T})$ lower bound, establishing rate-optimality.
 Experiments with 50 matched-pair runs confirm the $O(\sqrt{T})$ regret rate (empirical

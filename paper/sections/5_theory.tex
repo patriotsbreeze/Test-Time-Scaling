@@ -6,22 +6,46 @@
 \begin{theorem}[Regret bound for DVA-MCTS]
 \label{thm:main}
 Under Assumptions~\ref{ass:lipschitz}--\ref{ass:cost}, with threshold
-$\tau_t = \gamma / \sqrt{t}$, DVA-MCTS achieves cumulative regret
-\[
-  \mathbb{E}[R(T)] \;\leq\; C_1(K,D) \sqrt{T \log K}
-  \;+\; 2\gamma \sqrt{T},
-\]
-where $C_1(K,D) = 8\sigma_{\max}\sqrt{2}\,\Phi(K,D)$,
-$\Phi(K,D) = (K^{D/2}-1)/(\sqrt{K}-1)$ is a tree-geometry constant
-(with $\Phi(K,1) = 1$), and $K$, $D$ are the branching factor and depth.
-Setting $\gamma^* = C_1(K,D)\sqrt{\log K}/2$ equates the two terms:
-\[
-  \mathbb{E}[R(T)] \;\leq\; C(K,D)\sqrt{T \log K},
-  \qquad C(K,D) = 16\sigma_{\max}\sqrt{2}\,\Phi(K,D).
-\]
-For fixed $K$ and $D$, $C(K,D)$ is a constant independent of $T$, confirming the
-$O\!\left(\sqrt{T\log K}\right)$ rate.
+$\tau_t = \gamma / \sqrt{t}$, DVA-MCTS achieves:
+\begin{enumerate}[(i)]
+  \item \textbf{(Single-level tree, $D{=}1$).}
+        \[
+          \mathbb{E}[R(T)] \;\leq\; C\sqrt{T\log K} \;+\; 2\gamma\sqrt{T},
+          \qquad C = 8\sigma_{\max}\sqrt{2},
+        \]
+        with $\gamma^* = 4\sigma_{\max}\sqrt{2\log K}$ giving
+        $\mathbb{E}[R(T)] \leq 16\sigma_{\max}\sqrt{2}\sqrt{T\log K}$.
+        This matches the $\Omega(\sqrt{T})$ lower bound (Theorem~\ref{thm:lower})
+        up to the $\sqrt{\log K}$ factor.
+  \item \textbf{(Depth-$D$ tree, general $D \geq 1$).}
+        \[
+          \mathbb{E}[R(T)] \;\leq\; C(K,D)\sqrt{T\log K} \;+\; 2\gamma\sqrt{T},
+        \]
+        where $C(K,D) = 16\sigma_{\max}\sqrt{2}\,\Phi(K,D)$ and
+        $\Phi(K,D) = (K^{D/2}-1)/(\sqrt{K}-1)$ is the tree-geometry constant
+        from Lemma~\ref{lem:uct}.  For fixed $K, D$ this is $O(\sqrt{T\log K})$;
+        for $K{=}2$, $D{=}12$: $\Phi(2,12) \leq 153$.
+\end{enumerate}
+The $O(\sqrt{T\log K})$ rate is the same in both parts;
+part (ii) inherits a depth-dependent constant from the Cauchy--Schwarz step in
+Lemma~\ref{lem:uct} (see Remark~\ref{rem:tree_depth}).
 \end{theorem}
+
+\begin{remark}[Tightness of the constant]
+\label{rem:constant_tightness}
+The constant $C = 16\sigma_{\max}\sqrt{2}$ in part~(i) is \emph{order-optimal}
+relative to the lower bound: Theorem~\ref{thm:lower} gives
+$\mathbb{E}[R(T)] \geq (\sigma/8)\sqrt{T}$, and the ratio is
+$C/(\sigma/8) = 128\sqrt{2} \approx 181$, independent of $T$ or $K$.
+This 181-fold gap is standard for UCT-type analyses and arises from union-bound
+and Cauchy--Schwarz steps that are tight only in worst-case configurations.
+The actual gap for $K{=}2$, $D{=}4$ ($N_{\mathcal{T}}{=}30$) in the exploitation regime
+is considerably smaller; see Section~\ref{sec:small_tree_results}.
+For depth $D > 1$, the additional factor $\Phi(K,D)$ is a Cauchy--Schwarz artifact
+(tight when all $K^d$ depth-$d$ nodes are visited equally, which UCT does not do);
+in practice the effective constant is $3$--$10\times$ smaller than the bound
+(Figure~\ref{fig:regret}(b)).
+\end{remark}
 
 \begin{proof}[Proof sketch]
 We decompose the regret at each step $t$ into two parts:
@@ -61,9 +85,10 @@ Direct-call steps contribute zero to term~(I); proxy steps contribute at most $\
   \;+\; \sum_{t:\,b_t=0}\tau_t
   \;\leq\; C_1(K,D)\sqrt{T\log K} + 2\gamma\sqrt{T}.
 \]
-Setting $\gamma^* = C_1(K,D)\sqrt{\log K}/2$ gives
-$2\gamma^*\sqrt{T} = C_1(K,D)\sqrt{T\log K}$, yielding
-$\mathbb{E}[R(T)] \leq C(K,D)\sqrt{T\log K}$ with $C(K,D) = 2C_1(K,D) = 16\sigma_{\max}\sqrt{2}\,\Phi(K,D)$.
+For $D{=}1$: $C_1(K,1) = 8\sigma_{\max}\sqrt{2}$ (tight, $\Phi(K,1){=}1$).
+For general $D$: $C_1(K,D) = 8\sigma_{\max}\sqrt{2}\,\Phi(K,D)$ (Lemma~\ref{lem:uct}).
+Setting $\gamma^*$ to equate the two terms gives
+$\mathbb{E}[R(T)] \leq C(K,D)\sqrt{T\log K}$ with $C(K,D) = 2C_1(K,D)$.
 The full proof is in Appendix~\ref{app:proofs}.
 \end{proof}
 
@@ -71,12 +96,15 @@ The full proof is in Appendix~\ref{app:proofs}.
 
 \begin{theorem}[Verifier call bound]
 \label{thm:calls}
-Under the same conditions as Theorem~\ref{thm:main}, with $N_{\mathcal{T}} = K^D - 1$
-interior nodes and threshold schedule $\tau_t = \gamma/\sqrt{t}$:
+Under the same conditions as Theorem~\ref{thm:main}, with
+\[
+  N_{\mathcal{T}} \;=\; \frac{K(K^D-1)}{K-1} \;=\; K + K^2 + \cdots + K^D
+\]
+non-root nodes and threshold schedule $\tau_t = \gamma/\sqrt{t}$:
 
 \begin{enumerate}[(a)]
   \item \textbf{(Single-verification ceiling)}
-        $\mathbb{E}[\mathcal{B}(\pi)] \leq N_{\mathcal{T}} = K^D - 1$.
+        $\mathbb{E}[\mathcal{B}(\pi)] \leq N_{\mathcal{T}} = \dfrac{K(K^D-1)}{K-1}$.
 
   \item \textbf{(Threshold-dependent refinement)}
         Define $T_{\mathrm{free}} = \lfloor(\gamma/(LD))^2\rfloor$.
@@ -148,8 +176,11 @@ argument via Pinsker's inequality and Fano's method is in Appendix~\ref{app:lowe
 
 \begin{corollary}[Rate-optimality]
 \label{cor:optimal}
-DVA-MCTS achieves the minimax-optimal regret rate $\Theta(\sqrt{T \log K})$ up to
-the tree-geometry factor $\Phi(K,D)$, which is a constant for fixed $K, D$.
+DVA-MCTS achieves the minimax-optimal regret \emph{rate} $\Theta(\sqrt{T \log K})$:
+the upper bound (Theorem~\ref{thm:main}) and lower bound (Theorem~\ref{thm:lower})
+agree on the rate up to $\sqrt{\log K}$.  The constant $C(K,D)$ is conservative
+by a factor $\Phi(K,D)$ relative to the tight $D{=}1$ value; this is a proof artifact
+(Remark~\ref{rem:constant_tightness}), not a property of the algorithm.
 \end{corollary}
 
 \subsection{Finite-Sample Behaviour and the Exploration Regime}
@@ -158,7 +189,7 @@ the tree-geometry factor $\Phi(K,D)$, which is a constant for fixed $K, D$.
 \label{rem:exploration}
 Theorem~\ref{thm:main} is an asymptotic statement as $T \to \infty$.
 At finite $T$, the algorithm passes through two distinct regimes determined by the
-tree size $N_{\mathcal{T}} = K^D - 1$:
+tree size $N_{\mathcal{T}} = K(K^D-1)/(K-1)$:
 
 \begin{enumerate}[(i)]
   \item \textbf{Exploration regime} ($T \lesssim N_{\mathcal{T}}$): Most visited
@@ -176,7 +207,7 @@ tree size $N_{\mathcal{T}} = K^D - 1$:
 \end{enumerate}
 
 In the experiments of Section~\ref{sec:experiments} ($K{=}2$, $D{=}12$,
-$N_{\mathcal{T}}{=}4{,}095$), budgets $B \leq 400$ are firmly in the exploration
+$N_{\mathcal{T}}{=}8{,}190$), budgets $B \leq 400$ are firmly in the exploration
 regime, which explains the empirical slope of $0.635$ at $T{=}400$.
 The transition is visible in Figure~\ref{fig:calls}: efficiency savings accelerate
 markedly for $B \geq 800$, consistent with the exploitation regime beginning around

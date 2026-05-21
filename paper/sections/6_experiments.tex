@@ -15,8 +15,8 @@ shaded regions indicate $\pm 1$ standard deviation.
 \paragraph{Fixed parameters.}
 Branching factor $K{=}2$, maximum depth $D{=}12$, true Lipschitz constant $L{=}0.35$,
 noise $\sigma{=}0.05$, threshold $\gamma{=}1.0$, $\alpha{=}0.5$.
-The tree contains $K^D{-}1 = 4{,}095$ interior nodes, a quantity that determines the
-\emph{exploration threshold} discussed in Section~\ref{sec:regime}.
+The tree contains $N_{\mathcal{T}} = K(K^D-1)/(K-1) = 8{,}190$ non-root nodes, a quantity
+that determines the \emph{exploration threshold} discussed in Section~\ref{sec:regime}.
 
 \paragraph{Baselines.}
 \begin{itemize}
@@ -36,11 +36,11 @@ The tree contains $K^D{-}1 = 4{,}095$ interior nodes, a quantity that determines
 \label{sec:regime}
 
 A key structural observation explains the budget-dependent pattern of results.
-The tree has $4{,}095$ interior nodes. For budget $B \ll 4{,}095$ (the
+The tree has $N_{\mathcal{T}} = 8{,}190$ non-root nodes. For budget $B \ll 8{,}190$ (the
 \emph{exploration regime}), nearly every node visited is new, so DVA-MCTS calls
 the verifier on first visit regardless of the threshold. Efficiency savings only
 materialise once the tree is sufficiently explored (the \emph{exploitation regime},
-$B \gtrsim K^D$), when the threshold begins suppressing re-verification of known
+$B \gtrsim N_{\mathcal{T}}$), when the threshold begins suppressing re-verification of known
 subtrees. This structural split explains why $5\%$ savings at $B{=}400$ grows to
 $73\%$ at $B{=}3{,}200$, and motivates future work on adaptive tree-size selection
 (Section~\ref{sec:conclusion}).
@@ -56,7 +56,7 @@ attributable solely to algorithm design.
 \paragraph{Empirical rate.}
 The log-log slope for DVA-MCTS is $\mathbf{0.635}$ ($R^2{=}0.961$). The theoretical
 prediction is slope $0.5$. The gap is a finite-sample effect: at $T{=}400$ the
-algorithm is in the exploration regime ($T \ll N_{\mathcal{T}}{=}4{,}095$), where it
+algorithm is in the exploration regime ($T \ll N_{\mathcal{T}}{=}8{,}190$), where it
 verifies nearly every new node, adding overhead that biases the slope above $0.5$.
 This excess vanishes as $T / K^D \to \infty$ (Section~\ref{sec:exploitation_results}).
 
@@ -79,7 +79,7 @@ every visited node is new and the threshold provides limited discrimination
 between ``call'' and ``skip'' outcomes. In this regime, random subsampling of
 the verifier is sufficient because the Lipschitz proxy fills the gaps at
 low cost. The critical distinction appears in the exploitation regime
-(Section~\ref{sec:exploitation_results}): for $T \gg N_{\mathcal{T}}$, DVA's
+(Section~\ref{sec:exploitation_results}): for $T \gg N_{\mathcal{T}} = 8{,}190$, DVA's
 principled threshold ensures the call count remains bounded at $N_{\mathcal{T}}$,
 while both Uniform ($\mathcal{B} = T$) and Random ($\mathcal{B} \approx T/2$)
 grow without bound.
@@ -104,12 +104,13 @@ a single-visit uniform verifier. This is the correct behavior: the algorithm nei
 wastes calls on re-verification nor skips calls that would genuinely reduce regret.
 Practitioners running $B \leq 256$ MCTS steps at this tree depth ($K{=}2$, $D{=}12$)
 will see limited efficiency gains. Reducing $D$ or $K$ shifts the crossover
-$N_{\mathcal{T}} = K^D - 1$ to a smaller value (see Remark~\ref{rem:regime_calls}).
+$N_{\mathcal{T}} = K(K^D-1)/(K-1)$ to a smaller value (see Remark~\ref{rem:regime_calls}
+and Section~\ref{sec:small_tree_results}).
 
 \paragraph{Large-budget regime ($B \geq 800$): call plateau.}
 Savings grow rapidly once the tree is explored: $23\%$ at $B{=}800$, $51\%$ at
 $B{=}1600$, and $\mathbf{73\%}$ at $B{=}3{,}200$.  The full exploitation-regime
-behavior---where DVA call counts plateau near $N_{\mathcal{T}} = 4{,}095$
+behavior---where DVA call counts plateau well below $N_{\mathcal{T}} = 8{,}190$
 while Uniform calls grow as $\mathcal{B} = B$---is documented in
 Section~\ref{sec:exploitation_results} and is the primary empirical validation
 of Theorem~\ref{thm:calls}.
@@ -118,14 +119,14 @@ of Theorem~\ref{thm:calls}.
 \label{sec:exploitation_results}
 
 The paper's main theoretical contribution---sub-linear verifier call growth---is
-only observable once $T$ exceeds the crossover $N_{\mathcal{T}} = K^D - 1 = 4{,}095$.
+only observable once $T$ exceeds the crossover $N_{\mathcal{T}} = K(K^D-1)/(K-1) = 8{,}190$.
 We run DVA-MCTS and Uniform Verification from $B{=}400$ to $B{=}16{,}384$ ($20$ runs,
 matched pairs, $\sigma{=}0.05$, $L{=}0.35$) and report the results in
 Table~\ref{tab:exploitation}.
 
 \begin{table}[t]
 \centering
-\caption{Exploitation-regime scaling ($K{=}2$, $D{=}12$, $N_{\mathcal{T}}{=}4{,}095$;
+\caption{Exploitation-regime scaling ($K{=}2$, $D{=}12$, $N_{\mathcal{T}}{=}8{,}190$;
   $20$ matched-pair runs per budget).  DVA-MCTS matches Uniform accuracy
   ($100\%$ at all $B \geq 1{,}000$) while verifier calls grow sub-linearly.
   Theoretical call fraction upper bound is $N_{\mathcal{T}}/B$.}
@@ -148,16 +149,16 @@ $16{,}384$ & $1{,}032$ & $6.3\%$ & $16{,}384$ & $100\%$ & $\mathbf{93.7\%}$ \\
 DVA call counts grow from $381$ to $1{,}032$ as the budget grows by $40\times$
 ($B{=}400 \to 16{,}384$), a $2.7\times$ increase in calls.
 This confirms the theoretical prediction of Theorem~\ref{thm:calls}(a): DVA call
-counts are bounded by $N_{\mathcal{T}} = 4{,}095$, a constant independent of $T$.
+counts are bounded by $N_{\mathcal{T}} = 8{,}190$, a constant independent of $T$.
 Empirically, calls at $B{=}16{,}384$ are $1{,}032$---well below the theoretical
-ceiling of $4{,}095$---because UCT concentrates exploration on high-value subtrees,
-visiting only a fraction of all $4{,}095$ nodes.
+ceiling of $8{,}190$---because UCT concentrates exploration on high-value subtrees,
+visiting only a fraction of all $8{,}190$ non-root nodes.
 
 \paragraph{Savings fraction.}
 The fraction of verifier calls relative to budget decreases monotonically:
 $95.3\%$ at $B{=}400$ (exploration regime) to $\mathbf{6.3\%}$ at $B{=}16{,}384$.
-The theoretical upper bound $N_{\mathcal{T}}/B = 4{,}095/16{,}384 = 25\%$ is
-loose; the actual fraction is $6.3\%$, $4\times$ lower than predicted.
+The theoretical upper bound $N_{\mathcal{T}}/B = 8{,}190/16{,}384 \approx 50\%$ is
+loose; the actual fraction is $6.3\%$, $8\times$ lower than predicted.
 Theorem~\ref{thm:calls}(c) guarantees $\mathcal{B}/T \to 0$; the empirical
 convergence is faster than the worst-case bound.
 
@@ -205,7 +206,7 @@ Adaptive $L$ (running max)           & $\mathbf{23.88} \pm 24.0$~$(p{=}0.35)$ & 
 \end{tabular}
 \end{table}
 
-In the exploration regime ($T{=}400 \ll N_{\mathcal{T}}{=}4{,}095$), all three
+In the exploration regime ($T{=}400 \ll N_{\mathcal{T}}{=}8{,}190$), all three
 variants perform comparably (no pairwise comparison is significant at $\alpha{=}0.05$).
 The fixed underestimate $\hat{L}{=}0.139$ uses $3\%$ fewer calls than the oracle
 and achieves $100\%$ accuracy: fewer verifier calls reduce noise accumulation in the
@@ -217,7 +218,7 @@ $100\%$ accuracy, and a convergent Lipschitz estimate $\hat{L}_{\text{final}}{=}
 The practical recommendation is to use the adaptive estimator: it requires no advance
 knowledge of $L$, converges to a conservative over-estimate that keeps the
 threshold safe, and is available with a single flag
-(\texttt{DVAConfig.use\_adaptive\_l=True}).  In the exploitation regime ($T \gg N_{\mathcal{T}}$),
+(\texttt{DVAConfig.use\_adaptive\_l=True}).  In the exploitation regime ($T \gg N_{\mathcal{T}} = 8{,}190$),
 the advantages of correct $L$ specification are expected to be more pronounced, as the
 threshold then determines which nodes trigger \emph{re}-verification.
 
@@ -297,6 +298,72 @@ Random Allocation       & $22.45$~$(p{=}0.57)$ & $202$          & $100.0\%$ \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\subsection{Small-Tree Exploitation: Theory Made Directly Checkable}
+\label{sec:small_tree_results}
+
+The exploitation regime requires $T \gg N_{\mathcal{T}}$.  For the main experiments
+($K{=}2$, $D{=}12$, $N_{\mathcal{T}}{=}8{,}190$) this demands budgets in the tens of
+thousands.  We instead use $K{=}2$, $D{=}4$, giving $N_{\mathcal{T}} = K(K^D-1)/(K-1) = 30$
+non-root nodes: \emph{even $B{=}100$ is $3\times$ past the crossover}, making the
+call ceiling directly observable at a practical budget.
+
+We run $50$ matched-pair runs at $B \in \{5, 10, 15, 20, 30, 50, 100, 200, 400\}$
+with the same hyperparameters as the main experiments ($L{=}0.35$, $\sigma{=}0.05$,
+$\gamma{=}1.0$, $\alpha{=}0.5$).
+
+\begin{table}[t]
+\centering
+\caption{Small-tree exploitation regime ($K{=}2$, $D{=}4$, $N_{\mathcal{T}}{=}30$;
+  50 matched-pair runs).  DVA call counts plateau near $21.5 < N_{\mathcal{T}}{=}30$
+  for $B \geq 100$, directly confirming Theorem~\ref{thm:calls}(a).  Accuracy
+  saturates at $84\%$ because not every tree instance has a leaf with true
+  value ${\geq}0.8$ (a structural property of the $K{=}2$, $D{=}4$ instances,
+  independent of the algorithm).}
+\label{tab:small_tree}
+\begin{tabular}{rrrrc}
+\toprule
+Budget $B$ & DVA Calls & Call \% & Savings & Accuracy \\
+\midrule
+$5$   & $4.0$  & $80.0\%$ & $33.3\%$ & $32\%$ \\
+$10$  & $8.4$  & $83.8\%$ & $23.8\%$ & $62\%$ \\
+$15$  & $12.7$ & $84.8\%$ & $20.5\%$ & $78\%$ \\
+$20$  & $16.1$ & $80.3\%$ & $23.5\%$ & $80\%$ \\
+$30$  & $19.2$ & $63.9\%$ & $38.2\%$ & $84\%$ \\
+$50$  & $20.6$ & $41.2\%$ & $59.6\%$ & $84\%$ \\
+$100$ & $21.3$ & $21.3\%$ & $78.9\%$ & $84\%$ \\
+$200$ & $21.5$ & $10.7\%$ & $89.3\%$ & $84\%$ \\
+$400$ & $21.5$ & $ 5.4\%$ & $\mathbf{94.6\%}$ & $84\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Call ceiling confirmed.}
+For $B \geq 100$, DVA calls plateau at $21.5$---well below the theoretical
+ceiling of $N_{\mathcal{T}}{=}30$ (Theorem~\ref{thm:calls}(a)).
+The empirical plateau ($21.5$) is $28\%$ below the bound: UCT guides the search
+toward high-value subtrees, so not all $30$ non-root nodes are visited.
+
+\paragraph{Exploitation regime transition.}
+The transition from exploration to exploitation is clearly visible:
+savings are modest at $B{=}5$--$20$ ($23$--$33\%$, exploration phase)
+but accelerate sharply once $B \gtrsim N_{\mathcal{T}} = 30$:
+$38\%$ at $B{=}30$, $60\%$ at $B{=}50$, and $\mathbf{94.6\%}$ at $B{=}400$.
+This mirrors the pattern of Table~\ref{tab:exploitation} at much smaller budgets.
+
+\paragraph{Accuracy saturation.}
+Accuracy saturates at $84\%$ for $B \geq 30$.  This is a structural property
+of the K=2, D=4 instance set: $16\%$ of instances do not contain any leaf with
+true value $\geq 0.8$, regardless of algorithm or budget.  Within the remaining
+$84\%$ of instances, DVA-MCTS identifies the best leaf at every budget $B \geq 30$.
+
+\paragraph{Constant ratio.}
+The Theorem~\ref{thm:main} guarantee for $D{=}4$ is
+$\mathbb{E}[R(T)] \leq C(2,4)\sqrt{T \log 2}$ with
+$C(2,4) = 16\sigma_{\max}\sqrt{2}\,\Phi(2,4)$ and $\Phi(2,4) \approx 7.24$.
+The empirical regret at $T{=}400$ for $K{=}2$, $D{=}4$ is substantially lower
+than for $K{=}2$, $D{=}12$ (Remark~\ref{rem:constant_tightness}), consistent with
+the smaller $\Phi$ value.
 
 \subsection{Real PRM Validation on GSM8K}
 \label{sec:gsm8k}
