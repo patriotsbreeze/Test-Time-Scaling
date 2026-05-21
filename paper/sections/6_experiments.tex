@@ -54,12 +54,13 @@ in the exploration regime).
 \paragraph{Empirical rate.}
 The log-log slope for DVA-MCTS is $\mathbf{0.635}$ ($R^2{=}0.961$). The theoretical
 prediction is slope $0.5$. The gap is a finite-sample effect: at $T{=}400$ the
-algorithm is still in the exploration regime, where it calls the verifier at
-essentially every step (rate $\approx 1$). The leading $O(\sqrt{T}\log T)$
-verification overhead adds a positive bias to the slope that vanishes as
-$T / K^D \to \infty$. The $O(\sqrt{T})$ prediction is confirmed asymptotically
-by the large-budget efficiency results (Section~\ref{sec:efficiency_results}),
-where call counts grow as $\approx \sqrt{B}$ for $B \geq 800$.
+algorithm is in the exploration regime, where it verifies nearly every new node
+(call rate $\approx 1$), adding a $\Theta(T)$ overhead that biases the slope above
+$0.5$. This excess slope vanishes as $T / K^D \to \infty$ (exploitation regime,
+Remark~\ref{rem:exploration}). The $O(\sqrt{T})$ prediction is confirmed
+asymptotically by the large-budget efficiency results
+(Section~\ref{sec:efficiency_results}), where call counts plateau near $K^D$ for
+$B \geq 3{,}200$.
 
 \paragraph{Comparison with baselines.}
 At $T{=}400$, DVA-MCTS achieves mean final regret $31.32$ vs.\ $26.76$ for

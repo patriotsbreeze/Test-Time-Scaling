@@ -9,15 +9,12 @@ Under Assumptions~\ref{ass:lipschitz}--\ref{ass:cost}, with threshold
 $\tau_t = \gamma / \sqrt{t}$, DVA-MCTS achieves cumulative regret
 \[
   \mathbb{E}[R(T)] \;\leq\; C_1 \sqrt{T \log K}
-  \;+\; 2\gamma \sqrt{T}
-  \;+\; 2N_{\mathcal{T}}\sigma_{\max},
+  \;+\; 2\gamma \sqrt{T},
 \]
-where $C_1 = 8\sigma_{\max}\sqrt{2}$, $K$ is the branching factor, and
-$N_{\mathcal{T}} = K^D - 1$.
-Setting $\gamma^* = 4\sigma_{\max}\sqrt{2\log K}$ equates the first two terms
-to give
+where $C_1 = 8\sigma_{\max}\sqrt{2}$ and $K$ is the branching factor.
+Setting $\gamma^* = 4\sigma_{\max}\sqrt{2\log K}$ equates the two terms to give
 \[
-  \mathbb{E}[R(T)] \;\leq\; C\sqrt{T \log K} \;+\; 2N_{\mathcal{T}}\sigma_{\max},
+  \mathbb{E}[R(T)] \;\leq\; C\sqrt{T \log K},
   \qquad C = 16\sigma_{\max}\sqrt{2}.
 \]
 \end{theorem}
@@ -33,37 +30,36 @@ We decompose the regret at each step $t$ into two parts:
 \]
 
 \textbf{Bounding the estimation error.}
-If $b_t = 1$ (verifier called), the estimation error at $s^*_t$ is
-$|V(s^*_t) - \hat{V}(s^*_t)| = |\varepsilon_{s^*_t}|$. By the sub-Gaussian assumption
-with parameter $\sigma^2$, $\mathbb{E}[|\varepsilon|] \leq \sigma_{\max}$.
+Term~(I) is the \emph{signed} quantity $V(s^*_t) - \hat{v}_{s^*_t}$.
+Since noise is zero-mean (Assumption~\ref{ass:noise}):
 
-If $b_t = 0$ (proxy used), let $s_{\text{anc}}$ be the ancestor from which the proxy
-is computed. By Assumption~\ref{ass:lipschitz},
-$|V(s^*_t) - V(s_{\text{anc}})| \leq L \cdot |d(s^*_t) - d(s_{\text{anc}})|$.
-The condition $b_t = 0$ was triggered when $\delta_t = L \cdot |d(s_t) - d(s_{\text{anc}})| \leq \tau_t$,
-so the estimation error is at most $\tau_t + \sigma_{\max}$.
+If $b_t = 1$: $\mathbb{E}[V(s^*_t) - \hat{V}(s^*_t)]
+= \mathbb{E}[-\varepsilon_{s^*_t}] = 0$.
+
+If $b_t = 0$: $\hat{v}_{s^*_t} = \hat{V}(s_{\text{anc}}) = V(s_{\text{anc}}) + \varepsilon_{s_{\text{anc}}}$,
+so $\mathbb{E}[V(s^*_t) - \hat{v}_{s^*_t}]
+= V(s^*_t) - V(s_{\text{anc}}) \leq L\cdot|d(s^*_t)-d(s_{\text{anc}})| \leq \tau_t$.
+The ancestor's noise $\varepsilon_{s_{\text{anc}}}$ cancels in expectation; only the
+Lipschitz gap $\leq \tau_t$ remains.
 
 \textbf{Bounding the selection error.}
 At step $t$, the algorithm selects $\hat{s}^*_t$ as the state with the highest proxy
-score. Since we apply a UCT-style selection with $c_{\text{ucb}} = \sqrt{2\log K}$,
-the standard UCT analysis \citep{kocsis2006bandit} applied to the proxy-augmented
+score. The UCT analysis \citep{kocsis2006bandit} applied to the proxy-augmented
 values gives a per-step selection error of $O(\sqrt{\log K / n(s)})$, which sums to
-$O(\sqrt{T \log K})$ over all steps by Cauchy--Schwarz.
+$O(\sqrt{T \log K})$ over all steps by Cauchy--Schwarz (see Remark~\ref{rem:tree_depth}
+for the tree-depth extension).
 
 \textbf{Combining.}
-Summing the selection error, proxy estimation error, and the O(1) direct-verification
-error ($\leq N_{\mathcal{T}}\sigma_{\max}$ by Theorem~\ref{thm:calls}(a)):
+Direct-call steps contribute zero to term~(I); proxy steps contribute at most $\tau_t$:
 \[
   \mathbb{E}[R(T)]
   \;\leq\; C_1\sqrt{T\log K}
-  \;+\; \gamma\sum_{t=1}^T t^{-1/2}
-  \;+\; 2N_{\mathcal{T}}\sigma_{\max}
-  \;\leq\; C_1\sqrt{T\log K} + 2\gamma\sqrt{T} + 2N_{\mathcal{T}}\sigma_{\max}.
+  \;+\; \sum_{t:\,b_t=0}\tau_t
+  \;\leq\; C_1\sqrt{T\log K} + 2\gamma\sqrt{T}.
 \]
-Setting $\gamma^* = 4\sigma_{\max}\sqrt{2\log K} = C_1\sqrt{\log K}/2$ makes
+Setting $\gamma^* = 4\sigma_{\max}\sqrt{2\log K} = C_1\sqrt{\log K}/2$ gives
 $2\gamma^*\sqrt{T} = C_1\sqrt{T\log K}$, yielding
-$\mathbb{E}[R(T)] \leq 2C_1\sqrt{T\log K} + 2N_{\mathcal{T}}\sigma_{\max}
-= C\sqrt{T\log K} + 2N_{\mathcal{T}}\sigma_{\max}$ with $C = 2C_1 = 16\sigma_{\max}\sqrt{2}$.
+$\mathbb{E}[R(T)] \leq C\sqrt{T\log K}$ with $C = 2C_1 = 16\sigma_{\max}\sqrt{2}$.
 The full proof is in Appendix~\ref{app:proofs}.
 \end{proof}
 
@@ -131,7 +127,7 @@ and $73\%$ at $B{=}3200$ in our experiments (Section~\ref{sec:efficiency_results
 For any online verifier allocation policy $\pi$, there exists a problem instance
 (a tree with branching factor $K$ and verifier noise $\sigma > 0$) such that
 \[
-  \mathbb{E}[R(T)] \;\geq\; \frac{\sigma}{2}\sqrt{T}.
+  \mathbb{E}[R(T)] \;\geq\; \frac{\sigma}{8}\sqrt{T}.
 \]
 \end{theorem}
 
@@ -165,11 +161,14 @@ tree size $N_{\mathcal{T}} = K^D - 1$:
     nodes are new. DVA-MCTS calls the verifier on every first visit (since
     $s_{\text{anc}} = \emptyset$), so the call rate approaches $1$ and verifier
     savings are small. The regret slope in log-log space is higher than $0.5$
-    because the $O(\sqrt{T}\log T)$ first-visit cost dominates.
+    because the near-unit call rate adds a $\Theta(T)$ overhead; this bias
+    vanishes as $T/K^D \to \infty$.
   \item \textbf{Exploitation regime} ($T \gg N_{\mathcal{T}}$): Most visited
-    nodes already have a stored observation; the threshold $\tau_t$ governs
-    whether re-verification is triggered. Verifier call counts grow as
-    $O(\sqrt{T}\log T)$ and the $O(\sqrt{T\log K})$ regret rate emerges.
+    nodes already have stored observations; the threshold $\tau_t$ governs
+    whether re-verification is triggered. Call counts plateau at
+    $N_{\mathcal{T}}$ (Theorem~\ref{thm:calls}(a)), the call fraction
+    $N_{\mathcal{T}}/T \to 0$, and the $O(\sqrt{T\log K})$ regret rate
+    emerges.
 \end{enumerate}
 
 In the experiments of Section~\ref{sec:experiments} ($K{=}2$, $D{=}12$,

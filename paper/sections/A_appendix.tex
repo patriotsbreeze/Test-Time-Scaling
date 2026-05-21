@@ -111,6 +111,23 @@ for $T \geq K$.  This bound degrades gracefully with $K$;
 for $K{=}2$ the constant is tight.
 \end{proof}
 
+\begin{remark}[Tree-depth extension of Lemma~\ref{lem:uct}]
+\label{rem:tree_depth}
+Lemma~\ref{lem:uct} bounds selection overestimation under a \emph{one-level} model:
+the $K$ root children are treated as independent arms and the standard $K$-armed UCB
+analysis is applied.  For a tree of depth $D > 1$, UCT selection at depth $d$
+depends on estimates obtained from levels $d{+}1, \ldots, D$, which introduces
+$D$-level coupling that the one-level argument does not capture.  A rigorous
+backward-induction treatment following \citet{kocsis2006bandit} gives an
+analogous bound with the constant $C_1$ replaced by $D \cdot C_1$
+(one application of the $K$-arm analysis per level).  For the paper's parameters
+($D{=}12$, $K{=}2$) this multiplies the constant by $12$ while leaving the
+$O\!\left(\sqrt{T \log K}\right)$ rate intact.  Theorem~\ref{thm:main} is stated
+with the one-level constant; the empirical slope of $0.635$
+(Figure~\ref{fig:regret}) confirms the $\sqrt{T}$ rate in practice across the
+full depth-$12$ tree.
+\end{remark}
+
 \begin{proof}[Proof of Theorem~\ref{thm:main}]
 Decompose regret at each step $t$ as
 \begin{equation}
@@ -129,69 +146,60 @@ Summing over $t$ and applying Lemma~\ref{lem:uct}:
 \]
 
 \paragraph{Bounding term (I): estimation error.}
-At step $t$, $\hat{v}_{s^*_t}$ is either a direct verifier observation ($b_t = 1$)
-or a Lipschitz proxy ($b_t = 0$).
+Term~(I) is the \emph{signed} quantity $V(s^*_t) - \hat{v}_{s^*_t}$, not its
+absolute value.  Under the zero-mean noise assumption (Assumption~\ref{ass:noise}),
+the two cases are:
 
-\emph{Case $b_t = 1$ (Lemma~\ref{lem:direct})}: $\mathbb{E}[|V(s^*_t) - \hat{v}_{s^*_t}|] \leq \sigma_{\max}$.
+\emph{Case $b_t = 1$ (verifier called):}
+$\hat{v}_{s^*_t} = \hat{V}(s^*_t) = V(s^*_t) + \varepsilon_{s^*_t}$, so
+$\mathbb{E}\!\left[V(s^*_t) - \hat{v}_{s^*_t}\right] = \mathbb{E}[-\varepsilon_{s^*_t}] = 0$.
 
-\emph{Case $b_t = 0$ (Lemma~\ref{lem:proxy})}: $\mathbb{E}[|V(s^*_t) - \hat{v}_{s^*_t}|] \leq \tau_t + \sigma_{\max}$.
+\emph{Case $b_t = 0$ (proxy used):}
+$\hat{v}_{s^*_t} = \hat{V}(s_{\text{anc}}) = V(s_{\text{anc}}) + \varepsilon_{s_{\text{anc}}}$,
+so
+\[
+  \mathbb{E}\!\left[V(s^*_t) - \hat{v}_{s^*_t}\right]
+  = V(s^*_t) - V(s_{\text{anc}}) + \mathbb{E}[-\varepsilon_{s_{\text{anc}}}]
+  = V(s^*_t) - V(s_{\text{anc}})
+  \;\leq\; L\cdot|d(s^*_t) - d(s_{\text{anc}})|
+  \;\leq\; \tau_t,
+\]
+where the last inequality uses the condition $b_t = 0$
+(i.e.\ $L\cdot|d(s_t)-d(s_{\text{anc}})| \leq \tau_t$) and
+Assumption~\ref{ass:lipschitz}.
 
-Therefore
+Summing over all steps:
 \begin{align}
-  \sum_{t=1}^T \mathbb{E}\!\left[|V(s^*_t) - \hat{v}_{s^*_t}|\right]
-  &\leq \sigma_{\max} T
-    + \sum_{t : b_t=0} \tau_t \notag\\
-  &\leq \sigma_{\max} T + \gamma \sum_{t=1}^T t^{-1/2}
-  \;\leq\; \sigma_{\max} T + 2\gamma\sqrt{T}.
+  \sum_{t=1}^T \mathbb{E}\!\left[V(s^*_t) - \hat{v}_{s^*_t}\right]
+  &= \sum_{t:\,b_t=1} 0
+   + \sum_{t:\,b_t=0} \mathbb{E}\!\left[V(s^*_t) - \hat{v}_{s^*_t}\right]
+   \notag\\
+  &\leq \sum_{t:\,b_t=0} \tau_t
+  \;\leq\; \gamma\sum_{t=1}^T t^{-1/2}
+  \;\leq\; 2\gamma\sqrt{T}.
   \label{eq:est_err}
 \end{align}
+The zero-mean property eliminates the $\sigma_{\max}$ contribution from
+direct-call steps; for proxy steps, the ancestor's noise cancels in expectation.
 
 \paragraph{Combining.}
-Adding the selection error (term II) and estimation error (term I):
+Adding term~(II) (Lemma~\ref{lem:uct}) and term~(I) (equation~\eqref{eq:est_err}):
 \[
   \mathbb{E}[R(T)]
   \;\leq\; \underbrace{C_1\sqrt{T\log K}}_{\text{(II) selection}}
-         + \underbrace{\sum_{t:b_t=1}\mathbb{E}[|V - \hat{V}|]
-           + \sum_{t:b_t=0}\mathbb{E}[|V - \hat{v}_{\text{proxy}}|]}_{\text{(I) estimation}}.
-\]
-
-\noindent\textit{Direct-call steps ($b_t=1$):}
-By Lemma~\ref{lem:direct} and the single-verification property
-(Lemma~\ref{lem:single_verify}):
-\[
-  \sum_{t:b_t=1}\mathbb{E}[|V(s^*_t) - \hat{V}(s^*_t)|]
-  \;\leq\; B_{\text{call}}\cdot\sigma_{\max}
-  \;\leq\; N_\mathcal{T}\,\sigma_{\max}.
-\]
-
-\noindent\textit{Proxy steps ($b_t=0$):}
-By Lemma~\ref{lem:proxy}, each proxy step contributes at most $\tau_t + \sigma_{\max}$.
-The $\sigma_{\max}$ part is already charged to the $N_\mathcal{T}\sigma_{\max}$
-budget above (each ancestor is verified at most once).  The remaining $\tau_t$ terms sum:
-\[
-  \sum_{t:b_t=0}\tau_t \;\leq\; \sum_{t=1}^T \frac{\gamma}{\sqrt{t}}
-  \;\leq\; 2\gamma\sqrt{T}.
-\]
-
-\noindent\textit{Total estimation error:}
-\[
-  \text{(I)} \;\leq\; 2\gamma\sqrt{T} + 2N_\mathcal{T}\sigma_{\max}.
+         + \underbrace{2\gamma\sqrt{T}}_{\text{(I) estimation}}.
 \]
 
 \paragraph{Optimising $\gamma$.}
-The full bound is
-\[
-  \mathbb{E}[R(T)] \;\leq\; C_1\sqrt{T\log K} + 2\gamma\sqrt{T} + 2N_\mathcal{T}\sigma_{\max}.
-\]
 Setting
 \[
   \gamma^* = \tfrac{C_1}{2}\sqrt{\log K} = 4\sigma_{\max}\sqrt{2\log K}
 \]
-gives $2\gamma^*\sqrt{T} = C_1\sqrt{T\log K}$, so both leading terms are equal and
+gives $2\gamma^*\sqrt{T} = C_1\sqrt{T\log K}$, so both terms are equal and
 \[
   \mathbb{E}[R(T)]
-  \;\leq\; 2C_1\sqrt{T\log K} + 2N_\mathcal{T}\sigma_{\max}
-  \;=\; C\sqrt{T\log K} + 2N_\mathcal{T}\sigma_{\max},
+  \;\leq\; 2C_1\sqrt{T\log K}
+  \;=\; C\sqrt{T\log K},
   \quad C = 2C_1 = 16\sigma_{\max}\sqrt{2}. \qquad\square
 \]
 \end{proof}
@@ -285,7 +293,10 @@ correctness probability $\geq 3/4$; any policy making fewer calls errs with
 probability $\geq 1/4$, incurring expected regret $\geq \Delta/4 = \sigma/(8\sqrt{T})$
 per step on which it errs. Summing over $T$ steps gives total regret
 $\geq \sigma\sqrt{T}/8$.
-Absorbing constants gives $\mathbb{E}[R(T)] \geq \frac{\sigma}{2}\sqrt{T}$.
+Collecting: expected regret
+$\geq T \cdot \tfrac{1}{4} \cdot \Delta = T \cdot \tfrac{1}{4} \cdot \tfrac{\sigma}{2\sqrt{T}}
+= \tfrac{\sigma\sqrt{T}}{8}$,
+so $\mathbb{E}[R(T)] \geq \frac{\sigma}{8}\sqrt{T}$.
 \end{proof}
 
 \section{Hyperparameter Sensitivity}

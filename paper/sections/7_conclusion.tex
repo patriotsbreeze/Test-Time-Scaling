@@ -5,8 +5,10 @@ We introduced DVA-MCTS, the first algorithm for test-time compute scaling with
 provably efficient dynamic verifier allocation. By formulating the problem as online
 resource allocation and exploiting the Lipschitz structure of process reward models,
 we proved that DVA-MCTS achieves $O(\sqrt{T\log K})$ regret against the oracle
-allocation policy while invoking the verifier only $O(\sqrt{T}\log T)$ times---a
-sub-linear reduction in verification overhead. A matching $\Omega(\sqrt{T})$ lower
+allocation policy while invoking the verifier at most $N_{\mathcal{T}} = K^D-1$
+times in total---a constant independent of~$T$, so the call fraction
+$\mathcal{B}/T \to 0$ as $T \to \infty$---a sub-linear reduction in verification
+overhead. A matching $\Omega(\sqrt{T})$ lower
 bound establishes rate-optimality.
 
 Three empirical findings strengthen the theoretical picture.
