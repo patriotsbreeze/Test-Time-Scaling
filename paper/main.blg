@@ -1,49 +1,51 @@
-This is BibTeX, Version 0.99e (TeX Live 2026)
+This is BibTeX, Version 0.99e
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: main.aux
+Reallocating 'name_of_file' (item size: 1) to 9 items.
 The style file: plainnat.bst
+Reallocating 'name_of_file' (item size: 1) to 11 items.
 Database file #1: references.bib
 Warning--empty booktitle in auer2002finite
 Warning--empty booktitle in bubeck2011x
-You've used 30 entries,
+You've used 32 entries,
             2773 wiz_defined-function locations,
-            741 strings with 10864 characters,
-and the built_in function-call counts, 17135 in all, are:
-= -- 1403
-> -- 1425
-< -- 16
-+ -- 480
-- -- 450
-* -- 1448
-:= -- 2709
-add.period$ -- 95
-call.type$ -- 30
-change.case$ -- 234
-chr.to.int$ -- 30
-cite$ -- 62
-duplicate$ -- 700
-empty$ -- 1135
-format.name$ -- 484
-if$ -- 3531
+            752 strings with 11283 characters,
+and the built_in function-call counts, 18220 in all, are:
+= -- 1498
+> -- 1485
+< -- 19
++ -- 500
+- -- 468
+* -- 1528
+:= -- 2861
+add.period$ -- 101
+call.type$ -- 32
+change.case$ -- 246
+chr.to.int$ -- 32
+cite$ -- 66
+duplicate$ -- 756
+empty$ -- 1230
+format.name$ -- 506
+if$ -- 3771
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 31
-newline$ -- 159
-num.names$ -- 120
-pop$ -- 503
+missing$ -- 33
+newline$ -- 169
+num.names$ -- 128
+pop$ -- 533
 preamble$ -- 1
-purify$ -- 205
+purify$ -- 215
 quote$ -- 0
-skip$ -- 604
+skip$ -- 650
 stack$ -- 0
-substring$ -- 339
-swap$ -- 105
-text.length$ -- 9
+substring$ -- 378
+swap$ -- 119
+text.length$ -- 11
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 325
+type$ -- 347
 warning$ -- 2
-while$ -- 115
+while$ -- 124
 width$ -- 0
-write$ -- 383
+write$ -- 409
 (There were 2 warnings)

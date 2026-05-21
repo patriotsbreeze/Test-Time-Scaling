@@ -54,11 +54,14 @@
   \centering
   \includegraphics[width=\linewidth]{figures/fig1_regret_comparison.pdf}
   \caption{
-    Regret comparison over $T=500$ search steps (50 independent runs, shaded = $\pm$1 SD).
-    \textbf{(a)} Cumulative regret: DVA-MCTS achieves substantially lower cumulative
-    regret than Uniform Verification despite fewer verifier calls.
-    \textbf{(b)} Log-log scaling confirms the $O(\sqrt{T})$ rate for DVA-MCTS
-    (slope $\approx 0.5$), matching Theorem~\ref{thm:main}.
+    Regret comparison over $T{=}400$ search steps (50 independent runs,
+    shaded $= \pm1$ SD).
+    \textbf{(a)} Cumulative regret: DVA-MCTS and Uniform Verification are close in
+    the exploration regime ($T \ll K^D$); DVA achieves $98\%$ final accuracy vs.\
+    $96\%$ for Uniform (Table~\ref{tab:summary}).
+    \textbf{(b)} Log-log scaling: empirical slope $0.635$ ($R^2{=}0.961$), above
+    the asymptotic $0.5$ prediction due to exploration-regime overhead
+    (Remark~\ref{rem:exploration}).
   }
   \label{fig:regret}
 \end{figure}
@@ -96,10 +99,11 @@
   \centering
   \includegraphics[width=0.65\linewidth]{figures/fig4_compute_accuracy.pdf}
   \caption{
-    Compute--accuracy tradeoff. DVA-MCTS tracks Oracle Allocation closely,
-    reaching within $2.1\%$ accuracy at $T=800$ while using $38\%$ fewer
-    verifier calls. Uniform Verification and Random Allocation are shown for
-    reference.
+    Compute--accuracy tradeoff (50 runs per budget).
+    DVA-MCTS matches Uniform Verification within $2$ percentage points at all
+    budgets $B \geq 400$ while using up to $73\%$ fewer verifier calls at
+    $B{=}3{,}200$. Random-path Best-of-$N$ fails in deep trees
+    ($0\%$ accuracy; see Section~\ref{sec:tradeoff_results}).
   }
   \label{fig:tradeoff}
 \end{figure}
@@ -121,15 +125,15 @@
   \centering
   \includegraphics[width=\linewidth]{figures/fig6_estimated_L.pdf}
   \caption{
-    Effect of using the estimated Lipschitz constant $\hat{L}{=}0.139$ instead
-    of the true $L{=}0.35$ ($T{=}400$, 50 runs).
-    \textbf{(a)} Cumulative regret curves; the underestimated $\hat{L}$ yields
-    $119\%$ higher final regret. The adaptive $L$ estimator (running max of
-    observed $|V(s){-}V(s')|/\Delta d$) closes $27\%$ of this gap.
-    \textbf{(b)} Final regret and verifier call count side by side.
-    Fixed $\hat{L}$ saves $4\%$ of verifier calls at the cost of $119\%$ more
-    regret; the adaptive estimator recovers accuracy with minimal extra calls (see
-    Section~\ref{sec:lhat} and Remark~\ref{rem:lhat}).
+    Effect of Lipschitz constant specification ($T{=}400$, 50 runs;
+    Table~\ref{tab:lhat}).
+    \textbf{(a)} Grouped bar chart of mean final regret; fixed
+    $\hat{L}{=}0.139$ yields $74\%$ higher regret than known $L{=}0.35$.
+    The adaptive estimator (running max of $|V(s){-}V(s')|/\Delta d$)
+    closes $\mathbf{97\%}$ of this gap, recovering $100\%$ accuracy.
+    \textbf{(b)} Regret--calls scatter: adaptive $\hat{L}$ Pareto-dominates
+    fixed $\hat{L}$ (lower regret, comparable calls); see
+    Section~\ref{sec:lhat} and Remark~\ref{rem:lhat}.
   }
   \label{fig:lhat}
 \end{figure}
