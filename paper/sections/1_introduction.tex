@@ -67,9 +67,12 @@ We answer this question affirmatively. Specifically:
     In the large-budget synthetic regime ($B{=}3200$, $K^D{=}4{,}096$ nodes),
     DVA-MCTS reduces verifier calls by $73\%$ with a $2$-percentage-point accuracy
     gap; savings grow with budget as the algorithm enters the exploitation regime
-    ($T \gg K^D$). On $100$ real GSM8K problems (Math-Shepherd PRM), DVA-MCTS
-    achieves $8.8\%$ fewer calls while improving accuracy by $3.6$ percentage points,
-    with larger call savings expected for PRMs with continuous score outputs
+    ($T \gg K^D$). An adaptive online estimator for $L$ closes $97\%$ of the regret
+    gap caused by $L$ misspecification, recovering full accuracy with only $1\%$
+    additional verifier calls. On $100$ real GSM8K problems (Math-Shepherd PRM),
+    DVA-MCTS achieves $8.8\%$ fewer calls \emph{and} $3.6$ percentage points higher
+    accuracy than exhaustive verification, with larger call savings expected for PRMs
+    with continuous score outputs
     (Section~\ref{sec:experiments}).
 \end{enumerate}
 
@@ -79,12 +82,15 @@ verifier allocation. The sub-linear verifier budget translates directly to
 wall-clock inference savings in deployed systems. In the synthetic setting, once
 the tree is sufficiently explored ($T \gg K^D$), DVA-MCTS requires $862$ verifier
 calls at $B{=}3{,}200$ versus $3{,}200$ for uniform allocation---a $3.7\times$
-reduction. On real Math-Shepherd PRM data, the call reduction is $8.8\%$ (with an additional
-$3.6$-percentage-point accuracy improvement) due to the proxy-smoothing effect;
-the modest call savings reflect the high effective Lipschitz constant of binary step labels; PRMs with smooth, continuous
-score outputs are expected to yield larger savings, as their score trajectories
-satisfy the Lipschitz assumption more tightly. These efficiency gains are
-particularly valuable when the verifier is a large neural network (e.g., a $7$B
+reduction. Critically, the algorithm does not require prior knowledge of $L$: an
+online adaptive estimator converges during search and closes $97\%$ of the regret
+gap caused by $L$ misspecification. On real Math-Shepherd PRM data, DVA-MCTS
+simultaneously reduces verifier calls by $8.8\%$ \emph{and} improves accuracy by
+$3.6$ percentage points relative to exhaustive verification---a Pareto improvement
+in both efficiency and quality. The modest call savings on binary-label PRMs are
+expected to grow substantially for PRMs with continuous score outputs, where the
+effective $L$ is lower and the threshold skips more verification steps. These gains
+are particularly valuable when the verifier is a large neural network (e.g., a $7$B
 PRM) executed on dedicated hardware.
 
 \paragraph{Organization.}

@@ -17,7 +17,11 @@ is $0.635$, consistent with the $O(\sqrt{T})$ prediction. In the large-budget
 synthetic setting ($B{=}3200$), DVA-MCTS reduces verifier calls by $73\%$ while
 staying within $2$ percentage points of exhaustive-verification accuracy; savings
 are smaller at lower budgets, reflecting the exploration--exploitation crossover
-at $T \approx K^D$. On $100$ real GSM8K problems using Math-Shepherd PRM annotations,
-DVA-MCTS achieves an $8.8\%$ call reduction while improving accuracy by $3.6$ percentage
-points over exhaustive verification, with larger savings expected for PRMs with continuous
+at $T \approx K^D$. An adaptive estimator for the Lipschitz constant $L$---which
+tracks the running maximum of observed score-change ratios during search---closes
+$97\%$ of the regret gap between a misspecified estimate and the oracle $L$,
+recovering full accuracy with only $1\%$ additional verifier calls. On $100$ real
+GSM8K problems using Math-Shepherd PRM annotations, DVA-MCTS achieves an $8.8\%$
+call reduction \emph{and} a $3.6$-percentage-point accuracy improvement over
+exhaustive verification, with larger call savings expected for PRMs with continuous
 (rather than binary) score outputs.

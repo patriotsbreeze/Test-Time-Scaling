@@ -115,7 +115,13 @@ along a path, while $L$ is the \emph{supremum}; for Uniform$(-L, L)$ increments
 the mean absolute value is $L/2$, and cancellation across larger depth gaps
 reduces it further.
 
-Figure~\ref{fig:lhat} and Table~\ref{tab:lhat} show the effect of using $\hat{L}$
+A less-biased alternative is the \emph{sequential-step estimator}
+$\hat{L}_{\text{seq}} = \mathbb{E}[|V(s){-}V(s_{\text{prev}})|]$ computed over single
+consecutive steps, which yields $\hat{L}_{\text{seq}}{=}0.139$; it avoids the
+multi-step cancellation bias but still underestimates $L$ by $2.5\times$.
+Table~\ref{tab:lhat} uses $\hat{L}_{\text{seq}}$ as the fixed estimate since it better
+captures single-step variation relevant to the threshold decision.
+Figure~\ref{fig:lhat} and Table~\ref{tab:lhat} show the effect of using $\hat{L}_{\text{seq}}$
 instead of $L$ in DVA-MCTS.
 
 \begin{table}[t]

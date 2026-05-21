@@ -75,14 +75,15 @@ root-to-leaf path with tree depths $d(s)$ and $d(s')$,
 \begin{remark}[Motivation for Assumption~\ref{ass:lipschitz}]
 This assumption captures the intuition that the quality of a partial solution changes
 smoothly as more tokens are generated. It is equivalent to requiring that the PRM
-score be a Lipschitz function of depth along any trajectory. Figure~\ref{fig:lipschitz}
-provides empirical support: on simulated PRM trajectories (noise $\sigma{=}0.05$,
-consistent with reported PRM score variance from \citet{lightman2023lets}), the estimated
-Lipschitz constant $\hat{L}$ stabilizes rapidly and is consistent across depth gaps.
+score be a Lipschitz function of depth along any trajectory.
+Section~\ref{sec:gsm8k} validates the assumption empirically on real Math-Shepherd
+PRM scores~\citep{wang2024math}: across $100$ GSM8K problems the mean rate of change
+is $\bar{L}{=}0.276$ per step, confirming approximate Lipschitz continuity in practice
+(with the caveat that binary labels admit $L_{\max}{=}1.0$ for single-step transitions,
+discussed in Section~\ref{sec:gsm8k}).
 Violations could occur at decision boundaries where the solution becomes clearly correct
 or incorrect; in practice these are isolated events that do not materially affect our
-bound (see Remark~\ref{rem:robustness}). Section~\ref{sec:gsm8k} validates the assumption
-on real Math-Shepherd PRM scores~\citep{wang2024math}.
+bound (see Remark~\ref{rem:robustness}).
 \end{remark}
 
 \begin{assumption}[Bounded verifier noise]
