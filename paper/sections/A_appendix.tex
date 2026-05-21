@@ -229,16 +229,17 @@ are fixed problem parameters, $N_\mathcal{T}$ is a constant independent of $T$, 
 the call fraction $\mathcal{B}/T \leq N_\mathcal{T}/T \to 0$ as $T \to \infty$.
 
 \medskip
-\noindent\textbf{Part (b): Threshold-dependent refinement.}
-A call at step $t$ requires $\delta_t = L \cdot |d(s_t) - d(s_\mathrm{anc})| > \tau_t = \gamma/\sqrt{t}$.
+\noindent\textbf{Part (b): Threshold-triggered refinement.}
+A \emph{threshold-triggered} call requires $s_\mathrm{anc} \neq \emptyset$
+(re-visit) and $\delta_t = L \cdot |d(s_t) - d(s_\mathrm{anc})| > \tau_t$.
 Since depths lie in $\{0,\ldots,D\}$, we have $\delta_t \leq LD$ always.
 When $\tau_t \geq LD$---equivalently, $t \leq (\gamma/(LD))^2 =: T_\mathrm{free}$---the
-threshold dominates every possible depth gap, so no call is triggered.
-Therefore $\mathcal{B}(\pi) \leq |\{t : t > T_\mathrm{free}\}| = \max(0, T - T_\mathrm{free})$.
-Combining with part (a):
-\[
-  \mathcal{B}(\pi) \;\leq\; \min\!\bigl(N_\mathcal{T},\; \max(0,\, T - T_\mathrm{free})\bigr).
-\]
+threshold dominates every possible depth gap, so no threshold-triggered call
+occurs.  Verifier calls during $t \leq T_\mathrm{free}$ are exclusively
+first-visit calls ($s_\mathrm{anc} = \emptyset$), which are already bounded
+in total by $N_\mathcal{T}$ via Part~(a).
+The number of threshold-triggered calls is at most $\max(0, T - T_\mathrm{free})$;
+together with Part~(a) the total satisfies $\mathcal{B}(\pi) \leq N_\mathcal{T}$.
 
 \medskip
 \noindent\textbf{Part (c): Savings fraction.}

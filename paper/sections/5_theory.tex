@@ -5,7 +5,7 @@
 
 \begin{theorem}[Regret bound for DVA-MCTS]
 \label{thm:main}
-Under Assumptions~\ref{ass:lipschitz}--\ref{ass:cost}, with threshold
+Under Assumptions~\ref{ass:lipschitz}--\ref{ass:noise}, with threshold
 $\tau_t = \gamma / \sqrt{t}$, DVA-MCTS achieves:
 \begin{enumerate}[(i)]
   \item \textbf{(Single-level tree, $D{=}1$).}
@@ -106,16 +106,17 @@ non-root nodes and threshold schedule $\tau_t = \gamma/\sqrt{t}$:
   \item \textbf{(Single-verification ceiling)}
         $\mathbb{E}[\mathcal{B}(\pi)] \leq N_{\mathcal{T}} = \dfrac{K(K^D-1)}{K-1}$.
 
-  \item \textbf{(Threshold-dependent refinement)}
+  \item \textbf{(Threshold-triggered refinement)}
         Define $T_{\mathrm{free}} = \lfloor(\gamma/(LD))^2\rfloor$.
-        For $t \leq T_{\mathrm{free}}$, the threshold $\tau_t \geq LD$ dominates
-        every possible depth gap $\delta_t \leq LD$, so no verifier calls are made.
-        Hence
-        \[
-          \mathbb{E}[\mathcal{B}(\pi)]
-          \;\leq\;
-          \min\!\bigl(N_{\mathcal{T}},\; \max(0,\, T - T_{\mathrm{free}})\bigr).
-        \]
+        For $t \leq T_{\mathrm{free}}$, $\tau_t \geq LD$ dominates every possible
+        depth gap $\delta_t \leq LD$, so \emph{threshold-triggered} calls
+        (on re-visited nodes, $s_{\mathrm{anc}} \neq \emptyset$) cannot occur.
+        Verifier calls during $t \leq T_{\mathrm{free}}$ are exclusively
+        first-visit calls ($s_{\mathrm{anc}} = \emptyset$), already bounded by
+        Part~(a).  The number of threshold-triggered calls is at most
+        $\max(0,\, T - T_{\mathrm{free}})$.
+        $T_{\mathrm{free}}$ grows with the signal-to-noise ratio $\gamma/(LD)$:
+        higher $\gamma$ or smaller $L$ extends the first-visit-only phase.
 
   \item \textbf{(Savings fraction)}
         For any $T > N_{\mathcal{T}}$, the fraction of steps requiring verification satisfies
@@ -130,10 +131,11 @@ non-root nodes and threshold schedule $\tau_t = \gamma/\sqrt{t}$:
 Part (a): DVA-MCTS stores $\hat{V}(s)$ on first verification and reuses it on all
 subsequent visits, so any node is verified at most once. Hence $\mathcal{B}(\pi) \leq N_{\mathcal{T}}$.
 
-Part (b): A call is made at step $t$ only if $\delta_t = L \cdot |d(s_t) - d(s_{\text{anc}})| > \tau_t$.
-Since $|d(s_t) - d(s_{\text{anc}})| \leq D$, we have $\delta_t \leq LD$. When
-$\tau_t = \gamma/\sqrt{t} \geq LD$, i.e.\ $t \leq ({\gamma}/{LD})^2 = T_{\mathrm{free}}$,
-no call is triggered. The combined bound follows by counting remaining steps.
+Part (b): A threshold-triggered call requires both $s_{\mathrm{anc}} \neq \emptyset$ (re-visit)
+and $\delta_t > \tau_t$.  Since $\delta_t \leq LD$ always, $\tau_t \geq LD$
+(i.e.\ $t \leq T_{\mathrm{free}}$) prevents any threshold-triggered call.
+Calls at $t \leq T_{\mathrm{free}}$ are exclusively first-visit calls
+($s_{\mathrm{anc}} = \emptyset$), already counted in Part~(a)'s $N_{\mathcal{T}}$ ceiling.
 
 Part (c): Immediate from (a).
 The full proof is in Appendix~\ref{app:calls}.
@@ -146,7 +148,8 @@ $\gamma$ and $L$. For the theoretically optimal $\gamma^* = 4\sigma_{\max}\sqrt{
 (Theorem~\ref{thm:main}), $T_{\mathrm{free}} = 32\sigma_{\max}^2\log K / (L^2D^2)$:
 a constant that grows with signal-to-noise $\sigma_{\max}/L$ and shrinks with tree
 depth $D$. Part (b) thus shows that a \emph{better signal-to-noise ratio or shallower
-tree} yields a longer call-free initial phase, even within the exploration regime.
+tree} yields a longer \emph{first-visit-only} initial phase---one in which
+threshold-triggered re-visit calls cannot occur---even within the exploration regime.
 Three distinct regimes emerge empirically (see also Section~\ref{sec:regime}):
 \emph{exploration} ($B \ll N_{\mathcal{T}}$, savings ${<}5\%$);
 \emph{transition} ($B \lesssim N_{\mathcal{T}}$, proxy mechanism active,

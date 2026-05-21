@@ -78,7 +78,7 @@ The log-log slope for DVA-MCTS is $\mathbf{0.635}$ ($R^2{=}0.961$). The theoreti
 prediction is slope $0.5$. The gap is a finite-sample effect: at $T{=}400$ the
 algorithm is in the exploration regime ($T \ll N_{\mathcal{T}}{=}8{,}190$), where it
 verifies nearly every new node, adding overhead that biases the slope above $0.5$.
-This excess vanishes as $T / K^D \to \infty$ (Section~\ref{sec:exploitation_results}).
+This excess vanishes as $T / N_{\mathcal{T}} \to \infty$ (Section~\ref{sec:exploitation_results}).
 
 \paragraph{Exploration-regime comparisons.}
 In the exploration regime, all three algorithms perform similarly:
