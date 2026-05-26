@@ -4,12 +4,14 @@
 \subsection{High-Level Design}
 
 DVA-MCTS augments standard MCTS \citep{coulom2006efficient} with two components:
-(1) a \emph{score memory} $\mathcal{M}$ that stores the most recent verifier
-observation along each root-to-leaf path, and (2) a \emph{budget-sensitive threshold}
-$\tau_t$ that governs whether the verifier is called at step $t$. When the verifier is
-not called, the algorithm \emph{proxies} the score of the current node using the
-nearest ancestor for which a verifier observation exists, adjusted by the Lipschitz
-bound.
+(1) a \emph{score memory} $\mathcal{M}$ that stores verifier observations for each
+verified node, and (2) a \emph{budget-sensitive threshold} $\tau_t$ that governs
+whether the verifier is called at step $t$.  When the verifier is not called, the
+algorithm substitutes a \emph{dynamic Lipschitz proxy}: the nearest verified
+ancestor's cached score, recomputed fresh at each step $t$.  Dynamic recomputation
+is essential: as more ancestors accumulate observations, the proxy automatically
+improves without additional verifier calls (Definition~\ref{def:dynamic_proxy};
+see also the proof of Theorem~\ref{thm:main}).
 
 \subsection{Budget-Sensitive Threshold}
 
@@ -19,47 +21,59 @@ At step $t$, define the threshold
   \qquad \gamma > 0,
 \]
 where $\gamma$ is a hyperparameter that trades off regret and verification cost.
-The verifier is invoked at node $s_t$ if and only if the estimated score uncertainty
-exceeds $\tau_t$:
+The verifier is invoked at node $s_t$ if and only if the Lipschitz-estimated
+score discrepancy exceeds $\tau_t$:
 \[
   b_t = \mathbf{1}\!\left[\,\delta_t > \tau_t\,\right],
 \]
-where $\delta_t$ is the \emph{score discrepancy estimate}:
+where the \emph{score discrepancy estimate} is
 \[
-  \delta_t \;=\; L \cdot \bigl|d(s_t) - d(s_{\text{anc}})\bigr|,
+  \delta_t \;=\; L \cdot \bigl|d(s_t) - d(s_{\mathrm{anc},t}(s_t))\bigr|,
 \]
-and $s_{\text{anc}}$ is the deepest ancestor of $s_t$ for which a verifier observation
-is stored in $\mathcal{M}$.
+and $s_{\mathrm{anc},t}(s_t)$ is the deepest ancestor of $s_t$ verified by step $t$
+(Definition~\ref{def:dynamic_proxy}).  If no verified ancestor exists, the
+verifier is called unconditionally ($b_t = 1$).
 
 \begin{remark}
 The threshold $\tau_t = \gamma / \sqrt{t}$ is decreasing in $t$, meaning the algorithm
-becomes \emph{more conservative} about skipping the verifier as the budget is
-exhausted. This mirrors the exploration--exploitation schedule in UCB-style bandit
-algorithms \citep{auer2002finite}.
+becomes \emph{more conservative} about skipping the verifier as the search progresses.
+This mirrors the exploration--exploitation schedule in UCB-style bandit
+algorithms \citep{auer2002finite}.  Once a node is verified, it is \emph{never}
+re-verified (Lemma~\ref{lem:single_verify}); the threshold governs only whether
+unverified nodes skip their first verification.
 \end{remark}
 
-\subsection{Score Proxy}
+\subsection{Dynamic Lipschitz Proxy}
 
-When $b_t = 0$ (verifier not called), the algorithm sets
+When $b_t = 0$ (verifier not called), the algorithm uses the dynamic proxy
 \[
-  \hat{v}_t \;=\; \hat{V}(s_{\text{anc}}),
+  \hat{v}_t(s_t) \;=\; \hat{V}(s_{\mathrm{anc},t}(s_t)),
 \]
-i.e.\ the ancestor's cached score is used directly (neutral proxy, $\eta_t \equiv 0$).
-This proxy satisfies
-$|\hat{v}_t - V(s_t)| \leq L \cdot |d(s_t) - d(s_{\text{anc}})| + \sigma_{\max}$
-under Assumptions~\ref{ass:lipschitz}--\ref{ass:noise}, consistent with
-the ``use proxy'' branch of Algorithm~\ref{alg:dva}.
+i.e.\ the nearest \emph{currently}-verified ancestor's cached score.
+Because the proxy is recomputed at each step $t$ (not stored once and cached
+indefinitely), the estimation error automatically decreases as new ancestors
+are verified:
+\[
+  |V(s_t) - \hat{v}_t(s_t)|
+  \;\leq\; L \cdot \Delta d_t(s_t) + \sigma_{\max},
+\]
+where $\Delta d_t(s_t) = d(s_t) - d(s_{\mathrm{anc},t}(s_t))$ shrinks over time.
+This is the \emph{Lipschitz midpoint}: since $V(s_t) \in [\hat{V}(s_{\mathrm{anc}}) - L\Delta d,
+\hat{V}(s_{\mathrm{anc}}) + L\Delta d]$, the ancestor's score is the midpoint of the
+Lipschitz-constrained interval for $V(s_t)$.
 
-\subsection{UCB Selection with Verifier Budget}
+\subsection{UCT Selection with Dynamic Proxy}
 
 The standard UCT selection criterion \citep{kocsis2006bandit} selects the child $a^*$
-of the current node $s$ that maximizes
+of the current node $s$ that maximises
 \[
-  \text{UCT}(s, a) = \bar{V}(P(s,a)) + c_{\text{ucb}} \sqrt{\frac{\ln n(s)}{n(P(s,a))}},
+  \text{UCT}(s, a) = \hat{v}_t(P(s,a)) + c_{\text{ucb}} \sqrt{\frac{\ln n(s)}{n(P(s,a))}},
 \]
-where $n(\cdot)$ is the visit count and $\bar{V}(\cdot)$ is the empirical mean score.
-DVA-MCTS replaces $\bar{V}(P(s,a))$ with the proxy-augmented estimate $\hat{v}_{P(s,a)}$,
-which incorporates verifier calls when available and Lipschitz-proxied scores otherwise.
+where $n(\cdot)$ is the visit count and $\hat{v}_t(\cdot)$ is the \emph{dynamic}
+proxy estimate (Definition~\ref{def:dynamic_proxy}), using the most recently verified
+ancestor at each step.  For verified nodes, $\hat{v}_t(s) = \hat{V}(s)$ (stored
+verifier value); for unverified nodes, $\hat{v}_t(s) = \hat{V}(s_{\mathrm{anc},t}(s))$
+updated as the tree fills in.
 
 \subsection{Full Algorithm}
 
@@ -70,43 +84,52 @@ Algorithm~\ref{alg:dva} gives the complete DVA-MCTS procedure.
 \label{alg:dva}
 \begin{algorithmic}[1]
 \Require Root $s_0$, LLM policy $\pi_\theta$, verifier $V$,
-         Lipschitz constant $L$, threshold constant $\gamma$,
+         Lipschitz constant $L$ (or adaptive $\hat{L}$), threshold constant $\gamma$,
          budget $T$, branching factor $K$
 \State Initialize score memory $\mathcal{M} \leftarrow \emptyset$,
        visit counts $n(s) \leftarrow 0$ for all $s$, $t \leftarrow 0$
+\State Call verifier at $s_0$; store $\hat{V}(s_0)$ in $\mathcal{M}$
+       \Comment{warm-start anchor}
 \While{$t < T$}
-  \State \textit{// Selection}
+  \State \textit{// Selection (dynamic UCT)}
   \State $s \leftarrow s_0$
-  \While{$s$ is not a leaf}
-    \State $a^* \leftarrow \arg\max_{a} \hat{v}(P(s,a)) + c_{\text{ucb}}\sqrt{\ln n(s) / n(P(s,a))}$
+  \While{$s$ has children and $d(s) < D$}
+    \State $a^* \leftarrow \arg\max_{a} \hat{v}_t(P(s,a)) + c_{\text{ucb}}\sqrt{\ln n(s) / n(P(s,a))}$
     \State $s \leftarrow P(s, a^*)$
   \EndWhile
   \State \textit{// Expansion}
-  \State Add children $\{P(s, a) : a \in \mathcal{A}\}$ to tree
-  \State \textit{// Simulation and Verifier Decision}
-  \For{each new child $s'$}
-    \State $t \leftarrow t + 1$
-    \State $s_{\text{anc}} \leftarrow$ deepest ancestor of $s'$ in $\mathcal{M}$
-    \State $\delta \leftarrow L \cdot (d(s') - d(s_{\text{anc}}))$
-    \State $\tau \leftarrow \gamma / \sqrt{t}$
-    \If{$\delta > \tau$ \textbf{or} $s_{\text{anc}} = \emptyset$}
-      \State $\hat{v}(s') \leftarrow \hat{V}(s')$ \Comment{invoke verifier}
-      \State $\mathcal{M} \leftarrow \mathcal{M} \cup \{(s', \hat{v}(s'))\}$
-    \Else
-      \State $\hat{v}(s') \leftarrow \hat{V}(s_{\text{anc}})$ \Comment{use proxy}
+  \If{$d(s) < D$}
+    \State Add children $\{P(s, a) : a \in \mathcal{A}\}$ to tree
+  \EndIf
+  \State \textit{// Verifier Decision}
+  \For{each new simulation target $s'$ at step $t \leftarrow t + 1$}
+    \State $s_{\mathrm{anc}} \leftarrow$ deepest ancestor of $s'$ in $\mathcal{M}$
+    \If{$s_{\mathrm{anc}} = \emptyset$ \textbf{or} $L \cdot (d(s') - d(s_{\mathrm{anc}})) > \gamma/\sqrt{t}$}
+      \State $\hat{V}(s') \leftarrow$ invoke verifier$(s')$
+             \Comment{call verifier; store in $\mathcal{M}$}
+      \State $\mathcal{M} \leftarrow \mathcal{M} \cup \{(s', \hat{V}(s'))\}$
     \EndIf
+    \State $\hat{v}_t(s') \leftarrow \hat{V}(s_{\mathrm{anc}}(s'))$
+           \Comment{dynamic proxy: use nearest $\mathcal{M}$-ancestor (may equal $s'$)}
   \EndFor
   \State \textit{// Backpropagation}
-  \State Update $n(s)$ and $\bar{V}(s)$ along the selected path
+  \State Update $n(s)$ and $\bar{V}(s)$ along the selected path using $\hat{v}_t(s')$
 \EndWhile
-\State \Return $\hat{s}^* = \arg\max_{s \in \mathcal{L}} \hat{v}(s)$
+\State \Return $\hat{s}^* = \arg\max_{s \in \text{visited}} \hat{v}_T(s)$
 \end{algorithmic}
 \end{algorithm}
 
+\begin{remark}[Dynamic proxy in line 17]
+Line~17 always uses the dynamic proxy---which equals $\hat{V}(s')$ if $s'$ was just
+verified on line~14, or $\hat{V}(s_{\mathrm{anc}}(s'))$ otherwise.  This unified
+formula captures both cases and ensures the estimate is always drawn from $\mathcal{M}$.
+\end{remark}
+
 \subsection{Complexity}
 
-Each search step requires $O(D)$ work for selection, $O(K)$ work for expansion, and
-either $O(V_{\text{cost}})$ or $O(1)$ for the verifier decision (proxy lookup).
+Each search step requires $O(D)$ work for selection, $O(K)$ work for expansion,
+$O(D)$ for the dynamic proxy lookup (ancestor walk), and either
+$O(V_{\text{cost}})$ or $O(1)$ for the verifier decision.
 The total work per step is $O(D + K + V_{\text{cost}} \cdot b_t)$. Since
 $\sum_{t=1}^T b_t \leq N_{\mathcal{T}} = K(K^D-1)/(K-1)$ by Theorem~\ref{thm:calls}(a),
 the total verification cost is at most $O(V_{\text{cost}} \cdot N_{\mathcal{T}})$, a constant

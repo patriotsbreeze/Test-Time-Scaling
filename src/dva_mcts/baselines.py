@@ -1,9 +1,16 @@
 """
 Baseline search algorithms for comparison with DVA-MCTS.
 
-  - UniformMCTS:          verifier called at every node (exhaustive verification)
+  - UniformMCTS:       verifier called at every node (exhaustive verification)
   - RandomAllocationMCTS: verifier called with fixed probability p=0.5
-  - BestOfN:              N independent samples, each fully verified; no tree search
+  - RandomPathSearch:  N independent uniform-random root-to-leaf paths,
+                       each fully verified; demonstrates that exploration
+                       strategy (not just verification) matters in deep trees.
+                       NOTE: this is NOT standard Best-of-N sampling (which
+                       uses the LLM's own generation distribution). It is an
+                       unguided random walk included only to show that
+                       *guided* tree search is necessary in high-branching
+                       trees (Section 6.1 of the paper).
 """
 
 from __future__ import annotations
@@ -24,7 +31,9 @@ class UniformMCTS:
     Standard MCTS with verifier called at every expanded node.
 
     This is the 'exhaustive verification' baseline against which DVA-MCTS
-    is measured. Uses UCT selection identical to DVA-MCTS.
+    is measured. Uses UCT selection identical to DVA-MCTS (dynamic estimates
+    are equivalent to verifier estimates for Uniform since every node is
+    verified).
     """
 
     def __init__(self, verifier: Verifier, config: DVAConfig, rng: np.random.Generator) -> None:
@@ -37,18 +46,20 @@ class UniformMCTS:
         verifier_calls = 0
         cumulative_regret = 0.0
 
-        # Verify root
+        # Verify root for warm-start
         self._call_verifier(tree.root)
         verifier_calls += 1
 
         for t in range(1, budget + 1):
             node = self._select(tree)
-            if tree.is_leaf(node):
+            if not tree.at_max_depth(node) and not node.children:
                 tree.expand(node)
 
             if node.children:
-                sim_node = max(node.children,
-                               key=lambda c: c.uct_score(node.visit_count, self.cfg.c_ucb))
+                sim_node = max(
+                    node.children,
+                    key=lambda c: c.uct_score(node.visit_count, self.cfg.c_ucb),
+                )
             else:
                 sim_node = node
 
@@ -98,9 +109,7 @@ class UniformMCTS:
 
     def _select(self, tree: SearchTree) -> SearchNode:
         node = tree.root
-        while not tree.is_leaf(node):
-            if not node.children:
-                break
+        while node.children and not tree.at_max_depth(node):
             node = max(node.children, key=lambda c: c.uct_score(node.visit_count, self.cfg.c_ucb))
         return node
 
@@ -108,8 +117,6 @@ class UniformMCTS:
         score = self.verifier.score(node)
         node.verifier_called = True
         node.verifier_value = score
-        if hasattr(self.verifier, "true_value"):
-            node.true_value = self.verifier.true_value(node)
 
     def _backpropagate(self, node: SearchNode, value: float) -> None:
         current: Optional[SearchNode] = node
@@ -121,7 +128,7 @@ class UniformMCTS:
 class RandomAllocationMCTS:
     """
     MCTS where each node is verified independently with probability p.
-    This is an uninformed baseline that achieves sub-linear calls but no
+    An uninformed baseline that achieves sub-linear calls but carries no
     regret guarantee.
     """
 
@@ -147,27 +154,26 @@ class RandomAllocationMCTS:
 
         for t in range(1, budget + 1):
             node = self._select(tree)
-            if tree.is_leaf(node):
+            if not tree.at_max_depth(node) and not node.children:
                 tree.expand(node)
 
             if node.children:
-                sim_node = max(node.children,
-                               key=lambda c: c.uct_score(node.visit_count, self.cfg.c_ucb))
+                sim_node = max(
+                    node.children,
+                    key=lambda c: c.uct_score(node.visit_count, self.cfg.c_ucb),
+                )
             else:
                 sim_node = node
 
             if self.rng.random() < self.p:
                 self._call_verifier(sim_node)
                 verifier_calls += 1
-            else:
-                if hasattr(self.verifier, "true_value"):
-                    sim_node.true_value = self.verifier.true_value(sim_node)
-                if sim_node.parent and sim_node.parent.estimated_value is not None:
-                    sim_node.proxy_value = sim_node.parent.estimated_value
-                else:
-                    sim_node.proxy_value = 0.5
+            # Else: use parent's estimated value as proxy (UCT will use this
+            # via the inherited mean_value; no persistent proxy stored).
 
-            sim_value = sim_node.estimated_value or 0.0
+            sim_value = sim_node.estimated_value or (
+                sim_node.parent.estimated_value if sim_node.parent else 0.5
+            ) or 0.5
             self._backpropagate(sim_node, sim_value)
 
             _, oracle_best = tree.best_true_leaf()
@@ -210,9 +216,7 @@ class RandomAllocationMCTS:
 
     def _select(self, tree: SearchTree) -> SearchNode:
         node = tree.root
-        while not tree.is_leaf(node):
-            if not node.children:
-                break
+        while node.children and not tree.at_max_depth(node):
             node = max(node.children, key=lambda c: c.uct_score(node.visit_count, self.cfg.c_ucb))
         return node
 
@@ -220,8 +224,6 @@ class RandomAllocationMCTS:
         score = self.verifier.score(node)
         node.verifier_called = True
         node.verifier_value = score
-        if hasattr(self.verifier, "true_value"):
-            node.true_value = self.verifier.true_value(node)
 
     def _backpropagate(self, node: SearchNode, value: float) -> None:
         current: Optional[SearchNode] = node
@@ -230,13 +232,19 @@ class RandomAllocationMCTS:
             current = current.parent
 
 
-class BestOfN:
-    """
-    Best-of-N baseline: generate N independent solutions and return the
-    highest-scoring one according to the verifier.
+# ── Keep BestOfN name for backward-compat; paper uses "Random-Path Search" ──
 
-    No tree structure; the 'budget' is split equally across N candidates.
-    This is the simplest test-time scaling strategy (Brown et al. 2024).
+class RandomPathSearch:
+    """
+    Random-Path Search (RPS): sample `budget` independent uniform-random
+    root-to-leaf paths; verify each leaf and return the highest-scoring one.
+
+    This is NOT standard Best-of-N sampling (which samples from the LLM's
+    own policy distribution).  RPS samples paths uniformly at random from
+    the tree, achieving Pr[optimal leaf] = K^{-D}.  For deep trees this
+    probability is negligible (2^{-12} ≈ 0.02% for K=2, D=12), so RPS
+    serves only to demonstrate that *guided* search is necessary—it is
+    not a fair competitor to tree-based methods (Section 6.1).
     """
 
     def __init__(self, verifier: Verifier, rng: np.random.Generator) -> None:
@@ -244,24 +252,17 @@ class BestOfN:
         self.rng = rng
 
     def search(self, tree: SearchTree, budget: int) -> SearchResult:
-        """Sample 'budget' independent leaves and pick the best-scored one.
-
-        Cumulative regret is computed correctly: at each step t the algorithm's
-        running-best true value is compared against the oracle's running-best true
-        value (the best among the t sampled leaves), and the per-step gap is
-        accumulated.
-        """
         verifier_calls = 0
         best_score = -1.0
-        best_node = None
+        best_node: Optional[SearchNode] = None
         running_best_true = -1.0
         cumulative_regret = 0.0
         step_records: List[StepRecord] = []
 
         for t in range(1, budget + 1):
-            # Simulate an independent path from root to a random leaf
+            # Simulate an independent uniform-random path from root to a leaf
             node = tree.root
-            for _ in range(tree.max_depth):
+            while not tree.at_max_depth(node):
                 if not node.children:
                     tree.expand(node)
                 if node.children:
@@ -280,15 +281,12 @@ class BestOfN:
                 best_score = score
                 best_node = node
 
-            # Track running-best true value and proper cumulative regret
             true_val = node.true_value or 0.0
             if true_val > running_best_true:
                 running_best_true = true_val
 
-            # Oracle at step t: best true value among all visited nodes so far
             _, oracle_best = tree.best_true_leaf()
-            step_regret = max(0.0, oracle_best - running_best_true)
-            cumulative_regret += step_regret
+            cumulative_regret += max(0.0, oracle_best - running_best_true)
 
             step_records.append(StepRecord(
                 step=t,
@@ -318,3 +316,7 @@ class BestOfN:
             verifier_call_fraction=1.0,
             step_records=step_records,
         )
+
+
+# Backward-compatibility alias
+BestOfN = RandomPathSearch

@@ -15,26 +15,35 @@ class DVAConfig:
     # UCT exploration constant
     c_ucb: float = 1.414  # sqrt(2)
 
-    # Lipschitz constant estimate (set to true L or estimated online)
+    # Lipschitz constant estimate (set to true L or estimated online via adaptive)
     lipschitz_L: float = 0.35
 
-    # Sub-Gaussian noise bound (used in proxy computation)
+    # Sub-Gaussian noise bound (used in proxy error bounds, not in computation)
     sigma_max: float = 0.05
 
     # Search tree geometry
     branching_factor: int = 2
     max_depth: int = 12
 
-    # Whether to call verifier at depth-0 nodes always (warm-start)
+    # Whether to call verifier at the root always (warm-start anchor for proxy chain)
     always_verify_root: bool = True
 
-    # Adaptive L estimation: track running max of |V(s)-V(s')| / depth_gap
+    # Adaptive L̂ estimation: track running max of |V(s)-V(s')| / depth_gap
+    # Recommended default: True (requires no advance knowledge of L)
     use_adaptive_l: bool = False
     adaptive_l_init: float = 0.1  # starting estimate before data accumulates
 
     def threshold(self, t: int) -> float:
         """Budget-sensitive threshold tau_t = gamma / t^alpha."""
         return self.gamma / max(t, 1) ** self.alpha
+
+    @property
+    def n_tree_nodes(self) -> int:
+        """N_T = K(K^D - 1)/(K-1): theoretical verifier call ceiling."""
+        K, D = self.branching_factor, self.max_depth
+        if K == 1:
+            return D
+        return K * (K**D - 1) // (K - 1)
 
 
 @dataclass
@@ -58,7 +67,7 @@ class ExperimentConfig:
     run_dva: bool = True
     run_uniform: bool = True
     run_random: bool = True
-    run_best_of_n: bool = True
+    run_random_path: bool = True  # renamed from run_best_of_n (see Section 6.1)
 
     # Output
     results_dir: str = "results"

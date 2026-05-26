@@ -6,30 +6,52 @@
 \begin{theorem}[Regret bound for DVA-MCTS]
 \label{thm:main}
 Under Assumptions~\ref{ass:lipschitz}--\ref{ass:noise}, with threshold
-$\tau_t = \gamma / \sqrt{t}$, DVA-MCTS achieves:
+$\tau_t = \gamma / \sqrt{t}$ and dynamic Lipschitz proxy
+(Definition~\ref{def:dynamic_proxy}), DVA-MCTS achieves:
 \begin{enumerate}[(i)]
   \item \textbf{(Single-level tree, $D{=}1$).}
         \[
-          \mathbb{E}[R(T)] \;\leq\; C\sqrt{T\log K} \;+\; 2\gamma\sqrt{T},
+          \mathbb{E}[R(T)] \;\leq\; C\sqrt{T\log K} \;+\; 2\gamma\sqrt{T}
+                                   \;+\; LN_{\mathcal{T}},
           \qquad C = 8\sigma_{\max}\sqrt{2},
         \]
         with $\gamma^* = 4\sigma_{\max}\sqrt{2\log K}$ giving
-        $\mathbb{E}[R(T)] \leq 16\sigma_{\max}\sqrt{2}\sqrt{T\log K}$.
+        $\mathbb{E}[R(T)] \leq 16\sigma_{\max}\sqrt{2}\sqrt{T\log K} + LN_{\mathcal{T}}$.
         This matches the $\Omega(\sqrt{T})$ lower bound (Theorem~\ref{thm:lower})
-        up to the $\sqrt{\log K}$ factor.
+        up to the $\sqrt{\log K}$ factor and the constant $LN_{\mathcal{T}}$.
   \item \textbf{(Depth-$D$ tree, general $D \geq 1$).}
         \[
-          \mathbb{E}[R(T)] \;\leq\; C(K,D)\sqrt{T\log K} \;+\; 2\gamma\sqrt{T},
+          \mathbb{E}[R(T)] \;\leq\; C(K,D)\sqrt{T\log K} \;+\; 2\gamma\sqrt{T}
+                                   \;+\; LDN_{\mathcal{T}},
         \]
         where $C(K,D) = 16\sigma_{\max}\sqrt{2}\,\Phi(K,D)$ and
         $\Phi(K,D) = (K^{D/2}-1)/(\sqrt{K}-1)$ is the tree-geometry constant
-        from Lemma~\ref{lem:uct}.  For fixed $K, D$ this is $O(\sqrt{T\log K})$;
+        from Lemma~\ref{lem:uct}.  For fixed $K, D$: $LDN_{\mathcal{T}}$ is a constant
+        independent of $T$, so the rate is $O(\sqrt{T\log K})$;
         for $K{=}2$, $D{=}12$: $\Phi(2,12) \leq 153$.
 \end{enumerate}
-The $O(\sqrt{T\log K})$ rate is the same in both parts;
-part (ii) inherits a depth-dependent constant from the Cauchy--Schwarz step in
-Lemma~\ref{lem:uct} (see Remark~\ref{rem:tree_depth}).
+The $O(\sqrt{T\log K})$ rate holds in both parts.
+Part (ii) inherits a depth-dependent constant $\Phi(K,D)$ from the tree geometry
+(Lemma~\ref{lem:uct}; see Remark~\ref{rem:tree_depth}) and an additive
+$LDN_{\mathcal{T}}$ constant from the dynamic proxy estimation error
+(Remark~\ref{rem:LDN_T}).  Both are $O(1)$ for fixed $K, D$.
 \end{theorem}
+
+\begin{definition}[Dynamic Lipschitz proxy]
+\label{def:dynamic_proxy}
+At each step $t$, for any node $s$, the \emph{dynamic proxy estimate} is
+\[
+  \hat{v}_t(s) \;=\;
+  \begin{cases}
+    \hat{V}(s) & \text{if $s$ has been verified by step $t$,}\\
+    \hat{V}(s_{\mathrm{anc},t}(s)) & \text{otherwise,}
+  \end{cases}
+\]
+where $s_{\mathrm{anc},t}(s)$ is the deepest ancestor of $s$ verified by step $t$.
+The proxy is recomputed fresh at each step---not cached---so the estimation error
+$|V(s) - \hat{v}_t(s)| \leq L\cdot\Delta d_t(s) + \sigma_{\max}$ reflects the
+\emph{current} tree coverage, improving automatically as ancestors are verified.
+\end{definition}
 
 \begin{remark}[Tightness of the constant]
 \label{rem:constant_tightness}
@@ -37,14 +59,21 @@ The constant $C = 16\sigma_{\max}\sqrt{2}$ in part~(i) is \emph{order-optimal}
 relative to the lower bound: Theorem~\ref{thm:lower} gives
 $\mathbb{E}[R(T)] \geq (\sigma/8)\sqrt{T}$, and the ratio is
 $C/(\sigma/8) = 128\sqrt{2} \approx 181$, independent of $T$ or $K$.
-This 181-fold gap is standard for UCT-type analyses and arises from union-bound
-and Cauchy--Schwarz steps that are tight only in worst-case configurations.
-The actual gap for $K{=}2$, $D{=}4$ ($N_{\mathcal{T}}{=}30$) in the exploitation regime
-is considerably smaller; see Section~\ref{sec:small_tree_results}.
-For depth $D > 1$, the additional factor $\Phi(K,D)$ is a Cauchy--Schwarz artifact
-(tight when all $K^d$ depth-$d$ nodes are visited equally, which UCT does not do);
-in practice the effective constant is $3$--$10\times$ smaller than the bound
-(Figure~\ref{fig:regret}(b)).
+This gap arises from the union-bound and Cauchy--Schwarz steps that are tight
+only in adversarial worst-case configurations where all nodes are visited equally.
+UCT concentrates exploration on high-value paths, so the empirical constant is
+$3$--$10\times$ smaller (Figure~\ref{fig:regret}(b)).
+For depth $D > 1$, the factor $\Phi(K,D)$ is a Cauchy--Schwarz artifact.
+A matching lower bound for general $D$ incorporating tree geometry is an open
+problem (see Remark~\ref{rem:lb_scope} in Appendix~\ref{app:lower}).
+
+The additional additive term $LDN_{\mathcal{T}}$ in Theorem~\ref{thm:main}(ii) is
+a constant (for fixed $K, D$) that arises from the dynamic proxy estimation error
+accumulated while oracle-best nodes are unverified.  It does not affect the
+asymptotic rate but may dominate for small $T$ (see Remark~\ref{rem:LDN_T}).
+For the small-tree setting ($K{=}2$, $D{=}4$, $N_{\mathcal{T}}{=}30$),
+$LDN_{\mathcal{T}} = 0.35 \times 4 \times 30 = 42$, negligible relative to observed
+empirical regret at all tested budgets.
 \end{remark}
 
 \begin{proof}[Proof sketch]
@@ -52,43 +81,41 @@ We decompose the regret at each step $t$ into two parts:
 \[
   V(s^*_t) - V(\hat{s}^*_t)
   \;=\;
-  \underbrace{V(s^*_t) - \hat{v}_{s^*_t}}_{\text{estimation error}}
+  \underbrace{V(s^*_t) - \hat{v}_t(s^*_t)}_{\text{(I) estimation error}}
   \;+\;
-  \underbrace{\hat{v}_{s^*_t} - V(\hat{s}^*_t)}_{\text{selection error}}.
+  \underbrace{\hat{v}_t(s^*_t) - V(\hat{s}^*_t)}_{\text{(II) selection error}}.
 \]
+Here $\hat{v}_t(s)$ is the \emph{dynamic} proxy estimate (Definition~\ref{def:dynamic_proxy}),
+recomputed at each step $t$ using the most recently verified ancestor of $s$.
 
-\textbf{Bounding the estimation error.}
-Term~(I) is the \emph{signed} quantity $V(s^*_t) - \hat{v}_{s^*_t}$.
-Since noise is zero-mean (Assumption~\ref{ass:noise}):
+\textbf{Bounding term (I): estimation error for $s^*_t$.}
+Since $s^*_t$ is a visited node, its dynamic estimate $\hat{v}_t(s^*_t)$ is either its
+own verified score or its nearest verified ancestor's score.
 
-If $b_t = 1$: $\mathbb{E}[V(s^*_t) - \hat{V}(s^*_t)]
-= \mathbb{E}[-\varepsilon_{s^*_t}] = 0$.
+\emph{Case A ($s^*_t$ verified by step $t$):}
+$\mathbb{E}[V(s^*_t) - \hat{v}_t(s^*_t)] = \mathbb{E}[-\varepsilon_{s^*_t}] = 0$.
 
-If $b_t = 0$: $\hat{v}_{s^*_t} = \hat{V}(s_{\text{anc}}) = V(s_{\text{anc}}) + \varepsilon_{s_{\text{anc}}}$,
-so $\mathbb{E}[V(s^*_t) - \hat{v}_{s^*_t}]
-= V(s^*_t) - V(s_{\text{anc}}) \leq L\cdot|d(s^*_t)-d(s_{\text{anc}})| \leq \tau_t$.
-The ancestor's noise $\varepsilon_{s_{\text{anc}}}$ cancels in expectation; only the
-Lipschitz gap $\leq \tau_t$ remains.
+\emph{Case B ($s^*_t$ not yet verified by step $t$):}
+$\mathbb{E}[V(s^*_t) - \hat{v}_t(s^*_t)] \leq L\cdot\Delta d_t(s^*_t) \leq LD$.
+By the single-verification property (Lemma~\ref{lem:single_verify}),
+$s^*_t$ can remain unverified for at most $N_{\mathcal{T}}$ of the $T$ steps.
+Hence the total Case-B contribution is $\leq LDN_{\mathcal{T}}$, a constant.
 
-\textbf{Bounding the selection error.}
-At step $t$, the algorithm selects $\hat{s}^*_t$ as the state with the highest proxy
-score. Lemma~\ref{lem:uct} (proven via backward induction over the $D$ tree levels,
-see Appendix~\ref{app:proofs}) gives cumulative selection error
-$\leq C_1(K,D)\sqrt{T\log K}$, where $C_1(K,D) = 8\sigma_{\max}\sqrt{2}\,\Phi(K,D)$
-and $\Phi(K,D) = (K^{D/2}-1)/(\sqrt{K}-1)$ accounts for all tree levels.
+\textbf{Bounding term (II): selection error.}
+Since $\hat{s}^*_t = \arg\max_{i \leq t}\hat{v}_t(s_i)$, we have
+$\hat{v}_t(s^*_t) \leq \hat{v}_t(\hat{s}^*_t)$, so term~(II) is the overestimation
+at $\hat{s}^*_t$.  Lemma~\ref{lem:uct} (backward induction over $D$ tree levels,
+Appendix~\ref{app:proofs}) gives cumulative selection error
+$\leq C_1(K,D)\sqrt{T\log K}$.
 
 \textbf{Combining.}
-Direct-call steps contribute zero to term~(I); proxy steps contribute at most $\tau_t$:
 \[
   \mathbb{E}[R(T)]
-  \;\leq\; C_1(K,D)\sqrt{T\log K}
-  \;+\; \sum_{t:\,b_t=0}\tau_t
-  \;\leq\; C_1(K,D)\sqrt{T\log K} + 2\gamma\sqrt{T}.
+  \;\leq\; C_1(K,D)\sqrt{T\log K} + LDN_{\mathcal{T}}.
 \]
-For $D{=}1$: $C_1(K,1) = 8\sigma_{\max}\sqrt{2}$ (tight, $\Phi(K,1){=}1$).
-For general $D$: $C_1(K,D) = 8\sigma_{\max}\sqrt{2}\,\Phi(K,D)$ (Lemma~\ref{lem:uct}).
-Setting $\gamma^*$ to equate the two terms gives
-$\mathbb{E}[R(T)] \leq C(K,D)\sqrt{T\log K}$ with $C(K,D) = 2C_1(K,D)$.
+The threshold schedule additionally introduces a $2\gamma\sqrt{T}$ term from
+current-step proxy error (Lemma~\ref{lem:proxy}); setting $\gamma^*$ to balance
+terms gives $C(K,D) = 2C_1(K,D) = 16\sigma_{\max}\sqrt{2}\,\Phi(K,D)$.
 The full proof is in Appendix~\ref{app:proofs}.
 \end{proof}
 

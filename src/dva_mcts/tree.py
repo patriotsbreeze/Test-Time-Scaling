@@ -22,9 +22,13 @@ class SearchNode:
 
     # Verifier state
     verifier_called: bool = False
-    verifier_value: Optional[float] = None  # observed noisy value when called
-    proxy_value: Optional[float] = None     # Lipschitz proxy when not called
-    true_value: Optional[float] = None      # ground truth (for evaluation only)
+    verifier_value: Optional[float] = None  # observed noisy score when called
+    true_value: Optional[float] = None      # ground truth (oracle, for evaluation only)
+
+    # NOTE: proxy_value is intentionally NOT stored persistently.
+    # The dynamic Lipschitz proxy is recomputed fresh each step via
+    # get_dynamic_estimate(), ensuring the error bound tau_t applies at
+    # the current step t (see Section 4.3 and Lemma A.1).
 
     @property
     def mean_value(self) -> float:
@@ -34,22 +38,91 @@ class SearchNode:
 
     @property
     def estimated_value(self) -> Optional[float]:
-        """Best available estimate: verifier > proxy > mean > None."""
+        """Best static estimate: verifier > mean > None.
+
+        For the dynamic Lipschitz proxy (ancestor-inherited score),
+        use get_dynamic_estimate(L) instead.  This property is kept
+        for backward-compatibility with logging and reporting code.
+        """
         if self.verifier_value is not None:
             return self.verifier_value
-        if self.proxy_value is not None:
-            return self.proxy_value
         if self.visit_count > 0:
             return self.mean_value
         return None
 
+    # ── Dynamic proxy ──────────────────────────────────────────────────────
+
+    def get_dynamic_estimate(self, L: float) -> Optional[float]:
+        """Dynamic Lipschitz proxy estimate, recomputed fresh each call.
+
+        Returns
+        -------
+        float | None
+            - If this node has been verified: its stored verifier_value.
+            - Else: nearest verified ancestor's verifier_value (neutral
+              Lipschitz midpoint; V(s) lies in [V_anc ± L·Δd]).
+            - None if no verified node exists on the path to the root.
+
+        Recomputing at each step (rather than caching proxy_value) ensures
+        the estimation error |V(s) - v̂_t(s)| ≤ L·Δd_t(s) reflects the
+        *current* tree coverage.  As ancestors are verified over time,
+        Δd_t decreases automatically—no extra verifier calls required.
+        """
+        if self.verifier_called and self.verifier_value is not None:
+            return self.verifier_value
+        ancestor = self.nearest_verified_ancestor()
+        if ancestor is None:
+            return None  # no information available yet
+        # Neutral midpoint of [V_anc - L·Δd, V_anc + L·Δd]
+        return ancestor.verifier_value
+
+    def depth_gap_to_verified_ancestor(self) -> int:
+        """Return depth gap to the nearest verified ancestor (0 if verified)."""
+        if self.verifier_called:
+            return 0
+        ancestor = self.nearest_verified_ancestor()
+        if ancestor is None:
+            return self.depth  # gap to root
+        return self.depth - ancestor.depth
+
     def uct_score(self, parent_visits: int, c_ucb: float) -> float:
-        """Upper Confidence Bound for Trees score."""
+        """Standard UCT score using static estimated_value."""
         if self.visit_count == 0:
             return float("inf")
         exploitation = self.estimated_value if self.estimated_value is not None else 0.0
         exploration = c_ucb * math.sqrt(math.log(max(parent_visits, 1)) / self.visit_count)
         return exploitation + exploration
+
+    def uct_score_dynamic(
+        self,
+        parent_visits: int,
+        c_ucb: float,
+        L: float,
+    ) -> float:
+        """UCT score with dynamic Lipschitz proxy estimate.
+
+        Uses get_dynamic_estimate(L) for the exploitation term, ensuring
+        the score reflects the latest verified information from ancestors.
+        Unverified nodes inherit their nearest verified ancestor's score,
+        which is updated automatically as the tree fills in.
+
+        Parameters
+        ----------
+        parent_visits : int
+            Visit count of the parent node (for UCT log term).
+        c_ucb : float
+            UCT exploration constant (sqrt(2) by default).
+        L : float
+            Current Lipschitz constant estimate (oracle or adaptive L̂).
+        """
+        if self.visit_count == 0:
+            return float("inf")
+        est = self.get_dynamic_estimate(L)
+        exploitation = est if est is not None else 0.0
+        exploration = c_ucb * math.sqrt(math.log(max(parent_visits, 1)) / self.visit_count)
+        return exploitation + exploration
+
+    # ── Tree traversal helpers ─────────────────────────────────────────────
 
     def update(self, value: float) -> None:
         """Backpropagate a value observation."""
@@ -122,7 +195,12 @@ class SearchTree:
         return node.children
 
     def is_leaf(self, node: SearchNode) -> bool:
-        return len(node.children) == 0 or node.depth >= self.max_depth
+        """True iff the node has no children OR is at maximum depth."""
+        return node.depth >= self.max_depth or len(node.children) == 0
+
+    def at_max_depth(self, node: SearchNode) -> bool:
+        """True iff the node is at the maximum tree depth."""
+        return node.depth >= self.max_depth
 
     def all_leaves(self) -> List[SearchNode]:
         """Return all currently expanded leaf nodes."""
@@ -130,28 +208,37 @@ class SearchTree:
         stack = [self.root]
         while stack:
             n = stack.pop()
-            if self.is_leaf(n):
+            if self.at_max_depth(n):
+                leaves.append(n)
+            elif not n.children:
                 leaves.append(n)
             else:
                 stack.extend(n.children)
         return leaves
 
     def best_true_leaf(self) -> Tuple[SearchNode, float]:
-        """Oracle: return the leaf with the highest true value among visited nodes."""
+        """Oracle: return the visited node with the highest true value."""
         visited = [n for n in self._node_registry.values() if n.visit_count > 0]
         if not visited:
             return self.root, self.root.true_value or 0.0
         best = max(visited, key=lambda n: n.true_value or 0.0)
         return best, best.true_value or 0.0
 
-    def best_estimated_leaf(self) -> Tuple[SearchNode, float]:
-        """Return the node with the highest estimated value among visited nodes."""
-        visited = [n for n in self._node_registry.values()
-                   if n.visit_count > 0 and n.estimated_value is not None]
+    def best_estimated_leaf(self, L: float = 0.0) -> Tuple[SearchNode, float]:
+        """Return the visited node with the highest dynamic estimate."""
+        visited = [n for n in self._node_registry.values() if n.visit_count > 0]
         if not visited:
             return self.root, 0.0
-        best = max(visited, key=lambda n: n.estimated_value or 0.0)
-        return best, best.estimated_value or 0.0
+        best = max(
+            visited,
+            key=lambda n: n.get_dynamic_estimate(L) if n.get_dynamic_estimate(L) is not None else -1.0,
+        )
+        est = best.get_dynamic_estimate(L)
+        return best, est if est is not None else 0.0
+
+    def n_verified(self) -> int:
+        """Return the number of nodes that have been verified."""
+        return sum(1 for n in self._node_registry.values() if n.verifier_called)
 
     def __len__(self) -> int:
         return len(self._node_registry)

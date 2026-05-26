@@ -50,14 +50,29 @@ class TestSearchNode:
         assert abs(score - expected) < 1e-9
 
     def test_estimated_value_priority(self):
+        # estimated_value: verifier > mean > None (proxy is now dynamic, not stored)
         node = SearchNode(node_id=0, depth=0)
-        # proxy only
-        node.proxy_value = 0.4
-        assert node.estimated_value == 0.4
-        # verifier overrides proxy
+        # No data yet
+        assert node.estimated_value is None
+        # After visit: mean available
+        node.update(0.4)
+        assert abs(node.estimated_value - 0.4) < 1e-9
+        # Verifier overrides mean
         node.verifier_value = 0.9
         node.verifier_called = True
         assert node.estimated_value == 0.9
+
+    def test_dynamic_estimate_uses_ancestor(self):
+        root = SearchNode(node_id=0, depth=0)
+        root.verifier_called = True
+        root.verifier_value = 0.8
+        child = SearchNode(node_id=1, depth=1, parent=root)
+        # Dynamic estimate should inherit ancestor's value
+        assert abs(child.get_dynamic_estimate(L=0.3) - 0.8) < 1e-9
+        # After verification, dynamic estimate uses own verifier value
+        child.verifier_called = True
+        child.verifier_value = 0.6
+        assert abs(child.get_dynamic_estimate(L=0.3) - 0.6) < 1e-9
 
     def test_path_to_root(self):
         root = SearchNode(node_id=0, depth=0)

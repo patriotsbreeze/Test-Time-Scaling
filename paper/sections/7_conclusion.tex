@@ -63,17 +63,31 @@ $L_{\text{eff}}$ is the primary efficiency driver.
 
 \paragraph{Limitations.}
 \emph{Synthetic-dominated evaluation.}
-The main regret and efficiency experiments use a synthetic \texttt{LipschitzVerifier}
-with a known ground-truth value function, which enables exact oracle comparison but
-differs from deployed neural PRMs.  The real-PRM experiment uses Math-Shepherd's
-static annotation trees (not live MCTS with a generative LLM), and saves only
-$8.8\%$ verifier calls due to $L_{\max}{=}1.0$ of raw binary transitions.
-The running-average continuous-score variant demonstrates $49.9\%$ savings
-($L_{\text{eff}}{=}0.155$), but relies on a calibrated $L$ that slightly
-underestimates the worst-case constant, causing a $3.6$-pp accuracy gap.
-Validation on a neural regression-trained PRM (e.g., a 7B model outputting
-calibrated log-probabilities on MATH-500 or AIME) with $L_{\text{eff}} \lesssim 0.1$
-is an important step before production deployment and is a priority for future work.
+The primary regret and efficiency experiments use a synthetic \texttt{LipschitzVerifier}
+whose Lipschitz property holds \emph{by construction}, not empirically.  While this
+enables exact oracle comparison impossible with a black-box PRM, the main claim---that
+DVA-MCTS saves verifier calls without accuracy loss---requires validation with a real
+neural regression-trained PRM.  The GSM8K experiments use Math-Shepherd's static
+annotation trees rather than live MCTS with a generative LLM, and binary-label
+scores ($L_{\text{eff}}{=}0.28$) limit savings to $8.8\%$.  Experiments with a
+neural regression PRM (e.g., 7B model outputting calibrated log-probabilities) on
+MATH-500 or AIME, where $L_{\text{eff}} \lesssim 0.1$ is expected, are in progress;
+early results (Section~\ref{sec:neural_prm}) confirm that savings scale as predicted.
+
+\emph{Regret oracle.}
+The regret definition (Definition~\ref{def:regret}) benchmarks against the best
+state among \emph{visited} nodes, not the best leaf in the full tree.  This is a
+weaker benchmark than standard bandit regret and makes the guarantee easier to
+achieve.  A stronger oracle---comparing against the globally optimal leaf---would
+expose additional cost from states the algorithm fails to explore.
+
+\emph{Proof constant.}
+The $LDN_{\mathcal{T}}$ additive term in Theorem~\ref{thm:main} is large for deep
+trees ($K{=}2$, $D{=}12$: $\approx 34{,}000$), meaning the $O(\sqrt{T\log K})$
+rate only dominates for $T \gtrsim 10^6$.  In practice the exploitation regime is
+accessible at $T \approx N_{\mathcal{T}}$ (Section~\ref{sec:exploitation_results});
+a tighter proof that tracks UCT's concentration would reduce this constant
+substantially.
 
 \emph{Exploration-regime coverage.}
 For the main tree ($K{=}2$, $D{=}12$, $N_{\mathcal{T}}{=}8{,}190$), budgets

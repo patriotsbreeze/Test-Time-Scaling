@@ -23,12 +23,14 @@ that determines the \emph{exploration threshold} discussed in Section~\ref{sec:r
   \item \textit{Uniform Verification}: verifier called at every search step.
   \item \textit{Random Allocation}: verifier called at each step independently
     with probability $0.5$.
-  \item \textit{Best-of-$N$ (random paths)}: $N$ paths are sampled uniformly at
+  \item \textit{Random-Path Search (RPS)}: $N$ paths are sampled uniformly at
     random from root to depth-$D$ leaves; each path is fully verified and the
-    highest-scoring leaf returned. \emph{Note:} this is not standard Best-of-$N$
-    (which generates independent full solutions via the LLM); rather it is
-    unguided random search within the fixed tree, included to demonstrate that
-    \emph{exploration strategy}---not just verification---is essential in deep trees
+    highest-scoring leaf returned.  \emph{Important:} this is \emph{not} standard
+    Best-of-$N$ sampling, which uses the LLM's own generation distribution.
+    RPS is an unguided uniform random walk over the tree ($K^{-D} \approx 0.02\%$
+    probability of reaching the optimal leaf for $K{=}2$, $D{=}12$) included solely
+    to demonstrate that guided tree search is necessary in high-branching trees;
+    it is not a fair competitor to any UCT-based method
     (Section~\ref{sec:tradeoff_results}).
 \end{itemize}
 
@@ -255,10 +257,19 @@ threshold then determines which nodes trigger \emph{re}-verification.
 Figure~\ref{fig:lipschitz} validates Assumption~\ref{ass:lipschitz} on $500$
 simulated trajectories ($22{,}500$ state pairs).
 
-\paragraph{Envelope holds exactly.}
-Across all $22{,}500$ pairs, the Lipschitz envelope $L \cdot |d{-}d'|$ is never
-violated (violation rate $= 0$). This is guaranteed by the verifier construction,
-confirming the data-generating process is consistent with the assumption.
+\paragraph{Construction guarantee vs.\ empirical content.}
+The synthetic \texttt{LipschitzVerifier} constructs scores as
+$V(\text{child}) = \text{clip}(V(\text{parent}) + \mathrm{Uniform}(-L, L), 0, 1)$,
+which \emph{guarantees} Assumption~\ref{ass:lipschitz} by construction.
+Accordingly, zero violations across $22{,}500$ pairs is an algebraic consequence
+of the data-generating process, not an empirical discovery.  The informative
+content of Figure~\ref{fig:lipschitz} is: (1) the distribution of observed
+$|V(s){-}V(s')|/|d{-}d'|$ ratios is concentrated well below the Lipschitz
+envelope, confirming the assumption is not tight on average; and (2) the
+mean rate $\bar{L}{=}0.091 \pm 0.081$ is substantially below $L{=}0.35$,
+explaining why a conservative over-estimate of $L$ still yields large savings.
+Real-PRM validation (Section~\ref{sec:gsm8k}) provides the genuine empirical test
+of Assumption~\ref{ass:lipschitz}.
 
 \paragraph{Mean rate vs.\ supremum.}
 The global mean-rate estimate $\hat{L}{=}0.091 \pm 0.081$ is substantially below
@@ -285,14 +296,12 @@ the Lipschitz proxy provides useful signal for unverified nodes, effectively
 de-noising the search at low budgets where each verifier call introduces non-trivial
 noise $\sigma{=}0.05$.
 
-\paragraph{Random-path Best-of-$N$ fails in deep trees.}
-Random-path Best-of-$N$ achieves $0\%$ accuracy at all budgets. With $K^D{=}4{,}096$
-leaves, a uniform random path has probability $2^{-12}{\approx}0.02\%$ of selecting
-the optimal leaf. This finding is \emph{not} a critique of standard Best-of-$N$
-(which uses the LLM's own generation distribution, not uniform random paths), but
-demonstrates why guided tree search---whether DVA-MCTS or Uniform---is necessary
-in deep structured search spaces. Standard Best-of-$N$ is not comparable in this
-tree-search setting and is excluded from the main accuracy comparison.
+\paragraph{Random-Path Search (RPS) fails in deep trees.}
+RPS achieves $0\%$ accuracy at all budgets. With $K^D{=}4{,}096$ leaves, a uniform
+random path has probability $2^{-12}{\approx}0.02\%$ of selecting the optimal leaf.
+This demonstrates that guided tree search---whether DVA-MCTS or Uniform---is
+necessary; unguided random sampling cannot compete in deep structured search spaces.
+RPS is excluded from accuracy comparisons between UCT-based methods.
 
 \subsection{Ablation: Threshold Exponent $\alpha$}
 \label{sec:ablation}

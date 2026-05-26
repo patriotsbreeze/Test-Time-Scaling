@@ -6,30 +6,49 @@
 \subsection{Proof of Theorem~\ref{thm:main}}
 \label{app:main_proof}
 
-We provide a complete proof of the regret bound. Throughout, let
+Throughout, let
 $\mathcal{F}_t = \sigma(s_1, b_1, \hat{v}_1, \ldots, s_t, b_t, \hat{v}_t)$ be the
-natural filtration.
-
-\begin{lemma}[Proxy estimation error]
-\label{lem:proxy}
-Under Assumptions~\ref{ass:lipschitz} and \ref{ass:noise}, for any step $t$ with
-$b_t = 0$, the proxy satisfies
+natural filtration.  We write $\hat{v}_t(s)$ for the \emph{dynamic proxy estimate}
+of node $s$ at step $t$:
 \[
-  \mathbb{E}\!\left[|V(s_t) - \hat{v}_t| \;\middle|\; \mathcal{F}_{t-1}\right]
+  \hat{v}_t(s) \;=\;
+  \begin{cases}
+    \hat{V}(s) & \text{if $s$ has been verified by step $t$,} \\
+    \hat{V}(s_{\mathrm{anc},t}(s)) & \text{otherwise,}
+  \end{cases}
+\]
+where $s_{\mathrm{anc},t}(s)$ is the \emph{deepest ancestor of $s$ that has been
+verified by step $t$}.  Crucially, $\hat{v}_t(s)$ is recomputed fresh at each step $t$:
+as ancestors accumulate verifier observations, $\hat{v}_t(s)$ may change (improve)
+without additional verifier calls.  This distinguishes DVA-MCTS from a static
+proxy scheme and is essential for the correctness of Lemma~\ref{lem:proxy} below.
+
+\begin{lemma}[Dynamic proxy estimation error]
+\label{lem:proxy}
+Under Assumptions~\ref{ass:lipschitz} and \ref{ass:noise}, for any node $s$ and
+step $t$ at which the verifier is \emph{not} called at node $s_t$ (i.e.\ $b_t = 0$),
+the dynamic proxy satisfies
+\[
+  \mathbb{E}\!\left[
+    |V(s_t) - \hat{v}_t(s_t)| \;\middle|\; \mathcal{F}_{t-1}
+  \right]
   \;\leq\; \tau_t + \sigma_{\max}.
 \]
 \end{lemma}
 
 \begin{proof}
-When $b_t = 0$, the algorithm sets $\hat{v}_t = \hat{V}(s_{\text{anc}})$ where
-$s_{\text{anc}}$ is the stored ancestor. We have
+Since $b_t = 0$, the threshold condition gives
+$L \cdot |d(s_t) - d(s_{\mathrm{anc},t}(s_t))| \leq \tau_t$.
+Using the triangle inequality and Assumption~\ref{ass:lipschitz}:
 \begin{align*}
-  |V(s_t) - \hat{v}_t|
-  &\leq |V(s_t) - V(s_{\text{anc}})| + |V(s_{\text{anc}}) - \hat{V}(s_{\text{anc}})|\\
-  &\leq L \cdot |d(s_t) - d(s_{\text{anc}})| + |\varepsilon_{s_{\text{anc}}}|.
+  |V(s_t) - \hat{v}_t(s_t)|
+  &\leq |V(s_t) - V(s_{\mathrm{anc},t}(s_t))|
+        + |V(s_{\mathrm{anc},t}(s_t)) - \hat{V}(s_{\mathrm{anc},t}(s_t))|\\
+  &\leq L \cdot |d(s_t) - d(s_{\mathrm{anc},t}(s_t))|
+        + |\varepsilon_{s_{\mathrm{anc},t}(s_t)}|
+  \;\leq\; \tau_t + |\varepsilon_{s_{\mathrm{anc},t}(s_t)}|.
 \end{align*}
-The condition $b_t = 0$ means $L \cdot |d(s_t) - d(s_{\text{anc}})| \leq \tau_t$.
-Taking expectations and using $\mathbb{E}[|\varepsilon|] \leq \sigma_{\max}$ gives
+Taking expectations and applying $\mathbb{E}[|\varepsilon|] \leq \sigma_{\max}$ gives
 the result.
 \end{proof}
 
@@ -37,13 +56,13 @@ the result.
 \label{lem:direct}
 Under Assumption~\ref{ass:noise}, for any step $t$ with $b_t = 1$,
 \[
-  \mathbb{E}\!\left[|V(s_t) - \hat{v}_t| \;\middle|\; \mathcal{F}_{t-1}\right]
+  \mathbb{E}\!\left[|V(s_t) - \hat{v}_t(s_t)| \;\middle|\; \mathcal{F}_{t-1}\right]
   \;\leq\; \sigma_{\max}.
 \]
 \end{lemma}
 
 \begin{proof}
-Immediate from $\hat{v}_t = \hat{V}(s_t) = V(s_t) + \varepsilon_{s_t}$ and the
+Immediate from $\hat{v}_t(s_t) = \hat{V}(s_t) = V(s_t) + \varepsilon_{s_t}$ and the
 sub-Gaussian bound on $\varepsilon_{s_t}$.
 \end{proof}
 
@@ -56,23 +75,22 @@ For a tree of branching factor $K$ and depth $D$, let
 \]
 The cumulative selection error satisfies
 \[
-  \sum_{t=1}^{T} \mathbb{E}\!\left[\hat{v}_{s^*_t} - V(\hat{s}^*_t)\right]
+  \sum_{t=1}^{T} \mathbb{E}\!\left[\hat{v}_t(s^*_t) - V(\hat{s}^*_t)\right]
   \;\leq\; 8\sigma_{\max}\sqrt{2} \cdot \Phi(K,D) \cdot \sqrt{T\log K}.
 \]
 \end{lemma}
 
 \begin{proof}
 \textbf{Single-node UCT bound.}
-For any node $v$ visited $n_v \geq 1$ times, the same UCT analysis as in
-the standard $K$-armed bandit setting \citep{auer2002finite} applies to its $K$
-children: the selection overestimation at $v$ over its $n_v$ visits is bounded by
+For any node $v$ visited $n_v \geq 1$ times, standard UCT analysis applies to its $K$
+children: the selection overestimation at $v$ over $n_v$ visits is bounded by
 $8\sigma_{\max}\sqrt{2 n_v \log K}$.
 
 We verify the argument.  Let $c_a(s) = \sigma_{\max}\sqrt{2\ln(n_v)/n_a(s)}$ be the UCT
 confidence width for child $a$ after $n_a(s)$ visits within $v$'s sub-problem.
 By Hoeffding's inequality for sub-Gaussian noise:
 \[
-  \Pr\!\left[|\hat{v}_a^{(s)} - V(a)| > c_a(s)\right] \leq \frac{2}{n_v^2},
+  \Pr\!\left[|\hat{v}_t(a) - V(a)| > c_a(s)\right] \leq \frac{2}{n_v^2},
 \]
 and a union bound over $K$ children and $n_v$ rounds gives high-probability validity
 of all confidence intervals.  On this event, overestimation at each round contributes
@@ -99,7 +117,7 @@ since $|\mathcal{V}_d| = K^d$):
 
 Summing over all $D$ levels and recognising the geometric series:
 \[
-  \sum_{t=1}^T \mathbb{E}\!\left[\hat{v}_{s^*_t} - V(\hat{s}^*_t)\right]
+  \sum_{t=1}^T \mathbb{E}\!\left[\hat{v}_t(s^*_t) - V(\hat{s}^*_t)\right]
   \;\leq\; \sum_{d=0}^{D-1} 8\sigma_{\max}\sqrt{2\log K} \cdot K^{d/2} \cdot \sqrt{T}
   \;=\; 8\sigma_{\max}\sqrt{2T\log K} \cdot \Phi(K,D). \qquad\square
 \]
@@ -109,99 +127,127 @@ Summing over all $D$ levels and recognising the geometric series:
 \label{rem:tree_depth}
 For $K{=}2$, $D{=}12$: $\Phi(2,12) = \sum_{d=0}^{11}2^{d/2} \leq 153$, so the proof
 gives $C_1 \leq 8 \cdot 153 \cdot \sigma_{\max}\sqrt{2} \approx 1224\,\sigma_{\max}\sqrt{2}$.
-This constant is large but fixed (independent of $T$), confirming the
-$O(\sqrt{T\log K})$ rate.  It is a Cauchy--Schwarz upper bound and typically
+This constant is a Cauchy--Schwarz upper bound and typically
 far exceeds the empirical value: the observed slope $0.635$ at $T{=}400$
-(Figure~\ref{fig:regret}) and the actual regret values ($\approx 31$ at $T{=}400$)
+and the actual regret values ($\approx 31$ at $T{=}400$)
 are consistent with an effective constant in the range $1$--$5\,\sigma_{\max}\sqrt{2}$
 for the paper's parameters.  The gap is expected: the Cauchy--Schwarz step is tight
-only when all $K^d$ nodes at depth $d$ are visited equally, which does not occur in
-practice under guided UCT exploration.
+only when all $K^d$ nodes at depth $d$ are visited equally, which does not occur
+under guided UCT exploration.
 \end{remark}
 
 \begin{proof}[Proof of Theorem~\ref{thm:main}]
 Decompose regret at each step $t$ as
 \begin{equation}
   V(s^*_t) - V(\hat{s}^*_t)
-  = \underbrace{V(s^*_t) - \hat{v}_{s^*_t}}_{\text{(I) estimation error}}
-  + \underbrace{\hat{v}_{s^*_t} - V(\hat{s}^*_t)}_{\text{(II) selection error}}.
+  = \underbrace{V(s^*_t) - \hat{v}_t(s^*_t)}_{\text{(I) estimation error}}
+  + \underbrace{\hat{v}_t(s^*_t) - V(\hat{s}^*_t)}_{\text{(II) selection error}}.
   \label{eq:decomp}
 \end{equation}
+Here $\hat{v}_t(s^*_t)$ is the \emph{dynamic} proxy estimate of the oracle's best
+node $s^*_t$ at step $t$, recomputed using the most recently verified ancestor.
+Since $\hat{s}^*_t = \arg\max_{i \leq t} \hat{v}_t(s_i)$ by definition,
+$\hat{v}_t(s^*_t) - \hat{v}_t(\hat{s}^*_t) \leq 0$, so
+
+\[
+  \hat{v}_t(s^*_t) - V(\hat{s}^*_t)
+  \;\leq\; \hat{v}_t(\hat{s}^*_t) - V(\hat{s}^*_t)
+  \;=\; \text{selection overestimation at } \hat{s}^*_t.
+\]
 
 \paragraph{Bounding term (II): selection error.}
 Summing over $t$ and applying Lemma~\ref{lem:uct}:
 \[
-  \sum_{t=1}^T \mathbb{E}\!\left[\hat{v}_{s^*_t} - V(\hat{s}^*_t)\right]
+  \sum_{t=1}^T \mathbb{E}\!\left[\hat{v}_t(s^*_t) - V(\hat{s}^*_t)\right]
   \;\leq\; C_1 \sqrt{T\log K},
   \qquad C_1 = 8\sigma_{\max}\sqrt{2}\,\Phi(K,D).
 \]
 
 \paragraph{Bounding term (I): estimation error.}
-Term~(I) is the \emph{signed} quantity $V(s^*_t) - \hat{v}_{s^*_t}$, not its
-absolute value.  Under the zero-mean noise assumption (Assumption~\ref{ass:noise}),
-the two cases are:
+Term~(I) is the \emph{signed} quantity $V(s^*_t) - \hat{v}_t(s^*_t)$.
 
-\emph{Case $b_t = 1$ (verifier called):}
-$\hat{v}_{s^*_t} = \hat{V}(s^*_t) = V(s^*_t) + \varepsilon_{s^*_t}$, so
-$\mathbb{E}\!\left[V(s^*_t) - \hat{v}_{s^*_t}\right] = \mathbb{E}[-\varepsilon_{s^*_t}] = 0$.
+\textbf{Case A: $s^*_t$ is verified by step $t$.}
+Then $\hat{v}_t(s^*_t) = \hat{V}(s^*_t) = V(s^*_t) + \varepsilon_{s^*_t}$, so
+$\mathbb{E}[V(s^*_t) - \hat{v}_t(s^*_t)] = \mathbb{E}[-\varepsilon_{s^*_t}] = 0$
+by zero-mean noise (Assumption~\ref{ass:noise}).
 
-\emph{Case $b_t = 0$ (proxy used):}
-$\hat{v}_{s^*_t} = \hat{V}(s_{\text{anc}}) = V(s_{\text{anc}}) + \varepsilon_{s_{\text{anc}}}$,
-so
+\textbf{Case B: $s^*_t$ has not been verified by step $t$.}
+Then $\hat{v}_t(s^*_t) = \hat{V}(s_{\mathrm{anc},t}(s^*_t))$, and
 \[
-  \mathbb{E}\!\left[V(s^*_t) - \hat{v}_{s^*_t}\right]
-  = V(s^*_t) - V(s_{\text{anc}}) + \mathbb{E}[-\varepsilon_{s_{\text{anc}}}]
-  = V(s^*_t) - V(s_{\text{anc}})
-  \;\leq\; L\cdot|d(s^*_t) - d(s_{\text{anc}})|
-  \;\leq\; \tau_t,
+  \mathbb{E}[V(s^*_t) - \hat{v}_t(s^*_t)]
+  = V(s^*_t) - V(s_{\mathrm{anc},t}(s^*_t))
+  \;\leq\; L \cdot \Delta d_t(s^*_t),
 \]
-where the last inequality uses the condition $b_t = 0$
-(i.e.\ $L\cdot|d(s_t)-d(s_{\text{anc}})| \leq \tau_t$) and
-Assumption~\ref{ass:lipschitz}.
+where $\Delta d_t(s^*_t) = d(s^*_t) - d(s_{\mathrm{anc},t}(s^*_t))$ is the depth gap
+from $s^*_t$ to its nearest verified ancestor at step $t$.  The ancestor's noise
+cancels in expectation.
 
-Summing over all steps:
-\begin{align}
-  \sum_{t=1}^T \mathbb{E}\!\left[V(s^*_t) - \hat{v}_{s^*_t}\right]
-  &= \sum_{t:\,b_t=1} 0
-   + \sum_{t:\,b_t=0} \mathbb{E}\!\left[V(s^*_t) - \hat{v}_{s^*_t}\right]
-   \notag\\
-  &\leq \sum_{t:\,b_t=0} \tau_t
-  \;\leq\; \gamma\sum_{t=1}^T t^{-1/2}
-  \;\leq\; 2\gamma\sqrt{T}.
-  \label{eq:est_err}
-\end{align}
-The zero-mean property eliminates the $\sigma_{\max}$ contribution from
-direct-call steps; for proxy steps, the ancestor's noise cancels in expectation.
+\textbf{Bounding the Case-B contribution.}
+By the single-verification property (Lemma~\ref{lem:single_verify}), each of the
+$N_{\mathcal{T}}$ non-root nodes is verified at most once.  Let $\mathcal{U}(t)$ be the
+set of nodes unverified at step $t$.  Then $|\mathcal{U}(t)|$ is non-increasing and
+$|\mathcal{U}(0)| \leq N_{\mathcal{T}}$.  For any unverified node $s$, $\Delta d_t(s) \leq D$.
+Hence the cumulative Case-B contribution is bounded by
+\begin{equation}
+  \sum_{t:\,s^*_t \in \mathcal{U}(t)} L \cdot \Delta d_t(s^*_t)
+  \;\leq\; \sum_{t=1}^{T} L \cdot D \cdot \mathbf{1}[s^*_t \in \mathcal{U}(t)]
+  \;\leq\; L \cdot D \cdot N_{\mathcal{T}},
+  \label{eq:caseB}
+\end{equation}
+since $s^*_t$ can be unverified for at most $N_{\mathcal{T}}$ steps in total: once a
+node is verified it contributes zero to Case-B forever, and there are at most
+$N_{\mathcal{T}}$ nodes that can ever be unverified.
 
 \paragraph{Combining.}
-Adding term~(II) (Lemma~\ref{lem:uct}) and term~(I) (equation~\eqref{eq:est_err}),
-using the shorthand $C_1 = C_1(K,D) = 8\sigma_{\max}\sqrt{2}\,\Phi(K,D)$:
-\[
+Adding terms (I) and (II):
+\begin{equation}
   \mathbb{E}[R(T)]
   \;\leq\; \underbrace{C_1\sqrt{T\log K}}_{\text{(II) selection}}
-         + \underbrace{2\gamma\sqrt{T}}_{\text{(I) estimation}}.
-\]
+         + \underbrace{LDN_{\mathcal{T}}}_{\text{(I) estimation, constant}},
+  \label{eq:main_bound}
+\end{equation}
+where $C_1 = 8\sigma_{\max}\sqrt{2}\,\Phi(K,D)$ and
+$N_{\mathcal{T}} = K(K^D-1)/(K-1)$ is a constant independent of $T$.
 
-\paragraph{Optimising $\gamma$.}
-Setting
-\[
-  \gamma^* = \tfrac{C_1}{2}\sqrt{\log K}
-           = 4\sigma_{\max}\sqrt{2\log K}\cdot\Phi(K,D)
-\]
-gives $2\gamma^*\sqrt{T} = C_1\sqrt{T\log K}$, so both terms are equal and
+In addition, the threshold schedule $\tau_t = \gamma/\sqrt{t}$ introduces a further
+$2\gamma\sqrt{T}$ contribution from the proxy steps in $b_t = 0$ (Lemma~\ref{lem:proxy}
+applied to the current simulation node $s_t$):
 \[
   \mathbb{E}[R(T)]
-  \;\leq\; 2C_1\sqrt{T\log K}
-  \;=\; C(K,D)\sqrt{T\log K},
-  \quad C(K,D) = 2C_1 = 16\sigma_{\max}\sqrt{2}\,\Phi(K,D). \qquad\square
+  \;\leq\; C_1\sqrt{T\log K} + 2\gamma\sqrt{T} + LDN_{\mathcal{T}}.
 \]
+
+\paragraph{Optimising $\gamma$ and asymptotic rate.}
+Setting $\gamma^* = \tfrac{C_1}{2}\sqrt{\log K}$ balances the first two terms:
+\[
+  \mathbb{E}[R(T)]
+  \;\leq\; C(K,D)\sqrt{T\log K} + LDN_{\mathcal{T}},
+  \quad C(K,D) = 16\sigma_{\max}\sqrt{2}\,\Phi(K,D).
+\]
+Since $LDN_{\mathcal{T}}$ is a constant for fixed $K, D$, the rate is
+$O(\sqrt{T\log K})$ for $T \to \infty$.  For the exploration regime
+($T \ll N_{\mathcal{T}}$) the constant term may dominate; the exploitation regime
+($T \gg N_{\mathcal{T}}$) is where the $O(\sqrt{T\log K})$ rate is cleanly observable
+(Section~\ref{sec:exploitation_results}).  $\square$
+
+\begin{remark}[Role of the $LDN_{\mathcal{T}}$ term]
+\label{rem:LDN_T}
+The additive constant $LDN_{\mathcal{T}}$ accounts for the cumulative estimation
+error incurred while oracle-best nodes remain unverified.  It arises because
+the dynamic proxy estimates a node's value using its nearest verified ancestor,
+which may be $D$ levels away in the worst case.  For the paper's parameters:
+$LDN_{\mathcal{T}} = 0.35 \times 12 \times 8{,}190 \approx 34{,}000$.
+Although large, this is a one-time fixed cost: for $T$ above a threshold
+$T_0 = (LDN_{\mathcal{T}}/C_1)^2/\log K$, the first term dominates.  In the
+small-tree setting ($K{=}2$, $D{=}4$, $N_{\mathcal{T}}{=}30$),
+$LDN_{\mathcal{T}} = 0.35 \times 4 \times 30 = 42$, negligible relative to the
+empirical regret at all tested budgets.
+\end{remark}
+
 \end{proof}
 
 \subsection{Proof of Theorem~\ref{thm:calls}}
 \label{app:calls}
-
-We prove the bound in two parts corresponding to the exploration and exploitation
-regimes identified in Remark~\ref{rem:exploration}.
 
 \begin{lemma}[Single-verification property]
 \label{lem:single_verify}
@@ -210,60 +256,59 @@ at most once.
 \end{lemma}
 
 \begin{proof}
-Line~11 of Algorithm~\ref{alg:dva} stores the observation $(s', \hat{v}(s'))$ in
-the score memory $\mathcal{M}$ immediately after calling the verifier.  At every
-subsequent visit to $s'$, line~8 finds $s' \in \mathcal{M}$, so $s_{\text{anc}} = s'$
-and $\delta = L\cdot 0 = 0 < \tau_t$ for any $\tau_t > 0$; the else branch is taken
-and the verifier is not called.  (In the implementation this is enforced by the
-\texttt{verifier\_called} flag on each node.)
+DVA-MCTS stores the flag \texttt{verifier\_called = True} immediately after
+calling the verifier.  The predicate \texttt{\_should\_call\_verifier} returns
+\texttt{False} whenever \texttt{verifier\_called} is set (line~1 of the predicate
+function), so no node can be re-verified.  This is enforced by an assertion
+in the implementation.
 \end{proof}
 
 \begin{proof}[Proof of Theorem~\ref{thm:calls}]
 
 \noindent\textbf{Part (a): Single-verification ceiling.}
-By Lemma~\ref{lem:single_verify}, $\mathcal{B}(\pi) \leq |\mathcal{T}| \leq N_\mathcal{T}$,
+By Lemma~\ref{lem:single_verify}, $\mathcal{B}(\pi) \leq |\mathcal{T} \setminus \{s_0\}|
+= N_\mathcal{T}$,
 where $N_\mathcal{T} = K(K^D-1)/(K-1) = K + K^2 + \cdots + K^D$ is the number of
-non-root nodes (verifier calls can occur at depths $1$ through $D$ only, since the
-root has no ancestor from which to compute a depth gap).  Since $K$ and $D$
+non-root nodes (verifier calls can occur at depths $1$ through $D$ only; the
+root is verified during warm-start and counted separately).  Since $K$ and $D$
 are fixed problem parameters, $N_\mathcal{T}$ is a constant independent of $T$, and
 the call fraction $\mathcal{B}/T \leq N_\mathcal{T}/T \to 0$ as $T \to \infty$.
 
 \medskip
 \noindent\textbf{Part (b): Threshold-triggered refinement.}
 A \emph{threshold-triggered} call requires $s_\mathrm{anc} \neq \emptyset$
-(re-visit) and $\delta_t = L \cdot |d(s_t) - d(s_\mathrm{anc})| > \tau_t$.
+(re-visit to an unverified node) and $\delta_t = L \cdot |d(s_t) - d(s_\mathrm{anc})| > \tau_t$.
 Since depths lie in $\{0,\ldots,D\}$, we have $\delta_t \leq LD$ always.
 When $\tau_t \geq LD$---equivalently, $t \leq (\gamma/(LD))^2 =: T_\mathrm{free}$---the
 threshold dominates every possible depth gap, so no threshold-triggered call
-occurs.  Verifier calls during $t \leq T_\mathrm{free}$ are exclusively
-first-visit calls ($s_\mathrm{anc} = \emptyset$), which are already bounded
-in total by $N_\mathcal{T}$ via Part~(a).
-The number of threshold-triggered calls is at most $\max(0, T - T_\mathrm{free})$;
-together with Part~(a) the total satisfies $\mathcal{B}(\pi) \leq N_\mathcal{T}$.
+can occur.  For $t > T_\mathrm{free}$, threshold-triggered calls may occur, but each
+such call verifies one previously-unverified node and reduces $|\mathcal{U}(t)|$ by one;
+hence the total across all $t$ is at most $N_\mathcal{T}$ (Part~(a)).
 
 \medskip
 \noindent\textbf{Part (c): Savings fraction.}
-Immediate from part (a): $\mathcal{B}(\pi)/T \leq N_\mathcal{T}/T \to 0$.
+Immediate from part~(a): $\mathcal{B}(\pi)/T \leq N_\mathcal{T}/T \to 0$.
 
-\medskip
-\noindent\textbf{Empirical correspondence.}
+\end{proof}
+
+\begin{remark}[Tightness of the bound]
+\label{rem:tightness_calls}
 For the paper's parameters ($K{=}2$, $D{=}12$, $N_\mathcal{T}{=}8{,}190$,
 $\gamma{=}1.0$, $L{=}0.35$): $T_\mathrm{free} = (1.0/(0.35 \times 12))^2 \approx 0.06$,
-so the call-free phase is negligible.  In the experimental range $T \leq 3200$
-(exploration regime, $T \ll N_\mathcal{T}$), calls grow approximately as
-$1.9\sqrt{T}\log T$ empirically.  The formal bound $N_\mathcal{T} = 8{,}190$ is not tight
-here; it becomes tight in the exploitation regime ($T \gg N_\mathcal{T}$).
-A tighter bound matching the empirical rate would require analysing UCT's traversal
-concentration, which we leave to future work.
-\end{proof}
+so the call-free phase is negligible.  The formal bound $N_\mathcal{T} = 8{,}190$ is not
+tight; at $B{=}16{,}384$, DVA-MCTS uses only $1{,}032$ calls---$8\times$ below the
+bound---because UCT concentrates exploration on high-value subtrees, visiting only
+a small fraction of all $8{,}190$ non-root nodes.  A tighter bound matching the
+empirical rate would require analysing UCT's traversal concentration, which we
+leave to future work.
+\end{remark}
 
 \subsection{Proof of Theorem~\ref{thm:lower}}
 \label{app:lower}
 
 \begin{proof}
 We bound \emph{cumulative} regret $R(T) = \sum_{t=1}^T [V(s_t^*) - V(\hat{s}_t^*)]$
-by lower-bounding the per-step error probability at every step $t$, not merely at
-the final step.
+by lower-bounding the per-step error probability at every step $t$.
 
 \paragraph{Hard instance family.}
 Let $\mathcal{T}$ consist of root $s_0$ with two children $s_+$ and $s_-$.
@@ -329,6 +374,22 @@ Inserting into \eqref{eq:lb_sum}:
 This bound holds for \emph{every} policy $\pi$ on this instance family,
 regardless of the number of verifier calls made.
 Hence $\mathbb{E}[R(T)] \geq \frac{\sigma}{8}\sqrt{T}$.
+
+\begin{remark}[Lower-bound scope]
+\label{rem:lb_scope}
+The hard instance uses $D{=}1$ (two-node tree).  The upper bound for $D > 1$
+carries the additional factor $\Phi(K,D)$, giving a gap of $\Phi(K,D)\cdot
+128\sqrt{2} \approx 181\Phi(K,D)$ between the two rates.  This gap is a
+Cauchy--Schwarz artifact in Lemma~\ref{lem:uct}: UCT does not visit all $K^d$
+depth-$d$ nodes equally, and the empirical constant is $3$--$10\times$ smaller.
+The rate-optimality claim ($O(\sqrt{T\log K})$ vs.\ $\Omega(\sqrt{T})$)
+is exact; the multiplicative factor is loose by $\Phi(K,D)$.
+For $D{=}1$, the bound is tight up to the $\sqrt{\log K}$ factor.
+A matching lower bound for general $D$ that incorporates the tree geometry
+(analogous to the $X$-armed bandit lower bound of \citet{bubeck2011x})
+is an open problem that we leave to future work.
+\end{remark}
+
 \end{proof}
 
 \section{Hyperparameter Sensitivity}
@@ -377,20 +438,23 @@ $\mathcal{S}, \mathcal{A}$ & State and action spaces \\
 $K, D$ & Branching factor and depth \\
 $V(s)$ & True verifier score at state $s$ \\
 $\hat{V}(s)$ & Noisy verifier observation at $s$ \\
-$\hat{v}_t$ & Algorithm's estimate at step $t$ \\
+$\hat{v}_t(s)$ & Algorithm's \emph{dynamic} estimate of $s$ at step $t$ \\
 $b_t \in \{0,1\}$ & Verifier call indicator at step $t$ \\
 $\tau_t$ & Budget-sensitive threshold at step $t$ \\
 $\gamma$ & Threshold constant \\
 $\alpha$ & Threshold decay exponent \\
-$L$ & Lipschitz constant of $V$ \\
+$L$ & Lipschitz constant of $V$ along tree paths \\
 $\sigma$ & Sub-Gaussian noise parameter \\
 $T$ & Total search budget \\
 $R(T)$ & Cumulative regret \\
 $\mathcal{B}(\pi)$ & Total verifier calls under policy $\pi$ \\
-$s^*_t$ & Oracle's best state through step $t$ \\
+$N_{\mathcal{T}}$ & Tree size $K(K^D-1)/(K-1)$; theoretical call ceiling \\
+$s^*_t$ & Oracle's best visited state through step $t$ \\
 $\hat{s}^*_t$ & Algorithm's best estimated state through step $t$ \\
-$s_{\text{anc}}$ & Deepest ancestor with stored verifier observation \\
-$\mathcal{M}$ & Score memory (set of $(s, \hat{V}(s))$ pairs) \\
+$s_{\mathrm{anc},t}(s)$ & Deepest ancestor of $s$ verified by step $t$ \\
+$\Delta d_t(s)$ & Depth gap $d(s) - d(s_{\mathrm{anc},t}(s))$ \\
+$\Phi(K,D)$ & Tree geometry constant $(K^{D/2}-1)/(\sqrt{K}-1)$ \\
+$\hat{L}$ & Adaptive running-max Lipschitz estimate \\
 \bottomrule
 \end{tabular}
 \end{table}
